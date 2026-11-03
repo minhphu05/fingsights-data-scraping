@@ -6,7 +6,7 @@ publisher_domain: cafef.vn
 attribution_name: cafef
 timezone: Asia/Ho_Chi_Minh
 request_rate_per_second: 0.5
-max_pages_per_category: 10
+max_pages_per_category: 1000
 article_id_regex: '-(?P<article_id>188[0-9]{11,})\.chn$'
 discovery:
   mode: archive-pagination-with-rss-overlap

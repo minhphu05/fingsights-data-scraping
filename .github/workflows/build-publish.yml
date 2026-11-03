@@ -52,3 +52,22 @@ jobs:
           cache-from: type=gha,scope=finsights-scraping
           cache-to: type=gha,mode=max,scope=finsights-scraping
 
+      - name: Trigger K3s Dagster Code Server Rollout Restart
+        if: success()
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST || '103.249.117.232' }}
+          VPS_PORT: ${{ secrets.VPS_SSH_PORT || '26567' }}
+        run: |
+          if [ -n "${SSH_PRIVATE_KEY}" ]; then
+            echo "🚀 Triggering automatic rollout restart of Dagster code server on K3s..."
+            mkdir -p ~/.ssh
+            echo "${SSH_PRIVATE_KEY}" > ~/.ssh/finsights_vps
+            chmod 600 ~/.ssh/finsights_vps
+            ssh -i ~/.ssh/finsights_vps -o StrictHostKeyChecking=no -p "${VPS_PORT}" "root@${VPS_HOST}" \
+              "kubectl rollout restart deployment dagster-dagster-user-deployments-finsights-data-scraping -n orchestration"
+            echo "✅ Rollout restart triggered successfully!"
+          else
+            echo "ℹ️ SSH_PRIVATE_KEY not configured in GitHub Secrets; skipping automatic rollout restart."
+          fi
+

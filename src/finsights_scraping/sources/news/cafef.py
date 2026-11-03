@@ -45,6 +45,19 @@ def _clean_url(url: str) -> str:
     return urlunparse((parts.scheme or "https", parts.netloc.lower(), parts.path, "", "", ""))
 
 
+def _extract_date_from_url(url: str) -> date | None:
+    match = re.search(r"188(\d{2})(\d{2})(\d{2})", url)
+    if match:
+        year = int("20" + match.group(1))
+        month = int(match.group(2))
+        day = int(match.group(3))
+        try:
+            return date(year, month, day)
+        except ValueError:
+            pass
+    return None
+
+
 def _text(node: Tag | None) -> str | None:
     if node is None:
         return None
@@ -127,7 +140,11 @@ class CafeFClient:
         )
 
     async def close(self) -> None:
-        await self._client.aclose()
+        if not self._client.is_closed:
+            try:
+                await self._client.aclose()
+            except Exception:
+                pass
 
     async def _get(self, url: str) -> httpx.Response:
         interval = 1.0 / self.rate if self.rate > 0 else 0
@@ -177,6 +194,31 @@ class CafeFClient:
                 })
                 raise
 
+    async def _find_start_page(self, category: dict[str, Any], end_date: date) -> int:
+        """Binary search page index when target date is significantly in the past."""
+        template = category["page_template"]
+        low, high = 1, min(self.max_pages, 1000)
+        best_page = 1
+        while low <= high:
+            mid = (low + high) // 2
+            page_url = template.format(page=mid)
+            try:
+                response = await self._get(page_url)
+                urls = re.findall(r"/[^\"'\s]+-188\d+\.chn", response.text)
+                dates = [_extract_date_from_url(u) for u in urls]
+                valid_dates = [d for d in dates if d is not None]
+                if not valid_dates:
+                    high = mid - 1
+                    continue
+                if max(valid_dates) <= end_date:
+                    best_page = mid
+                    high = mid - 1
+                else:
+                    low = mid + 1
+            except Exception:
+                high = mid - 1
+        return max(1, best_page - 2)
+
     async def collect(
         self,
         window: DateWindow,
@@ -200,7 +242,8 @@ class CafeFClient:
                             for a in batch:
                                 results[a.source_article_id] = a
 
-        rss_urls = await self._rss_urls()
+        today = datetime.now(ZoneInfo(self.timezone_name)).date()
+        rss_urls = await self._rss_urls() if (today - window.end_date).days <= 2 else []
         for url in rss_urls:
             discovered[url] = ("rss", "recent_feed")
 
@@ -209,7 +252,13 @@ class CafeFClient:
             category_complete = False
             saw_any_articles = False
             template = category["page_template"]
-            for page_number in range(1, self.max_pages + 1):
+
+            # If target end_date is older than 2 days ago, jump directly using binary search
+            start_page = 1
+            if (today - window.end_date).days > 2:
+                start_page = await self._find_start_page(category, window.end_date)
+
+            for page_number in range(start_page, self.max_pages + 1):
                 page_url = category.get("first_page") if page_number == 1 else template.format(page=page_number)
                 response = await self._get(page_url)
                 soup = BeautifulSoup(response.content, "lxml")
@@ -222,6 +271,16 @@ class CafeFClient:
                 page_dates: list[datetime] = []
                 for article_url in candidates:
                     discovered.setdefault(article_url, (category["code"], "archive"))
+
+                    # Pre-filter using timestamp encoded directly in the CafeF URL
+                    estimated_date = _extract_date_from_url(article_url)
+                    if estimated_date is not None:
+                        est_dt = datetime.combine(estimated_date, datetime.min.time(), tzinfo=ZoneInfo(self.timezone_name))
+                        page_dates.append(est_dt)
+                        if estimated_date > window.end_date or estimated_date < window.start_date:
+                            # Skip full detail download if outside requested date window!
+                            continue
+
                     try:
                         article = await self.fetch_article(article_url, category=category["code"])
                         seen_article_urls.add(article_url)
@@ -231,7 +290,7 @@ class CafeFClient:
                             if article.source_article_id not in processed_uids:
                                 processed_uids.add(article.source_article_id)
                                 day_buffer.setdefault(article_date, []).append(article)
-                    except (UnusableArticleError, httpx.HTTPError) as err:
+                    except (UnusableArticleError, httpx.HTTPError):
                         continue
 
                 # Once a page finishes, flush any days strictly newer than the oldest article on this page
@@ -239,7 +298,7 @@ class CafeFClient:
                     _flush_days(min_date_cutoff=min(page_dates).date())
 
                 # Stop only after fully parsing a page whose every item predates the start.
-                if page_dates and min(page_dates).date() < window.start_date:
+                if page_dates and max(page_dates).date() < window.start_date:
                     category_complete = True
                     break
 
@@ -257,6 +316,9 @@ class CafeFClient:
             if url in seen_article_urls:
                 continue
             seen_article_urls.add(url)
+            estimated_date = _extract_date_from_url(url)
+            if estimated_date is not None and not (window.start_date <= estimated_date <= window.end_date):
+                continue
             try:
                 article = await self.fetch_article(url)
             except (UnusableArticleError, httpx.HTTPError):
@@ -271,6 +333,7 @@ class CafeFClient:
         return list(results.values())
 
     async def _rss_urls(self) -> list[str]:
+        regex = re.compile(self.config["article_id_regex"], re.IGNORECASE)
         urls: list[str] = []
         for feed_url in self.config["discovery"].get("rss_feeds", []):
             try:
@@ -279,7 +342,9 @@ class CafeFClient:
                 for item in soup.find_all("item"):
                     link = item.find("link")
                     if link and link.get_text(strip=True):
-                        urls.append(_clean_url(urljoin(feed_url, link.get_text(strip=True))))
+                        clean = _clean_url(urljoin(feed_url, link.get_text(strip=True)))
+                        if regex.search(clean):
+                            urls.append(clean)
             except Exception:
                 continue
         return list(dict.fromkeys(urls))

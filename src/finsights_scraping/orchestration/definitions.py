@@ -162,8 +162,14 @@ def collect_cafef_news(context):
             f"CafeF persisted day batch for {batch_date}: {len(uids)} articles (cumulative: {total_persisted})"
         )
 
+    async def _execute_collection():
+        try:
+            await client.collect(window, on_batch=_persist_day_batch)
+        finally:
+            await client.close()
+
     try:
-        asyncio.run(client.collect(window, on_batch=_persist_day_batch))
+        asyncio.run(_execute_collection())
         audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
         audit.finish_run(run_row_id, "SUCCESS", discovered=total_discovered, persisted=total_persisted)
         audit.save_checkpoint(source_config["source_code"], "last_completed_window", {
@@ -194,8 +200,6 @@ def collect_cafef_news(context):
             "persisted_before_failure": total_persisted,
         })
         raise
-    finally:
-        asyncio.run(client.close())
 
 
 @op(config_schema={
@@ -252,8 +256,14 @@ def collect_configured_news(context):
             f"{source_key} persisted day batch for {batch_date}: {len(uids)} articles (cumulative: {total_persisted})"
         )
 
+    async def _execute_collection():
+        try:
+            await client.collect(window, on_batch=_persist_day_batch)
+        finally:
+            await client.close()
+
     try:
-        asyncio.run(client.collect(window, on_batch=_persist_day_batch))
+        asyncio.run(_execute_collection())
         audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
         audit.finish_run(run_row_id, "SUCCESS", discovered=total_discovered, persisted=total_persisted)
         audit.save_checkpoint(source_config["source_code"], "last_completed_window", {
@@ -281,8 +291,6 @@ def collect_configured_news(context):
             "persisted_before_failure": total_persisted,
         })
         raise
-    finally:
-        asyncio.run(client.close())
 
 
 @op(config_schema={
