@@ -1,6 +1,8 @@
 # Orchestration and K3s isolated run pods
 dagster==1.13.27
 dagster-k8s==0.29.27
+dagster-postgres==0.29.27
+psycopg2-binary>=2.9.9
 
 # HTTP, source parsing, and YAML configuration
 httpx[http2]==0.28.1
