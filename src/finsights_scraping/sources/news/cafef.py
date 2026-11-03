@@ -5,7 +5,7 @@ import hashlib
 import json
 import os
 import re
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from email.utils import parsedate_to_datetime
 from typing import Any, Iterable
 from urllib.parse import urljoin, urlparse, urlunparse
@@ -177,10 +177,29 @@ class CafeFClient:
                 })
                 raise
 
-    async def collect(self, window: DateWindow) -> list[Article]:
-        """Fetch archive pages and detail pages; never infer missing publication dates."""
+    async def collect(
+        self,
+        window: DateWindow,
+        on_batch: Any | None = None,
+    ) -> list[Article]:
+        """Fetch archive pages and detail pages; flushes day-batches incrementally to prevent OOM."""
         discovered: dict[str, tuple[str, str]] = {}
-        parsed_articles: dict[str, Article] = {}
+        seen_article_urls: set[str] = set()
+        results: dict[str, Article] = {}
+        day_buffer: dict[date, list[Article]] = {}
+        processed_uids: set[str] = set()
+
+        def _flush_days(min_date_cutoff: date | None = None):
+            for pub_date in sorted(list(day_buffer.keys()), reverse=True):
+                if min_date_cutoff is None or pub_date > min_date_cutoff:
+                    batch = day_buffer.pop(pub_date, [])
+                    if batch:
+                        if on_batch:
+                            on_batch(pub_date, batch)
+                        else:
+                            for a in batch:
+                                results[a.source_article_id] = a
+
         rss_urls = await self._rss_urls()
         for url in rss_urls:
             discovered[url] = ("rss", "recent_feed")
@@ -205,14 +224,27 @@ class CafeFClient:
                     discovered.setdefault(article_url, (category["code"], "archive"))
                     try:
                         article = await self.fetch_article(article_url, category=category["code"])
-                        parsed_articles[article_url] = article
+                        seen_article_urls.add(article_url)
+                        article_date = article.published_at.astimezone(ZoneInfo(self.timezone_name)).date()
                         page_dates.append(article.published_at.astimezone(ZoneInfo(self.timezone_name)))
+                        if window.contains(article.published_at) and self.is_financial(article):
+                            if article.source_article_id not in processed_uids:
+                                processed_uids.add(article.source_article_id)
+                                day_buffer.setdefault(article_date, []).append(article)
                     except (UnusableArticleError, httpx.HTTPError) as err:
                         continue
+
+                # Once a page finishes, flush any days strictly newer than the oldest article on this page
+                if page_dates:
+                    _flush_days(min_date_cutoff=min(page_dates).date())
+
                 # Stop only after fully parsing a page whose every item predates the start.
                 if page_dates and min(page_dates).date() < window.start_date:
                     category_complete = True
                     break
+
+            _flush_days(min_date_cutoff=None)
+
             if not saw_any_articles or not category_complete:
                 if self.config.get("discovery", {}).get("fail_if_archive_boundary_not_proven", False):
                     raise IncompleteArchiveError(
@@ -220,15 +252,22 @@ class CafeFClient:
                         "increase max_pages_per_category or verify the archive pagination format"
                     )
 
-        results: dict[str, Article] = {}
         # Reuse detail fetches made during archive coverage; only RSS-only URLs need another fetch.
         for url, (_, discovery_method) in discovered.items():
+            if url in seen_article_urls:
+                continue
+            seen_article_urls.add(url)
             try:
-                article = parsed_articles.get(url) or await self.fetch_article(url)
+                article = await self.fetch_article(url)
             except (UnusableArticleError, httpx.HTTPError):
                 continue
             if window.contains(article.published_at) and self.is_financial(article):
-                results[article.source_article_id] = article
+                if article.source_article_id not in processed_uids:
+                    processed_uids.add(article.source_article_id)
+                    article_date = article.published_at.astimezone(ZoneInfo(self.timezone_name)).date()
+                    day_buffer.setdefault(article_date, []).append(article)
+
+        _flush_days(min_date_cutoff=None)
         return list(results.values())
 
     async def _rss_urls(self) -> list[str]:

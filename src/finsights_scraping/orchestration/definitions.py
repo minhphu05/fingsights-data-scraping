@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
@@ -11,9 +11,10 @@ from zoneinfo import ZoneInfo
 import yaml
 from dagster import Definitions, Field, RunRequest, SkipReason, String, job, op, schedule
 
+from ..domain.models import Article
 from ..domain.windows import DateWindow
 from ..persistence import Node1MarketWriter, Node1NewsWriter, ScrapeAuditWriter
-from ..sources.market import VietstockHistoryClient
+from ..sources.market import VietstockHistoryClient, VietstockPublicBoardClient
 from ..sources.news import (
     CafeFClient,
     ConfiguredHtmlNewsClient,
@@ -85,8 +86,12 @@ def _vietstock_schedule_ready() -> bool:
                 and request.get("end_date_parameter") and has_response_mapping)
 
 
-def _window(config: dict, timezone_name: str = "Asia/Ho_Chi_Minh") -> DateWindow:
-    return DateWindow.parse(config["start_date"], config["end_date"], timezone_name)
+def _window(config: dict | None = None, timezone_name: str = "Asia/Ho_Chi_Minh") -> DateWindow:
+    config = config or {}
+    today_str = datetime.now(ZoneInfo(timezone_name)).strftime("%Y-%m-%d")
+    start = config.get("start_date") or today_str
+    end = config.get("end_date") or today_str
+    return DateWindow.parse(start, end, timezone_name)
 
 
 def _news_source_config(source_key: str) -> dict:
@@ -117,8 +122,8 @@ def _pod_tags(source: str, memory_limit: str = "768Mi") -> dict:
 
 
 @op(config_schema={
-    "start_date": Field(String, is_required=True, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh"),
-    "end_date": Field(String, is_required=True, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh"),
+    "start_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
+    "end_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
     "storage_mode": Field(String, is_required=False, default_value="link_only", description="link_only (no OCI binary upload) or full_media"),
 })
 def collect_cafef_news(context):
@@ -135,33 +140,58 @@ def collect_cafef_news(context):
         start_date=window.start_date, end_date=window.end_date,
         config={"archive_mode": source_config["discovery"]["mode"], "storage_mode": storage_mode},
     )
-    discovered = 0
+    total_discovered = 0
+    total_persisted = 0
+    days_completed = 0
+
+    def _persist_day_batch(batch_date: date, day_articles: list[Article]) -> None:
+        nonlocal total_discovered, total_persisted, days_completed
+        if not day_articles:
+            return
+        total_discovered += len(day_articles)
+        uids = writer.persist_articles(day_articles)
+        total_persisted += len(uids)
+        days_completed += 1
+        audit.save_items(run_row_id, source_config["source_code"], day_articles, uids)
+        audit.save_checkpoint(source_config["source_code"], "last_completed_day", {
+            "completed_day": batch_date.isoformat(),
+            "articles_persisted": len(uids),
+            "total_persisted_so_far": total_persisted,
+        })
+        context.log.info(
+            f"CafeF persisted day batch for {batch_date}: {len(uids)} articles (cumulative: {total_persisted})"
+        )
+
     try:
-        articles = asyncio.run(client.collect(window))
-        discovered = len(articles)
-        destination_uids = writer.persist_articles(articles)
-        audit.save_items(run_row_id, source_config["source_code"], articles, destination_uids)
+        asyncio.run(client.collect(window, on_batch=_persist_day_batch))
         audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
-        audit.finish_run(run_row_id, "SUCCESS", discovered=discovered, persisted=len(destination_uids))
+        audit.finish_run(run_row_id, "SUCCESS", discovered=total_discovered, persisted=total_persisted)
         audit.save_checkpoint(source_config["source_code"], "last_completed_window", {
             "start_date": window.start_date.isoformat(),
             "end_date": window.end_date.isoformat(),
-            "persisted_articles": len(destination_uids),
+            "persisted_articles": total_persisted,
+            "days_completed": days_completed,
             "status": "SUCCESS",
         })
-        context.log.info("CafeF completed exact-range collection", extra={
-            "start_date": window.start_date.isoformat(), "end_date": window.end_date.isoformat(),
-            "articles_persisted": len(destination_uids),
-        })
-        return {"articles_persisted": len(destination_uids)}
+        context.log.info(
+            f"CafeF completed collection: {total_persisted} articles persisted across {days_completed} days",
+            extra={
+                "start_date": window.start_date.isoformat(),
+                "end_date": window.end_date.isoformat(),
+                "articles_persisted": total_persisted,
+                "days_completed": days_completed,
+            },
+        )
+        return {"articles_persisted": total_persisted, "days_completed": days_completed}
     except Exception as exc:
         audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
-        audit.finish_run(run_row_id, "FAILED", discovered=discovered, persisted=0, failed=1, error=str(exc)[:4000])
+        audit.finish_run(run_row_id, "FAILED", discovered=total_discovered, persisted=total_persisted, failed=1, error=str(exc)[:4000])
         audit.save_checkpoint(source_config["source_code"], "last_interrupted_run", {
             "start_date": window.start_date.isoformat(),
             "end_date": window.end_date.isoformat(),
             "error": str(exc)[:500],
             "fetch_attempts": len(client.fetch_attempts),
+            "persisted_before_failure": total_persisted,
         })
         raise
     finally:
@@ -170,8 +200,8 @@ def collect_cafef_news(context):
 
 @op(config_schema={
     "source_key": Field(String, is_required=True, description="Source config key: thanhnien, tuoitre, baomoi, vnexpress"),
-    "start_date": Field(String, is_required=True, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh"),
-    "end_date": Field(String, is_required=True, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh"),
+    "start_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
+    "end_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
     "storage_mode": Field(String, is_required=False, default_value="link_only", description="link_only (no OCI binary upload) or full_media"),
 })
 def collect_configured_news(context):
@@ -200,34 +230,55 @@ def collect_configured_news(context):
             "storage_mode": storage_mode,
         },
     )
-    discovered = 0
+    total_discovered = 0
+    total_persisted = 0
+    days_completed = 0
+
+    def _persist_day_batch(batch_date: date, day_articles: list[Article]) -> None:
+        nonlocal total_discovered, total_persisted, days_completed
+        if not day_articles:
+            return
+        total_discovered += len(day_articles)
+        uids = writer.persist_articles(day_articles)
+        total_persisted += len(uids)
+        days_completed += 1
+        audit.save_items(run_row_id, source_config["source_code"], day_articles, uids)
+        audit.save_checkpoint(source_config["source_code"], "last_completed_day", {
+            "completed_day": batch_date.isoformat(),
+            "articles_persisted": len(uids),
+            "total_persisted_so_far": total_persisted,
+        })
+        context.log.info(
+            f"{source_key} persisted day batch for {batch_date}: {len(uids)} articles (cumulative: {total_persisted})"
+        )
+
     try:
-        articles = asyncio.run(client.collect(window))
-        discovered = len(articles)
-        destination_uids = writer.persist_articles(articles)
-        audit.save_items(run_row_id, source_config["source_code"], articles, destination_uids)
+        asyncio.run(client.collect(window, on_batch=_persist_day_batch))
         audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
-        audit.finish_run(run_row_id, "SUCCESS", discovered=discovered, persisted=len(destination_uids))
+        audit.finish_run(run_row_id, "SUCCESS", discovered=total_discovered, persisted=total_persisted)
         audit.save_checkpoint(source_config["source_code"], "last_completed_window", {
             "start_date": window.start_date.isoformat(),
             "end_date": window.end_date.isoformat(),
-            "persisted_articles": len(destination_uids),
+            "persisted_articles": total_persisted,
+            "days_completed": days_completed,
             "status": "SUCCESS",
         })
         context.log.info(f"{source_key} completed exact-range collection", extra={
             "start_date": window.start_date.isoformat(),
             "end_date": window.end_date.isoformat(),
-            "articles_persisted": len(destination_uids),
+            "articles_persisted": total_persisted,
+            "days_completed": days_completed,
         })
-        return {"articles_persisted": len(destination_uids)}
+        return {"articles_persisted": total_persisted, "days_completed": days_completed}
     except Exception as exc:
         audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
-        audit.finish_run(run_row_id, "FAILED", discovered=discovered, persisted=0, failed=1, error=str(exc)[:4000])
+        audit.finish_run(run_row_id, "FAILED", discovered=total_discovered, persisted=total_persisted, failed=1, error=str(exc)[:4000])
         audit.save_checkpoint(source_config["source_code"], "last_interrupted_run", {
             "start_date": window.start_date.isoformat(),
             "end_date": window.end_date.isoformat(),
             "error": str(exc)[:500],
             "fetch_attempts": len(client.fetch_attempts),
+            "persisted_before_failure": total_persisted,
         })
         raise
     finally:
@@ -235,22 +286,31 @@ def collect_configured_news(context):
 
 
 @op(config_schema={
-    "start_date": Field(String, is_required=True, description="Inclusive provider trading date YYYY-MM-DD"),
-    "end_date": Field(String, is_required=True, description="Inclusive provider trading date YYYY-MM-DD"),
+    "start_date": Field(String, is_required=False, description="Inclusive provider trading date YYYY-MM-DD (defaults to today)"),
+    "end_date": Field(String, is_required=False, description="Inclusive provider trading date YYYY-MM-DD (defaults to today)"),
 })
 def collect_vietstock_market(context):
     source_config = _yaml(CONFIG_DIR / "sources/market/vietstock.yaml")
     window = _window(context.op_config, source_config.get("timezone", "Asia/Ho_Chi_Minh"))
-    mapping_path = _vietstock_mapping_path()
-    mapping = _yaml(mapping_path)
-    client = VietstockHistoryClient(source_config, mapping)
+    licensed_enabled = source_config.get("providers", {}).get("licensed_history", {}).get("enabled", False)
+    if licensed_enabled:
+        mapping_path = _vietstock_mapping_path()
+        mapping = _yaml(mapping_path)
+        client = VietstockHistoryClient(source_config, mapping)
+        provider_kind = "licensed_history"
+        run_config = {"provider": "licensed_history", "mapping_file": str(mapping_path)}
+    else:
+        client = VietstockPublicBoardClient(source_config)
+        provider_kind = "public_board"
+        run_config = {"provider": "public_board", "url": client.board_url}
+
     audit = ScrapeAuditWriter()
     run_row_id = audit.start_run(
         source_code=source_config["source_code"], source_kind="market",
         display_name=source_config["name"], base_url=source_config["website"],
         dagster_run_id=context.run_id, job_name="vietstock_market_job",
         start_date=window.start_date, end_date=window.end_date,
-        config={"provider": "licensed_history", "mapping_file": str(mapping_path)},
+        config=run_config,
     )
     try:
         records = asyncio.run(client.collect(window))
@@ -258,7 +318,11 @@ def collect_vietstock_market(context):
         audit.save_items(run_row_id, source_config["source_code"], records)
         audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
         audit.finish_run(run_row_id, "SUCCESS", discovered=len(records), persisted=persisted)
-        return {"market_records_persisted": persisted}
+        context.log.info(
+            f"Vietstock ({provider_kind}) collection completed: {persisted} records persisted",
+            extra={"provider": provider_kind, "records_persisted": persisted},
+        )
+        return {"market_records_persisted": persisted, "provider": provider_kind}
     except Exception as exc:
         audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
         audit.finish_run(run_row_id, "FAILED", discovered=0, persisted=0, failed=1, error=str(exc)[:4000])
