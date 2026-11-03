@@ -1,0 +1,111 @@
+name: Submit Scraping Jobs to Dagster K3s
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Source adapter to scrape'
+        required: true
+        default: 'cafef'
+        type: choice
+        options:
+          - all
+          - cafef
+          - vietstock
+          - thanhnien
+          - tuoitre
+          - baomoi
+          - vnexpress
+      start_date:
+        description: 'Inclusive Start Date (YYYY-MM-DD in Asia/Ho_Chi_Minh)'
+        required: true
+        default: '2026-11-02'
+      end_date:
+        description: 'Inclusive End Date (YYYY-MM-DD in Asia/Ho_Chi_Minh)'
+        required: true
+        default: '2026-11-02'
+      storage_mode:
+        description: 'Storage mode: link_only (no OCI binary upload) or full_media'
+        required: true
+        default: 'link_only'
+        type: choice
+        options:
+          - link_only
+          - full_media
+      wait_for_completion:
+        description: 'Wait for K3s execution Pod to finish'
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  launch-job:
+    name: Submit ${{ inputs.source }} Job
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Open Secure SSH Tunnel to Dagster Webserver
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST || '103.249.117.232' }}
+          VPS_PORT: ${{ secrets.VPS_SSH_PORT || '26567' }}
+        run: |
+          if [ -n "${SSH_PRIVATE_KEY}" ]; then
+            echo "🔑 Opening SSH tunnel to VPS NodePort 31882 (Dagster Webserver)..."
+            mkdir -p ~/.ssh
+            echo "${SSH_PRIVATE_KEY}" > ~/.ssh/finsights_vps
+            chmod 600 ~/.ssh/finsights_vps
+            ssh -i ~/.ssh/finsights_vps -o StrictHostKeyChecking=no -p "${VPS_PORT}" -N -f -L 31882:127.0.0.1:31882 "root@${VPS_HOST}"
+            sleep 2
+            echo "✅ SSH Tunnel established: localhost:31882 -> VPS:31882"
+          else
+            echo "ℹ️ SSH_PRIVATE_KEY not provided. Assuming direct access or pre-configured DAGSTER_URL."
+          fi
+
+      - name: Submit Job to Dagster & Spawn K3s Pod
+        env:
+          DAGSTER_URL: ${{ secrets.DAGSTER_URL || 'http://localhost:31882' }}
+        run: |
+          WAIT_FLAG=""
+          if [ "${{ inputs.wait_for_completion }}" = "true" ]; then
+            WAIT_FLAG="--wait"
+          fi
+
+          python scripts/submit_dagster_job.py \
+            --dagster-url "${DAGSTER_URL}" \
+            --source "${{ inputs.source }}" \
+            --start-date "${{ inputs.start_date }}" \
+            --end-date "${{ inputs.end_date }}" \
+            --storage-mode "${{ inputs.storage_mode }}" \
+            ${WAIT_FLAG}
+
+      - name: Inspect K3s Pod Status (Optional with Kubeconfig)
+        if: always()
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST || '103.249.117.232' }}
+          VPS_PORT: ${{ secrets.VPS_SSH_PORT || '26567' }}
+        run: |
+          if [ -n "${KUBECONFIG_DATA}" ]; then
+            echo "📦 Checking transient K3s scraping pods in namespace 'orchestration'..."
+            mkdir -p ~/.kube
+            echo "${KUBECONFIG_DATA}" > ~/.kube/config
+            chmod 600 ~/.kube/config
+
+            # Also forward K8s API if tunnel needed
+            if [ -n "${SSH_PRIVATE_KEY}" ]; then
+              ssh -i ~/.ssh/finsights_vps -o StrictHostKeyChecking=no -p "${VPS_PORT}" -N -f -L 6443:127.0.0.1:6443 "root@${VPS_HOST}" 2>/dev/null || true
+            fi
+
+            kubectl get pods -n orchestration -l app.kubernetes.io/component=source-job --sort-by=.metadata.creationTimestamp -o wide || true
+          fi
+

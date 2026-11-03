@@ -1,0 +1,69 @@
+source_code: vnexpress_news
+publisher_code: vnexpress
+name: VnExpress - tài chính và chứng khoán
+base_url: https://vnexpress.net
+publisher_domain: vnexpress.net
+attribution_name: VnExpress
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 0.5
+collection_enabled: true
+use_scope: personal_academic_research
+binary_asset_collection_enabled: true
+
+# Personal thesis research: keep collected records internal and attribute the source.
+access:
+  use_scope: personal_academic_research
+  internal_only: true
+  attribution_required: true
+  redistribution_allowed: false
+  respect_robots_txt: true
+rights:
+  status: unknown
+  binary_asset_statuses: []
+
+article_id_regex: '-(?P<article_id>\d+)\.html$'
+discovery:
+  mode: rss-overlap-and-paginated-archive
+  max_pages: 5
+  rss_recent_days: 7
+  rss_feeds:
+    - url: https://vnexpress.net/rss/kinh-doanh.rss
+      category: business_finance
+  archive_categories:
+    - code: stock_market
+      first_page: https://vnexpress.net/kinh-doanh/chung-khoan-p1
+      page_template: https://vnexpress.net/kinh-doanh/chung-khoan-p{page}
+  pagination_order: newest_to_oldest
+  stop_only_after_article_before_start_date: true
+  fail_if_archive_boundary_not_proven: false
+  link_selectors: ["a[href]"]
+
+article:
+  title_selectors: ["h1.title-detail", "h1"]
+  summary_selectors: ["p.description", ".description"]
+  subtitle_selectors: [".short_intro"]
+  author_selectors: [".author_mail", ".author", "[rel='author']"]
+  content_selectors: ["article.fck_detail", ".fck_detail", ".article-content"]
+  full_text_required: true
+  retain_paragraph_boundaries: true
+  block_types: [heading, paragraph, line_break, quote, image, audio, video, table, list]
+
+financial_relevance:
+  terms:
+    - chứng khoán
+    - cổ phiếu
+    - VN-Index
+    - VN30
+    - HOSE
+    - HNX
+    - UPCoM
+    - doanh nghiệp niêm yết
+    - báo cáo tài chính
+    - cổ tức
+    - trái phiếu
+    - lãi suất
+    - tỷ giá
+    - ngân hàng
+    - khối ngoại
+    - thanh khoản
+    - công bố thông tin

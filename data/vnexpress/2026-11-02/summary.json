@@ -1,0 +1,94 @@
+{
+  "source": "vnexpress",
+  "target_date": "2026-11-02",
+  "collected_at": "2026-11-03T09:27:54.813683",
+  "total_articles": 10,
+  "unique_tickers_matched": [
+    "BID",
+    "LPB",
+    "VCB",
+    "VIC"
+  ],
+  "total_fetch_attempts": 93,
+  "articles": [
+    {
+      "source_article_id": "5139438",
+      "title": "Giá vàng có thể giảm tiếp sau khi chạm đáy một năm",
+      "canonical_url": "https://vnexpress.net/gia-vang-co-the-giam-tiep-sau-khi-cham-day-mot-nam-5139438.html",
+      "published_at": "2026-11-02T00:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "5139418",
+      "title": "Công ty ông Lê Phước Vũ lãi bình quân mỗi tháng hơn 50 tỷ đồng",
+      "canonical_url": "https://vnexpress.net/cong-ty-ong-le-phuoc-vu-lai-binh-quan-moi-thang-hon-50-ty-dong-5139418.html",
+      "published_at": "2026-11-02T00:01:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "5139336",
+      "title": "Vì sao giá điện, thuế xăng cùng giảm?",
+      "canonical_url": "https://vnexpress.net/vi-sao-gia-dien-thue-xang-cung-giam-5139336.html",
+      "published_at": "2026-11-02T00:05:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "5137690",
+      "title": "Bài toán 300 tỷ USD mỗi năm để GDP tăng hai chữ số",
+      "canonical_url": "https://vnexpress.net/bai-toan-300-ty-usd-moi-nam-de-gdp-tang-hai-chu-so-5137690.html",
+      "published_at": "2026-11-02T05:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "5139574",
+      "title": "Giá vàng miếng đảo chiều lên 140 triệu đồng một lượng",
+      "canonical_url": "https://vnexpress.net/gia-vang-mieng-dao-chieu-len-140-trieu-dong-mot-luong-5139574.html",
+      "published_at": "2026-11-02T10:57:58+07:00",
+      "tickers": [
+        "VCB"
+      ]
+    },
+    {
+      "source_article_id": "5139733",
+      "title": "Bà Nguyễn Thị Kiều Anh làm Quyền tổng giám đốc Sacombank",
+      "canonical_url": "https://vnexpress.net/ba-nguyen-thi-kieu-anh-lam-quyen-tong-giam-doc-sacombank-5139733.html",
+      "published_at": "2026-11-02T14:03:02+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "5139732",
+      "title": "Vinasun lỗ nặng nhất từ Covid-19",
+      "canonical_url": "https://vnexpress.net/vinasun-lo-nang-nhat-tu-covid-19-5139732.html",
+      "published_at": "2026-11-02T14:17:30+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "5139716",
+      "title": "Vừa lên sàn, DatVietVAC chia cổ tức tiền mặt 25%",
+      "canonical_url": "https://vnexpress.net/vua-len-san-datvietvac-chia-co-tuc-tien-mat-25-5139716.html",
+      "published_at": "2026-11-02T15:04:11+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "5139808",
+      "title": "Doanh thu Vietjet tăng 41% nhờ mở rộng mạng bay",
+      "canonical_url": "https://vnexpress.net/doanh-thu-vietjet-tang-41-nho-mo-rong-mang-bay-5139808.html",
+      "published_at": "2026-11-02T16:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "5139827",
+      "title": "VN-Index giảm hơn 30 điểm",
+      "canonical_url": "https://vnexpress.net/vn-index-giam-hon-30-diem-5139827.html",
+      "published_at": "2026-11-02T16:19:29+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "LPB",
+        "VIC"
+      ]
+    }
+  ]
+}

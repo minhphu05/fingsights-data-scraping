@@ -1,0 +1,76 @@
+source_code: thanhnien_news
+publisher_code: thanhnien
+name: Báo Thanh Niên - tài chính và chứng khoán
+base_url: https://thanhnien.vn
+publisher_domain: thanhnien.vn
+attribution_name: Báo Thanh Niên
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 0.5
+collection_enabled: true
+use_scope: personal_academic_research
+binary_asset_collection_enabled: true
+
+# Personal thesis research: keep collected records internal and attribute the source.
+access:
+  use_scope: personal_academic_research
+  internal_only: true
+  attribution_required: true
+  redistribution_allowed: false
+  respect_robots_txt: true
+rights:
+  status: unknown
+  binary_asset_statuses: []
+
+article_id_regex: '-(?P<article_id>\d{6,})\.htm$'
+discovery:
+  mode: rss-overlap-and-paginated-archive
+  max_pages: 5
+  rss_recent_days: 7
+  rss_feeds:
+    - url: https://thanhnien.vn/rss/kinh-te/chung-khoan.rss
+      category: stocks
+    - url: https://thanhnien.vn/rss/kinh-te/ngan-hang.rss
+      category: banking
+    - url: https://thanhnien.vn/rss/kinh-te/doanh-nghiep.rss
+      category: listed_companies
+  archive_categories:
+    - code: stock_market
+      first_page: https://thanhnien.vn/chung-khoan-tags502378.html
+      next_link_selectors: ["a[rel='next']", "a.next"]
+    - code: finance_economy
+      first_page: https://thanhnien.vn/kinh-te.htm
+      next_link_selectors: ["a[rel='next']", "a.next"]
+  pagination_order: newest_to_oldest
+  stop_only_after_article_before_start_date: true
+  fail_if_archive_boundary_not_proven: false
+  link_selectors: ["a[href]"]
+
+article:
+  title_selectors: ["h1.detail-title", "h1"]
+  summary_selectors: ["h2.detail-sapo", "div.detail-sapo", ".detail-sapo"]
+  subtitle_selectors: [".detail-subtitle", ".detail-title-sub"]
+  author_selectors: [".author-name", ".detail-author", "span.name", "[rel='author']"]
+  content_selectors: [".detail-content", "#contentDetail", "#mainContent"]
+  full_text_required: true
+  retain_paragraph_boundaries: true
+  block_types: [heading, paragraph, line_break, quote, image, audio, video, table, list]
+
+financial_relevance:
+  terms:
+    - chứng khoán
+    - cổ phiếu
+    - VN-Index
+    - VN30
+    - HOSE
+    - HNX
+    - UPCoM
+    - doanh nghiệp niêm yết
+    - báo cáo tài chính
+    - cổ tức
+    - trái phiếu
+    - lãi suất
+    - tỷ giá
+    - ngân hàng
+    - khối ngoại
+    - thanh khoản
+    - công bố thông tin

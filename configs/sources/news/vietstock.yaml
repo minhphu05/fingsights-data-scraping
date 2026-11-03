@@ -1,0 +1,75 @@
+source_code: vietstock_news
+publisher_code: vietstock
+name: Vietstock - Tin chứng khoán và tài chính doanh nghiệp
+base_url: https://vietstock.vn
+publisher_domain: vietstock.vn
+attribution_name: Vietstock
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 0.5
+collection_enabled: true
+use_scope: personal_academic_research
+binary_asset_collection_enabled: true
+
+access:
+  use_scope: personal_academic_research
+  internal_only: true
+  attribution_required: true
+  redistribution_allowed: false
+  respect_robots_txt: true
+rights:
+  status: unknown
+  binary_asset_statuses: []
+
+article_id_regex: '-(?P<article_id>\d+-\d+)\.htm$'
+discovery:
+  mode: rss-overlap-and-paginated-archive
+  max_pages: 50
+  rss_recent_days: 7
+  rss_feeds:
+    - url: https://vietstock.vn/144/chung-khoan.rss
+      category: stocks
+    - url: https://vietstock.vn/830/chung-khoan/co-phieu.rss
+      category: equities
+    - url: https://vietstock.vn/739/chung-khoan/giao-dich-noi-bo.rss
+      category: insider_trading
+    - url: https://vietstock.vn/741/chung-khoan/niem-yet.rss
+      category: listing
+  archive_categories:
+    - code: stocks
+      first_page: https://vietstock.vn/chung-khoan.htm
+      next_link_selectors: ["a[rel='next']", "a.next"]
+  pagination_order: newest_to_oldest
+  stop_only_after_article_before_start_date: true
+  fail_if_archive_boundary_not_proven: false
+  link_selectors: ["a[href]"]
+
+article:
+  title_selectors: ["h1.article-title", "h1"]
+  summary_selectors: [".pHead", ".sapo", ".detail-sapo", "h2"]
+  subtitle_selectors: []
+  author_selectors: [".author", ".article-author", "[rel='author']"]
+  content_selectors: [".pBody", ".content", ".detail-content", "article"]
+  full_text_required: true
+  retain_paragraph_boundaries: true
+  block_types: [heading, paragraph, line_break, quote, image, audio, video, table, list]
+
+financial_relevance:
+  terms:
+    - chứng khoán
+    - cổ phiếu
+    - VN-Index
+    - VN30
+    - HOSE
+    - HNX
+    - UPCoM
+    - doanh nghiệp niêm yết
+    - báo cáo tài chính
+    - cổ tức
+    - trái phiếu
+    - lãi suất
+    - tỷ giá
+    - ngân hàng
+    - khối ngoại
+    - thanh khoản
+    - công bố thông tin
+

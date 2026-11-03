@@ -1,0 +1,45 @@
+source_code: cafef_news
+publisher_code: cafef
+name: CafeF financial and stock news
+base_url: https://cafef.vn
+publisher_domain: cafef.vn
+attribution_name: cafef
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 0.5
+max_pages_per_category: 10
+article_id_regex: '-(?P<article_id>188[0-9]{11,})\.chn$'
+discovery:
+  mode: archive-pagination-with-rss-overlap
+  rss_feeds:
+    - https://cafef.vn/thi-truong-chung-khoan.rss
+    - https://cafef.vn/doanh-nghiep.rss
+    - https://cafef.vn/tai-chinh-ngan-hang.rss
+    - https://cafef.vn/vi-mo-dau-tu.rss
+  archive_categories:
+    - code: stock_market
+      first_page: https://cafef.vn/timelinelist/18831/1.chn
+      page_template: https://cafef.vn/timelinelist/18831/{page}.chn
+    - code: business_finance
+      first_page: https://cafef.vn/timelinelist/18836/1.chn
+      page_template: https://cafef.vn/timelinelist/18836/{page}.chn
+    - code: banking_finance
+      first_page: https://cafef.vn/timelinelist/18834/1.chn
+      page_template: https://cafef.vn/timelinelist/18834/{page}.chn
+    - code: macro_finance
+      first_page: https://cafef.vn/timelinelist/18833/1.chn
+      page_template: https://cafef.vn/timelinelist/18833/{page}.chn
+  pagination_order: newest_to_oldest
+  stop_after_oldest_listing_date_before_start_date: true
+article:
+  canonical_link: rel=canonical
+  published_time: article:published_time
+  modified_time: article:modified_time
+  retain_paragraph_boundaries: true
+  content_selectors: [.contentdetail, "#mainContent", .detail-content, "article"]
+  block_types: [heading, paragraph, quote, image, audio, video, table, list]
+rights:
+  status: link_only
+  binary_asset_statuses: []
+financial_relevance:
+  require_one_term_or_company_alias: true
+  terms: ["cổ phiếu", "chứng khoán", "VN-Index", "VN30", "HOSE", "HNX", "UPCoM", "cổ tức", "niêm yết", "trái phiếu", "báo cáo tài chính", "lợi nhuận", "ngân hàng", "lãi suất", "tỷ giá", "đầu tư", "thanh khoản", "khối ngoại", "IPO"]

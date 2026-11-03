@@ -1,0 +1,67 @@
+source_code: baomoi_news
+publisher_code: baomoi
+name: Báo Mới - tổng hợp tin tài chính và chứng khoán
+base_url: https://baomoi.com
+publisher_domain: baomoi.com
+attribution_name: Báo Mới và nguồn báo gốc được dẫn trên từng bài
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 4
+collection_enabled: true
+use_scope: personal_academic_research
+binary_asset_collection_enabled: true
+
+# Personal thesis research: retain Baomoi and original publisher attribution.
+access:
+  use_scope: personal_academic_research
+  internal_only: true
+  attribution_required: true
+  redistribution_allowed: false
+  respect_robots_txt: true
+rights:
+  status: unknown
+  binary_asset_statuses: []
+
+article_id_regex: '-(?P<article_id>c\d+)\.epi$'
+discovery:
+  mode: paginated-category-archive
+  max_pages: 15
+  archive_categories:
+    - code: finance
+      first_page: https://baomoi.com/tai-chinh.epi
+      page_template: https://baomoi.com/tai-chinh/trang{page}.epi
+  pagination_order: newest_to_oldest
+  stop_only_after_article_before_start_date: true
+  fail_if_archive_boundary_not_proven: false
+  link_selectors: ["a[href]"]
+
+article:
+  title_selectors: ["h1"]
+  summary_selectors: [".article__summary", ".summary", ".description"]
+  subtitle_selectors: []
+  author_selectors: [".article__source", ".source", "[rel='author']"]
+  content_selectors: [".article__body", ".article-body", ".content-body"]
+  # Baomoi often displays a summary and a link to the originating publisher;
+  # do not treat an excerpt as the complete source article.
+  full_text_required: false
+  retain_paragraph_boundaries: true
+  block_types: [heading, paragraph, line_break, quote, image, audio, video, table, list]
+
+financial_relevance:
+  terms:
+    - chứng khoán
+    - cổ phiếu
+    - VN-Index
+    - VN30
+    - HOSE
+    - HNX
+    - UPCoM
+    - doanh nghiệp niêm yết
+    - báo cáo tài chính
+    - cổ tức
+    - trái phiếu
+    - lãi suất
+    - tỷ giá
+    - ngân hàng
+    - khối ngoại
+    - thanh khoản
+    - công bố thông tin

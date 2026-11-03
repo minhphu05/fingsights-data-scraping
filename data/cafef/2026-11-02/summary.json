@@ -1,0 +1,846 @@
+{
+  "source": "cafef",
+  "target_date": "2026-11-02",
+  "collected_at": "2026-11-03T09:15:18.362442",
+  "total_articles": 100,
+  "unique_tickers_matched": [
+    "BID",
+    "CTG",
+    "FPT",
+    "HPG",
+    "LPB",
+    "MBB",
+    "MWG",
+    "SHB",
+    "SSI",
+    "TCB",
+    "VCB",
+    "VHM",
+    "VIC",
+    "VND",
+    "VNM"
+  ],
+  "total_fetch_attempts": 219,
+  "articles": [
+    {
+      "source_article_id": "188261102232020333",
+      "title": "Tự doanh CTCK bán ròng gần 300 tỷ phiên đầu tháng, ngược chiều một cổ phiếu ngân hàng được gom mạnh",
+      "canonical_url": "https://cafef.vn/tu-doanh-ctck-ban-rong-gan-300-ty-phien-dau-thang-nguoc-chieu-mot-co-phieu-ngan-hang-duoc-gom-manh-188261102232020333.chn",
+      "published_at": "2026-11-02T23:20:00+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "TCB",
+        "MBB",
+        "HPG",
+        "VHM",
+        "VIC",
+        "MWG",
+        "SSI"
+      ]
+    },
+    {
+      "source_article_id": "188261102231624046",
+      "title": "Hàng tỷ USD bất ngờ rời chứng khoán Mỹ, chuyên gia cảnh báo một điều với chứng khoán Việt Nam",
+      "canonical_url": "https://cafef.vn/hang-ty-usd-bat-ngo-roi-chung-khoan-my-chuyen-gia-canh-bao-mot-dieu-voi-chung-khoan-viet-nam-188261102231624046.chn",
+      "published_at": "2026-11-02T23:20:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102104310284",
+      "title": "CTCK hé lộ 8 doanh nghiệp đáng chú ý, phù hợp để \"xuống tiền\" trong tháng 11",
+      "canonical_url": "https://cafef.vn/ctck-he-lo-8-doanh-nghiep-dang-chu-y-phu-hop-de-xuong-tien-trong-thang-11-188261102104310284.chn",
+      "published_at": "2026-11-02T19:40:00+07:00",
+      "tickers": [
+        "VCB",
+        "TCB",
+        "HPG",
+        "VHM",
+        "VIC",
+        "MWG"
+      ]
+    },
+    {
+      "source_article_id": "188261102192903264",
+      "title": "Con gái Chủ tịch PNJ bị bán giải chấp cổ phiếu",
+      "canonical_url": "https://cafef.vn/con-gai-chu-tich-pnj-bi-ban-giai-chap-co-phieu-188261102192903264.chn",
+      "published_at": "2026-11-02T19:30:00+07:00",
+      "tickers": [
+        "VND"
+      ]
+    },
+    {
+      "source_article_id": "188261102164752939",
+      "title": "FPT mất 120.000 tỷ vốn hóa",
+      "canonical_url": "https://cafef.vn/fpt-mat-120000-ty-von-hoa-188261102164752939.chn",
+      "published_at": "2026-11-02T19:01:00+07:00",
+      "tickers": [
+        "FPT"
+      ]
+    },
+    {
+      "source_article_id": "188261102171304049",
+      "title": "Chân dung Quyền Tổng Giám đốc sinh năm 1983 của Sacombank: Từ chuyên viên tín dụng đến vị trí điều hành ngân hàng triệu tỷ đồng",
+      "canonical_url": "https://cafef.vn/chan-dung-quyen-tong-giam-doc-sinh-nam-1983-cua-sacombank-tu-chuyen-vien-tin-dung-den-vi-tri-dieu-hanh-ngan-hang-trieu-ty-dong-188261102171304049.chn",
+      "published_at": "2026-11-02T18:35:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "188261102152751517",
+      "title": "Vượt kế hoạch lợi nhuận cả năm sau 9 tháng, một \"đại gia\" muốn chia cổ tức 5.000 đồng/cp",
+      "canonical_url": "https://cafef.vn/vuot-ke-hoach-loi-nhuan-ca-nam-sau-9-thang-mot-dai-gia-muon-chia-co-tuc-5000-dong-cp-188261102152751517.chn",
+      "published_at": "2026-11-02T17:27:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102171357014",
+      "title": "Tỷ phú Trần Đình Long đón tin vui từ Nhật Bản",
+      "canonical_url": "https://cafef.vn/ty-phu-tran-dinh-long-don-tin-vui-tu-nhat-ban-188261102171357014.chn",
+      "published_at": "2026-11-02T17:14:00+07:00",
+      "tickers": [
+        "HPG"
+      ]
+    },
+    {
+      "source_article_id": "188261102164122062",
+      "title": "Chứng khoán 'đỏ lửa', loạt cổ phiếu nằm sàn",
+      "canonical_url": "https://cafef.vn/chung-khoan-do-lua-loat-co-phieu-nam-san-188261102164122062.chn",
+      "published_at": "2026-11-02T17:09:00+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "MBB",
+        "LPB",
+        "HPG",
+        "FPT",
+        "VIC",
+        "MWG",
+        "SSI",
+        "VND"
+      ]
+    },
+    {
+      "source_article_id": "188261102153042689",
+      "title": "Bốn cổ phiếu ngân hàng bị khối ngoại “xả” 560 tỷ đồng trong ngày VN-Index mất 31 điểm",
+      "canonical_url": "https://cafef.vn/bon-co-phieu-ngan-hang-bi-khoi-ngoai-xa-560-ty-dong-trong-ngay-vn-index-mat-31-diem-188261102153042689.chn",
+      "published_at": "2026-11-02T15:45:00+07:00",
+      "tickers": [
+        "VCB",
+        "MBB",
+        "FPT"
+      ]
+    },
+    {
+      "source_article_id": "188261102151036162",
+      "title": "Bảo hiểm Bảo Minh chốt ngày phát hành hơn 15 triệu cổ phiếu trả cổ tức",
+      "canonical_url": "https://cafef.vn/bao-hiem-bao-minh-chot-ngay-phat-hanh-hon-15-trieu-co-phieu-tra-co-tuc-188261102151036162.chn",
+      "published_at": "2026-11-02T15:39:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102133736448",
+      "title": "Lợi nhuận ngành chứng khoán bốc hơi hơn 40% trong quý III",
+      "canonical_url": "https://cafef.vn/loi-nhuan-nganh-chung-khoan-boc-hoi-hon-40-trong-quy-iii-188261102133736448.chn",
+      "published_at": "2026-11-02T15:09:00+07:00",
+      "tickers": [
+        "SSI"
+      ]
+    },
+    {
+      "source_article_id": "188261102143806869",
+      "title": "Giá vàng quay đầu tăng",
+      "canonical_url": "https://cafef.vn/gia-vang-quay-dau-tang-188261102143806869.chn",
+      "published_at": "2026-11-02T14:38:00+07:00",
+      "tickers": [
+        "VCB"
+      ]
+    },
+    {
+      "source_article_id": "188261102141530609",
+      "title": "Doanh nghiệp có nữ Tổng giám đốc sinh năm 2002 phát thông báo quan trọng",
+      "canonical_url": "https://cafef.vn/doanh-nghiep-co-nu-tong-giam-doc-sinh-nam-2002-phat-thong-bao-quan-trong-188261102141530609.chn",
+      "published_at": "2026-11-02T14:15:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102132641614",
+      "title": "Mr Pips: Tiến sĩ, thạc sĩ đầu tư chứng khoán cũng thua",
+      "canonical_url": "https://cafef.vn/mr-pips-tien-si-thac-si-dau-tu-chung-khoan-cung-thua-188261102132641614.chn",
+      "published_at": "2026-11-02T13:26:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102113532883",
+      "title": "Doanh nghiệp của tỷ phú Phạm Nhật Vượng huy động gần 20.000 người cùng dàn cẩu siêu trường, siêu trọng thi công xuyên ngày đêm tại siêu công trình tầm vóc quốc tế",
+      "canonical_url": "https://cafef.vn/doanh-nghiep-cua-ty-phu-pham-nhat-vuong-huy-dong-gan-20000-nguoi-cung-dan-cau-sieu-truong-sieu-trong-thi-cong-xuyen-ngay-dem-tai-sieu-cong-trinh-tam-voc-quoc-te-188261102113532883.chn",
+      "published_at": "2026-11-02T12:30:00+07:00",
+      "tickers": [
+        "VIC"
+      ]
+    },
+    {
+      "source_article_id": "188261102121901951",
+      "title": "Ông Nguyễn Hữu Chỉnh bị bắt, doanh nghiệp báo lãi đột biến",
+      "canonical_url": "https://cafef.vn/ong-nguyen-huu-chinh-bi-bat-doanh-nghiep-bao-lai-dot-bien-188261102121901951.chn",
+      "published_at": "2026-11-02T12:23:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102113619148",
+      "title": "Giá vàng bạc hôm nay 2/11 bật tăng: Phú Quý, SJC, Bảo Tín Mạnh Hải đồng loạt cập nhật giá mới",
+      "canonical_url": "https://cafef.vn/gia-vang-bac-hom-nay-2-11-bat-tang-phu-quy-sjc-bao-tin-manh-hai-dong-loat-cap-nhat-gia-moi-188261102113619148.chn",
+      "published_at": "2026-11-02T11:38:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102111549376",
+      "title": "Một cổ phiếu bất ngờ \"hồi sinh\" sau cú rơi gần 90% giá trị",
+      "canonical_url": "https://cafef.vn/mot-co-phieu-bat-ngo-hoi-sinh-sau-cu-roi-gan-90-gia-tri-188261102111549376.chn",
+      "published_at": "2026-11-02T11:16:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102110909769",
+      "title": "20 phiên bán ròng liên tiếp, gần 1 tỷ USD cổ phiếu Việt Nam bị khối ngoại thẳng tay \"xả\" trong tháng 10",
+      "canonical_url": "https://cafef.vn/20-phien-ban-rong-lien-tiep-gan-1-ty-usd-co-phieu-viet-nam-bi-khoi-ngoai-thang-tay-xa-trong-thang-10-188261102110909769.chn",
+      "published_at": "2026-11-02T11:08:00+07:00",
+      "tickers": [
+        "SHB",
+        "TCB",
+        "HPG",
+        "FPT"
+      ]
+    },
+    {
+      "source_article_id": "18826110211060599",
+      "title": "SACOMBANK bổ nhiệm Quyền Tổng giám đốc 8X, chồng Shark Lê Hàn Tuệ Lâm rời 'ghế nóng' sau chưa đầy 4 tháng",
+      "canonical_url": "https://cafef.vn/sacombank-bat-ngo-bo-nhiem-quyen-tong-giam-doc-8x-chong-shark-le-han-tue-lam-roi-ghe-nong-sau-chua-day-4-thang-18826110211060599.chn",
+      "published_at": "2026-11-02T11:07:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "188261102102047814",
+      "title": "VN-Index bước vào tháng có xác suất tăng điểm 70%, CTCK gọi tên nhóm cổ phiếu có thể \"hút tiền\"",
+      "canonical_url": "https://cafef.vn/vn-index-buoc-vao-thang-co-xac-suat-tang-diem-70-ctck-goi-ten-nhom-co-phieu-co-the-hut-tien-188261102102047814.chn",
+      "published_at": "2026-11-02T10:35:00+07:00",
+      "tickers": [
+        "VIC"
+      ]
+    },
+    {
+      "source_article_id": "188261102075520627",
+      "title": "Nhiều doanh nghiệp cạn tiền mặt",
+      "canonical_url": "https://cafef.vn/nhieu-doanh-nghiep-can-tien-mat-188261102075520627.chn",
+      "published_at": "2026-11-02T08:19:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "18826110207575681",
+      "title": "Giá vàng 9999 Bảo Tín Minh Châu hôm nay 2/11/2026 bao nhiêu 1 chỉ?",
+      "canonical_url": "https://cafef.vn/gia-vang-9999-bao-tin-minh-chau-hom-nay-2-11-2026-bao-nhieu-1-chi-18826110207575681.chn",
+      "published_at": "2026-11-02T08:10:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261101202724058",
+      "title": "DatVietVAC dự kiến chi gần 279 tỷ đồng cổ tức ngay sau niêm yết",
+      "canonical_url": "https://cafef.vn/datvietvac-du-kien-chi-gan-279-ty-dong-co-tuc-ngay-sau-niem-yet-188261101202724058.chn",
+      "published_at": "2026-11-02T08:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261101163931958",
+      "title": "Vietcap kỷ niệm 19 năm thành lập với thông điệp \"Mỗi giao dịch, kiến tạo âm vang thịnh vượng\"",
+      "canonical_url": "https://cafef.vn/vietcap-ky-niem-19-nam-thanh-lap-voi-thong-diep-moi-giao-dich-kien-tao-am-vang-thinh-vuong-188261101163931958.chn",
+      "published_at": "2026-11-02T08:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261031090649027",
+      "title": "Chứng khoán KIS hoàn 100% phí giao dịch cổ phiếu trên iKIS ngày 2/11",
+      "canonical_url": "https://cafef.vn/chung-khoan-kis-hoan-100-phi-giao-dich-co-phieu-tren-ikis-ngay-2-11-188261031090649027.chn",
+      "published_at": "2026-11-02T08:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102080008726",
+      "title": "Lịch chốt quyền trả cổ tức trong tuần từ ngày 2/11-6/11, tỷ lệ cao nhất 100%",
+      "canonical_url": "https://cafef.vn/lich-chot-quyen-tra-co-tuc-trong-tuan-tu-ngay-2-11-6-11-ty-le-cao-nhat-100-188261102080008726.chn",
+      "published_at": "2026-11-02T07:59:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261101181828709",
+      "title": "Chuyên gia chỉ tên nhóm cổ phiếu đang ở \"chân sóng\", có cơ hội bứt phá cuối năm",
+      "canonical_url": "https://cafef.vn/chuyen-gia-chi-ten-nhom-co-phieu-dang-o-chan-song-co-co-hoi-but-pha-cuoi-nam-188261101181828709.chn",
+      "published_at": "2026-11-02T00:04:00+07:00",
+      "tickers": [
+        "HPG",
+        "VIC"
+      ]
+    },
+    {
+      "source_article_id": "188261101215317881",
+      "title": "Một \"đại gia\" chuẩn bị lăn chốt cổ tức hơn 50% bằng tiền mặt, dự chi gần 7.000 tỷ đồng",
+      "canonical_url": "https://cafef.vn/mot-dai-gia-chuan-bi-lan-chot-co-tuc-hon-50-bang-tien-mat-du-chi-gan-7000-ty-dong-188261101215317881.chn",
+      "published_at": "2026-11-02T00:02:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261101230807928",
+      "title": "Những ngôi sao một thời trên sàn chứng khoán: Từ vị thế cứ “ôm” là thắng, đến chia 3, chia 5 từ đỉnh",
+      "canonical_url": "https://cafef.vn/nhung-ngoi-sao-mot-thoi-tren-san-chung-khoan-tu-vi-the-cu-om-la-thang-den-chia-3-chia-5-tu-dinh-188261101230807928.chn",
+      "published_at": "2026-11-02T00:01:00+07:00",
+      "tickers": [
+        "FPT",
+        "VNM"
+      ]
+    },
+    {
+      "source_article_id": "188261101105644903",
+      "title": "Hành trình 26 năm của hai cổ phiếu đầu tiên trên sàn chứng khoán",
+      "canonical_url": "https://cafef.vn/bi-mat-sau-nhung-to-co-phan-e-va-hanh-trinh-26-nam-cua-hai-co-phieu-dau-tien-tren-san-chung-khoan-188261101105644903.chn",
+      "published_at": "2026-11-02T00:01:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102200858193",
+      "title": "Siêu đô thị 200.000 tỷ đồng của tỷ phú Phạm Nhật Vượng vào vòng bình chọn “7 Kỳ quan Đô thị Tương lai”",
+      "canonical_url": "https://cafef.vn/sieu-do-thi-200000-ty-dong-cua-ty-phu-pham-nhat-vuong-vao-vong-binh-chon-7-ky-quan-do-thi-tuong-lai-188261102200858193.chn",
+      "published_at": "2026-11-02T20:13:00+07:00",
+      "tickers": [
+        "VHM",
+        "VIC"
+      ]
+    },
+    {
+      "source_article_id": "188261102183737499",
+      "title": "72 doanh nghiệp Việt tạo bất ngờ tại Đông Nam Á với doanh thu 177,9 tỷ USD",
+      "canonical_url": "https://cafef.vn/72-doanh-nghiep-viet-tao-bat-ngo-tai-dong-nam-a-voi-doanh-thu-1779-ty-usd-188261102183737499.chn",
+      "published_at": "2026-11-02T19:37:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102153836839",
+      "title": "Giá rẻ trước mắt, liệu có lợi về lâu dài?",
+      "canonical_url": "https://cafef.vn/gia-re-truoc-mat-lieu-co-loi-ve-lau-dai-188261102153836839.chn",
+      "published_at": "2026-11-02T17:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102170700825",
+      "title": "Đại gia giày dép Việt Nam sản xuất 50 triệu đôi mỗi năm, đặt mục tiêu trở thành tập đoàn đa quốc gia",
+      "canonical_url": "https://cafef.vn/dai-gia-giay-dep-viet-nam-san-xuat-50-trieu-doi-moi-nam-dat-muc-tieu-tro-thanh-tap-doan-da-quoc-gia-188261102170700825.chn",
+      "published_at": "2026-11-02T17:06:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102161415503",
+      "title": "Vietjet: Doanh thu 9 tháng tăng 41%, mở rộng kết nối quốc tế, đầu tư công nghệ và đội tàu bay",
+      "canonical_url": "https://cafef.vn/vietjet-doanh-thu-9-thang-tang-41-mo-rong-ket-noi-quoc-te-dau-tu-cong-nghe-va-doi-tau-bay-188261102161415503.chn",
+      "published_at": "2026-11-02T16:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102151931384",
+      "title": "Cựu Chủ tịch, TGĐ, kế toán trưởng bị bắt, sau 5 tháng, công ty điện trên sàn chính thức có TGĐ mới sinh năm 1970",
+      "canonical_url": "https://cafef.vn/cuu-chu-tich-tgd-ke-toan-truong-bi-bat-sau-5-thang-cong-ty-dien-tren-san-chinh-thuc-co-tgd-moi-sinh-nam-1970-188261102151931384.chn",
+      "published_at": "2026-11-02T15:25:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102145251606",
+      "title": "Phó Tổng Giám đốc VNG bất ngờ xin từ nhiệm sau hơn 15 năm gắn bó",
+      "canonical_url": "https://cafef.vn/pho-tong-giam-doc-vng-bat-ngo-xin-tu-nhiem-sau-hon-15-nam-gan-bo-188261102145251606.chn",
+      "published_at": "2026-11-02T14:57:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102141626712",
+      "title": "Lần đầu tiên tỷ phú Trần Đình Long xuất khẩu lô lớn 8.000 tấn tôn mạ kẽm sang Nhật Bản",
+      "canonical_url": "https://cafef.vn/lan-dau-tien-ty-phu-tran-dinh-long-xuat-khau-lo-lon-8000-tan-ton-ma-kem-sang-nhat-ban-188261102141626712.chn",
+      "published_at": "2026-11-02T14:21:00+07:00",
+      "tickers": [
+        "HPG"
+      ]
+    },
+    {
+      "source_article_id": "188261102130922044",
+      "title": "Chủ tịch Cao Thị Ngọc Dung trực tiếp cho PNJ vay 700 tỷ đồng với lãi suất 10%/năm",
+      "canonical_url": "https://cafef.vn/chu-tich-cao-thi-ngoc-dung-truc-tiep-cho-pnj-vay-700-ty-dong-voi-lai-suat-10-nam-188261102130922044.chn",
+      "published_at": "2026-11-02T13:39:00+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "CTG"
+      ]
+    },
+    {
+      "source_article_id": "188261102115206709",
+      "title": "Petrolimex lợi nhuận 9 tháng đạt 4.688 tỷ đồng, vượt kế hoạch lợi nhuận năm 2026 gần 40%",
+      "canonical_url": "https://cafef.vn/petrolimex-loi-nhuan-9-thang-dat-4688-ty-dong-vuot-ke-hoach-loi-nhuan-nam-2026-gan-40-188261102115206709.chn",
+      "published_at": "2026-11-02T13:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102125841639",
+      "title": "Một công ty nông nghiệp của tỷ phú Trần Bá Dương lấn sân sang logistics, sắp khởi công cảng cạn 100.000m2 tại Gia Lai",
+      "canonical_url": "https://cafef.vn/mot-cong-ty-nong-nghiep-cua-ty-phu-tran-ba-duong-lan-san-sang-logistics-sap-khoi-cong-cang-can-100000m2-tai-gia-lai-188261102125841639.chn",
+      "published_at": "2026-11-02T12:58:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102101307506",
+      "title": "Chủ tịch sáng lập Geleximco Vũ Văn Tiền kể chuyện đàm phán với Tập đoàn Trung Quốc: Tôi đã từ chối phương án 70% lao động thủ công, yêu cầu 60% tự động hóa",
+      "canonical_url": "https://cafef.vn/chu-tich-sang-lap-geleximco-vu-van-tien-ke-chuyen-dam-phan-voi-tap-doan-trung-quoc-toi-da-tu-choi-phuong-an-70-lao-dong-thu-cong-yeu-cau-60-tu-dong-hoa-188261102101307506.chn",
+      "published_at": "2026-11-02T12:12:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102112354244",
+      "title": "Viettel hé lộ dự án chế tạo máy bay có người lái đầu tiên tại Việt Nam: Tuyển kỹ sư hàng không, tham vọng làm chủ công nghệ trực thăng, xuất hiện khu thử nghiệm đặc biệt",
+      "canonical_url": "https://cafef.vn/viettel-he-lo-du-an-che-tao-may-bay-co-nguoi-lai-dau-tien-tai-viet-nam-tuyen-ky-su-hang-khong-tham-vong-lam-chu-cong-nghe-truc-thang-xuat-hien-khu-thu-nghiem-dac-biet-188261102112354244.chn",
+      "published_at": "2026-11-02T11:38:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102105747838",
+      "title": "CLIP: Cảnh sát dẫn giải nữ đại gia Chu Thị Thành đến tòa",
+      "canonical_url": "https://cafef.vn/clip-canh-sat-dan-giai-nu-dai-gia-chu-thi-thanh-den-toa-188261102105747838.chn",
+      "published_at": "2026-11-02T11:10:00+07:00",
+      "tickers": [
+        "MBB"
+      ]
+    },
+    {
+      "source_article_id": "188261102105511446",
+      "title": "Sau Apple, Xiaomi, một đại gia công nghệ Mỹ đứng sau những cỗ máy AI sử dụng chip NVIDIA bất ngờ gây chú ý tại Digiworld",
+      "canonical_url": "https://cafef.vn/sau-apple-xiaomi-mot-dai-gia-cong-nghe-my-dung-sau-nhung-co-may-ai-su-dung-chip-nvidia-bat-ngo-gay-chu-y-tai-digiworld-188261102105511446.chn",
+      "published_at": "2026-11-02T10:55:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102101345484",
+      "title": "Tỷ phú Trần Đình Long đích thân kiểm tra dây chuyền sản xuất Dung Quất, ra chỉ đạo đặc biệt",
+      "canonical_url": "https://cafef.vn/ty-phu-tran-dinh-long-dich-than-kiem-tra-day-chuyen-san-xuat-dung-quat-ra-chi-dao-dac-biet-188261102101345484.chn",
+      "published_at": "2026-11-02T10:17:00+07:00",
+      "tickers": [
+        "HPG"
+      ]
+    },
+    {
+      "source_article_id": "188261102101138474",
+      "title": "Vì sao cổ phiếu FPT bị bán ròng?",
+      "canonical_url": "https://cafef.vn/vi-sao-co-phieu-fpt-bi-ban-rong-188261102101138474.chn",
+      "published_at": "2026-11-02T10:11:00+07:00",
+      "tickers": [
+        "CTG",
+        "FPT"
+      ]
+    },
+    {
+      "source_article_id": "188261102081038803",
+      "title": "Vụ án Vạn Thịnh Phát: Đã chi trả gần 14.000 tỷ đồng cho các bị hại",
+      "canonical_url": "https://cafef.vn/vu-an-van-thinh-phat-da-chi-tra-gan-14000-ty-dong-cho-cac-bi-hai-188261102081038803.chn",
+      "published_at": "2026-11-02T09:10:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102090527403",
+      "title": "Loạt đại gia bất động sản Nam Long, Khang Điền, BLUEMARQ, Becamex... báo lợi nhuận lao dốc 35-99% sau 9 tháng",
+      "canonical_url": "https://cafef.vn/loat-dai-gia-bat-dong-san-nam-long-khang-dien-bluemarq-becamex-bao-loi-nhuan-lao-doc-35-99-sau-9-thang-188261102090527403.chn",
+      "published_at": "2026-11-02T09:03:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102080434822",
+      "title": "Xét xử nữ đại gia xăng dầu Chu Thị Thành và 22 bị cáo khác",
+      "canonical_url": "https://cafef.vn/xet-xu-nu-dai-gia-xang-dau-chu-thi-thanh-va-22-bi-cao-khac-188261102080434822.chn",
+      "published_at": "2026-11-02T08:35:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "18826110208124044",
+      "title": "Vietjet: Doanh thu 9 tháng tăng 41%, mở rộng kết nối quốc tế, đầu tư công nghệ và đội tàu bay",
+      "canonical_url": "https://cafef.vn/doanh-thu-9-thang-tang-41-mo-rong-ket-noi-quoc-te-dau-tu-cong-nghe-va-doi-tau-bay-18826110208124044.chn",
+      "published_at": "2026-11-02T08:12:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102001953284",
+      "title": "Lần đầu tiên tại Việt Nam có DN công bố lãi hơn 100.000 tỷ đồng trong 4 quý: Vinhomes của tỷ phú Phạm Nhật Vượng vượt tập đoàn ông Lý Gia Thành",
+      "canonical_url": "https://cafef.vn/lan-dau-tien-tai-viet-nam-co-dn-cong-bo-lai-hon-100000-ty-dong-trong-4-quy-vinhomes-cua-ty-phu-pham-nhat-vuong-vuot-tap-doan-ong-ly-gia-thanh-188261102001953284.chn",
+      "published_at": "2026-11-02T00:19:00+07:00",
+      "tickers": [
+        "VHM",
+        "VIC",
+        "VND"
+      ]
+    },
+    {
+      "source_article_id": "188261102002042647",
+      "title": "Đừng bỏ lỡ: Hàng trăm doanh nghiệp đã công bố BCTC quý 3 dịp cuối tuần với nhiều con số bất ngờ",
+      "canonical_url": "https://cafef.vn/dung-bo-lo-hang-tram-doanh-nghiep-da-cong-bo-bctc-quy-3-dip-cuoi-tuan-voi-nhieu-con-so-bat-ngo-188261102002042647.chn",
+      "published_at": "2026-11-02T00:17:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261101221335781",
+      "title": "Tỷ phú Nguyễn Thị Phương Thảo đăng ký tài trợ 50.000 tỷ đồng, VinaCapital tính huy động 200 triệu USD: Nóng cuộc đua tại tháp 99 tầng cao 497m ở Thủ Thiêm",
+      "canonical_url": "https://cafef.vn/ty-phu-nguyen-thi-phuong-thao-dang-ky-tai-tro-50000-ty-dong-vinacapital-tinh-huy-dong-200-trieu-usd-nong-cuoc-dua-tai-thap-99-tang-cao-497m-o-thu-thiem-188261101221335781.chn",
+      "published_at": "2026-11-02T00:01:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102221235722",
+      "title": "Tối 2/11, giá vàng tăng vọt",
+      "canonical_url": "https://cafef.vn/toi-2-11-gia-vang-tang-vot-188261102221235722.chn",
+      "published_at": "2026-11-02T22:11:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102195210514",
+      "title": "Lãi suất tiết kiệm ngày 2/11 tại Agribank, Vietcombank, BIDV, VietinBank, MB, VPBank, Techcombank, Sacombank, HDBank,...",
+      "canonical_url": "https://cafef.vn/lai-suat-tiet-kiem-ngay-2-11-tai-agribank-vietcombank-bidv-vietinbank-mb-vpbank-techcombank-sacombank-hdbank-188261102195210514.chn",
+      "published_at": "2026-11-02T21:02:00+07:00",
+      "tickers": [
+        "SHB",
+        "VCB",
+        "BID",
+        "CTG",
+        "TCB",
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "188261102073739396",
+      "title": "Giá vàng nhẫn trơn, vàng miếng chiều tối 2/11 tại SJC, PNJ, DOJI, Bảo Tín Minh Châu và Bảo Tín Mạnh Hải đồng loạt tăng",
+      "canonical_url": "https://cafef.vn/gia-vang-nhan-tron-vang-mieng-sang-2-11-tai-sjc-pnj-doji-bao-tin-minh-chau-va-bao-tin-manh-hai-188261102073739396.chn",
+      "published_at": "2026-11-02T19:26:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102180157793",
+      "title": "Lãi suất giảm, tiết kiệm vẫn giữ sức hút",
+      "canonical_url": "https://cafef.vn/lai-suat-giam-tiet-kiem-van-giu-suc-hut-188261102180157793.chn",
+      "published_at": "2026-11-02T19:01:00+07:00",
+      "tickers": [
+        "VCB"
+      ]
+    },
+    {
+      "source_article_id": "188261102180623053",
+      "title": "Techcombank thông báo về kế hoạch nâng cấp hệ thống phục vụ trải nghiệm khách hàng",
+      "canonical_url": "https://cafef.vn/techcombank-thong-bao-ve-ke-hoach-nang-cap-he-thong-phuc-vu-trai-nghiem-khach-hang-188261102180623053.chn",
+      "published_at": "2026-11-02T18:06:00+07:00",
+      "tickers": [
+        "TCB"
+      ]
+    },
+    {
+      "source_article_id": "188261102171445456",
+      "title": "VPBank tiên phong đưa Visa Infinite Privilege về Việt Nam, nâng chuẩn trải nghiệm",
+      "canonical_url": "https://cafef.vn/vpbank-tien-phong-dua-visa-infinite-privilege-ve-viet-nam-nang-chuan-trai-nghiem-188261102171445456.chn",
+      "published_at": "2026-11-02T17:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102152932675",
+      "title": "Một cổ phiếu ngân hàng tăng 5% trong phiên đỏ lửa ngày 2/11",
+      "canonical_url": "https://cafef.vn/mot-co-phieu-ngan-hang-tang-5-trong-phien-do-lua-ngay-2-11-188261102152932675.chn",
+      "published_at": "2026-11-02T16:51:00+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "MBB",
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "188261102142820871",
+      "title": "Nợ xấu, tiền gửi khách hàng và lợi nhuận hiện nay của ngân hàng lớn nhất Việt Nam",
+      "canonical_url": "https://cafef.vn/no-xau-tien-gui-khach-hang-va-loi-nhuan-hien-nay-cua-ngan-hang-lon-nhat-viet-nam-188261102142820871.chn",
+      "published_at": "2026-11-02T15:30:00+07:00",
+      "tickers": [
+        "BID"
+      ]
+    },
+    {
+      "source_article_id": "188261102151505152",
+      "title": "SeABank hoàn tất tăng vốn điều lệ lên 34.688 tỷ đồng",
+      "canonical_url": "https://cafef.vn/seabank-hoan-tat-tang-von-dieu-le-len-34688-ty-dong-188261102151505152.chn",
+      "published_at": "2026-11-02T15:14:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102073347541",
+      "title": "Giá vàng ngày 2/11: Vàng SJC cao hơn thế giới 14,3 triệu đồng/lượng",
+      "canonical_url": "https://cafef.vn/gia-vang-ngay-2-11-vang-sjc-cao-hon-the-gioi-143-trieu-dong-luong-188261102073347541.chn",
+      "published_at": "2026-11-02T14:46:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102140413616",
+      "title": "World tour BIGBANG và bài toán Ecosystem Marketing của VPBank",
+      "canonical_url": "https://cafef.vn/world-tour-bigbang-va-bai-toan-ecosystem-marketing-cua-vpbank-188261102140413616.chn",
+      "published_at": "2026-11-02T14:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "18826110213454454",
+      "title": "Ông Dương Công Minh làm người đại diện theo pháp luật của SACOMBANK",
+      "canonical_url": "https://cafef.vn/ong-duong-cong-minh-lam-nguoi-dai-dien-theo-phap-luat-cua-sacombank-18826110213454454.chn",
+      "published_at": "2026-11-02T13:45:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "188261102113505476",
+      "title": "Thôi giữ chức Tổng giám đốc SACOMBANK, ông Loic Faussier sẽ đảm nhiệm vị trí nào?",
+      "canonical_url": "https://cafef.vn/thoi-giu-chuc-tong-giam-doc-sacombank-ong-loic-faussier-se-dam-nhiem-vi-tri-nao-188261102113505476.chn",
+      "published_at": "2026-11-02T11:34:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "188261102113144871",
+      "title": "Techcombank và Masterise Group đưa tinh hoa Baroque Châu Âu hòa nhịp cùng văn hóa Việt Nam",
+      "canonical_url": "https://cafef.vn/techcombank-va-masterise-group-dua-tinh-hoa-baroque-chau-au-hoa-nhip-cung-van-hoa-viet-nam-188261102113144871.chn",
+      "published_at": "2026-11-02T11:31:00+07:00",
+      "tickers": [
+        "TCB"
+      ]
+    },
+    {
+      "source_article_id": "1882611020957012",
+      "title": "SACOMBANK công bố quyền Tổng Giám đốc mới",
+      "canonical_url": "https://cafef.vn/sacombank-cong-bo-quyen-tong-giam-doc-moi-1882611020957012.chn",
+      "published_at": "2026-11-02T09:56:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "188261102073136403",
+      "title": "Không chỉ vì tỷ giá: Điều gì đang thúc đẩy doanh nghiệp giao dịch đồng Nhân Dân Tệ?",
+      "canonical_url": "https://cafef.vn/khong-chi-vi-ty-gia-dieu-gi-dang-thuc-day-doanh-nghiep-giao-dich-dong-nhan-dan-te-188261102073136403.chn",
+      "published_at": "2026-11-02T07:31:00+07:00",
+      "tickers": [
+        "VND"
+      ]
+    },
+    {
+      "source_article_id": "188261101221306147",
+      "title": "Vietcombank bất ngờ trích lập dự phòng 5.000 tỷ đồng cho một lô trái phiếu",
+      "canonical_url": "https://cafef.vn/vietcombank-bat-ngo-trich-lap-du-phong-5000-ty-dong-cho-mot-lo-trai-phieu-188261101221306147.chn",
+      "published_at": "2026-11-02T06:30:00+07:00",
+      "tickers": [
+        "VCB"
+      ]
+    },
+    {
+      "source_article_id": "188261101211756433",
+      "title": "Top 10 ngân hàng có lợi nhuận cao nhất quý 3/2026: VietinBank vượt Vietcombank, 6 ngân hàng lãi hơn 10.000 tỷ",
+      "canonical_url": "https://cafef.vn/top-10-ngan-hang-co-loi-nhuan-cao-nhat-quy-3-2026-vietinbank-vuot-vietcombank-6-ngan-hang-lai-hon-10000-ty-188261101211756433.chn",
+      "published_at": "2026-11-02T00:05:00+07:00",
+      "tickers": [
+        "SHB",
+        "VCB",
+        "BID",
+        "CTG",
+        "TCB",
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "188261102162602335",
+      "title": "Hơn 53% người dân TP Hồ Chí Minh đã được khám sức khỏe miễn phí",
+      "canonical_url": "https://cafef.vn/hon-53-nguoi-dan-tp-ho-chi-minh-da-duoc-kham-suc-khoe-mien-phi-188261102162602335.chn",
+      "published_at": "2026-11-02T17:39:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102142852172",
+      "title": "Chỉ 2 tháng nữa, Việt Nam chính thức phá dỡ cây cầu hơn 120 năm tuổi do người Pháp thiết kế",
+      "canonical_url": "https://cafef.vn/chi-2-thang-nua-viet-nam-chinh-thuc-pha-do-cay-cau-hon-120-nam-tuoi-do-nguoi-phap-thiet-ke-188261102142852172.chn",
+      "published_at": "2026-11-02T17:10:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102153901075",
+      "title": "Thuế đất phi nông nghiệp: Rủi ro có thể phát sinh và những lưu ý",
+      "canonical_url": "https://cafef.vn/thue-dat-phi-nong-nghiep-rui-ro-co-the-phat-sinh-va-nhung-luu-y-188261102153901075.chn",
+      "published_at": "2026-11-02T17:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "18826110214492021",
+      "title": "Phú Quốc chạy đua tiến độ dự án APEC giữa áp lực thiếu nhân lực",
+      "canonical_url": "https://cafef.vn/phu-quoc-chay-dua-tien-do-du-an-apec-giua-ap-luc-thieu-nhan-luc-18826110214492021.chn",
+      "published_at": "2026-11-02T16:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102162233429",
+      "title": "Trung Quốc, Ấn Độ đã thất bại, Việt Nam thành công thuyết phục đại bàng Mỹ đặt nhà máy lớn nhất thế giới, chuyên gia nói gì?",
+      "canonical_url": "https://cafef.vn/trung-quoc-an-do-da-that-bai-viet-nam-thanh-cong-thuyet-phuc-dai-bang-my-dat-nha-may-lon-nhat-the-gioi-chuyen-gia-noi-gi-188261102162233429.chn",
+      "published_at": "2026-11-02T16:22:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "1882611021610081",
+      "title": "Việt Nam có “kho báu” gấp 8 lần Trung Quốc, 12 lần Nga, 290 lần Mỹ, Phó Thủ tướng vừa có chỉ đạo quan trọng",
+      "canonical_url": "https://cafef.vn/viet-nam-co-kho-bau-gap-8-lan-trung-quoc-12-lan-nga-290-lan-my-pho-thu-tuong-vua-co-chi-dao-quan-trong-1882611021610081.chn",
+      "published_at": "2026-11-02T16:09:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102133848517",
+      "title": "Thu hút đầu tư phải tạo ra giá trị gia tăng, chuyển giao công nghệ",
+      "canonical_url": "https://cafef.vn/thu-hut-dau-tu-phai-tao-ra-gia-tri-gia-tang-chuyen-giao-cong-nghe-188261102133848517.chn",
+      "published_at": "2026-11-02T16:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102135219179",
+      "title": "Sắp khởi công dự án thủy điện tích năng gần 28.000 tỷ, có cáp treo",
+      "canonical_url": "https://cafef.vn/sap-khoi-cong-du-an-thuy-dien-tich-nang-gan-28000-ty-co-cap-treo-188261102135219179.chn",
+      "published_at": "2026-11-02T15:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102145534907",
+      "title": "Gần Hà Nội, một “thiên đường mua sắm” 5.200 tỷ, chuẩn Nhật Bản sắp mở cửa",
+      "canonical_url": "https://cafef.vn/gan-ha-noi-mot-thien-duong-mua-sam-5200-ty-chuan-nhat-ban-sap-mo-cua-188261102145534907.chn",
+      "published_at": "2026-11-02T15:20:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102144840072",
+      "title": "Xuất nhập khẩu Việt Nam: Bứt phá quy mô, nâng tầm giá trị",
+      "canonical_url": "https://cafef.vn/xuat-nhap-khau-viet-nam-but-pha-quy-mo-nang-tam-gia-tri-188261102144840072.chn",
+      "published_at": "2026-11-02T14:48:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102143003699",
+      "title": "Sau cuộc di dời 17.000 dân lớn nhất lịch sử, hiện 7.110 người dồn lực quyết lập kỳ tích cho dự án lớn nhất Việt Nam",
+      "canonical_url": "https://cafef.vn/sau-cuoc-di-doi-17000-dan-lon-nhat-lich-su-hien-7110-nguoi-don-luc-quyet-lap-ky-tich-cho-du-an-lon-nhat-viet-nam-188261102143003699.chn",
+      "published_at": "2026-11-02T14:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102144655292",
+      "title": "Tây Hồ Tây đang định hình cực tăng trưởng mới của Hà Nội như thế nào?",
+      "canonical_url": "https://cafef.vn/tay-ho-tay-dang-dinh-hinh-cuc-tang-truong-moi-cua-ha-noi-nhu-the-nao-188261102144655292.chn",
+      "published_at": "2026-11-02T14:19:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "18826110213340334",
+      "title": "Chuyên gia góp ý trước đề xuất san phẳng núi Một ở Quy Nhơn",
+      "canonical_url": "https://cafef.vn/chuyen-gia-gop-y-truoc-de-xuat-san-phang-nui-mot-o-quy-nhon-18826110213340334.chn",
+      "published_at": "2026-11-02T14:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102115842922",
+      "title": "Từ nay, tất cả các cá nhân, hộ kinh doanh có doanh thu dưới 10 tỷ đồng chính thức đón tin vui",
+      "canonical_url": "https://cafef.vn/tu-nay-tat-ca-cac-ca-nhan-ho-kinh-doanh-co-doanh-thu-duoi-10-ty-dong-chinh-thuc-don-tin-vui-188261102115842922.chn",
+      "published_at": "2026-11-02T13:13:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102113215855",
+      "title": "Cuộc đua thu hút FDI 'tăng nhiệt', Philippines, Malaysia, Ấn Độ đều nhập cuộc cạnh tranh: Bộ trưởng Bộ Tài chính nói gì về mục tiêu thu hút 30-40 tỷ USD/năm vốn giải ngân của Việt Nam?",
+      "canonical_url": "https://cafef.vn/cuoc-dua-thu-hut-fdi-tang-nhiet-philippines-malaysia-an-do-deu-nhap-cuoc-canh-tranh-bo-truong-bo-tai-chinh-noi-gi-ve-muc-tieu-thu-hut-30-40-ty-usd-nam-von-giai-ngan-cua-viet-nam-188261102113215855.chn",
+      "published_at": "2026-11-02T11:31:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102100334274",
+      "title": "TP. Đồng Nai phát triển logistics số gắn với sân bay, cảng biển",
+      "canonical_url": "https://cafef.vn/tp-dong-nai-phat-trien-logistics-so-gan-voi-san-bay-cang-bien-188261102100334274.chn",
+      "published_at": "2026-11-02T11:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102110625937",
+      "title": "Việt Nam đang xây dựng cầu đường bộ vượt sông Hồng 1.500 tỷ đồng nối thẳng Việt Nam – Trung Quốc, dự kiến hợp long ngay cuối tháng sau",
+      "canonical_url": "https://cafef.vn/viet-nam-dang-xay-dung-cau-duong-bo-vuot-song-hong-1500-ty-dong-noi-thang-viet-nam-trung-quoc-du-kien-hop-long-ngay-cuoi-thang-sau-188261102110625937.chn",
+      "published_at": "2026-11-02T11:09:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102103353609",
+      "title": "Đại biểu Quốc hội: Bỏ giấy phép kinh doanh rượu như 'thay ổ khóa bằng lời hứa'",
+      "canonical_url": "https://cafef.vn/dai-bieu-quoc-hoi-bo-giay-phep-kinh-doanh-ruou-nhu-thay-o-khoa-bang-loi-hua-188261102103353609.chn",
+      "published_at": "2026-11-02T11:07:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "18826103016573973",
+      "title": "T&T Group khai mở không gian tăng trưởng mới từ những dự án hạ tầng chiến lược",
+      "canonical_url": "https://cafef.vn/tt-group-khai-mo-khong-gian-tang-truong-moi-tu-nhung-du-an-ha-tang-chien-luoc-18826103016573973.chn",
+      "published_at": "2026-11-02T10:25:54+07:00",
+      "tickers": [
+        "BID"
+      ]
+    },
+    {
+      "source_article_id": "188261102085857758",
+      "title": "Hơn 2,5 triệu mã số thuế chưa thể đóng: Đề xuất giảm tới 70% tiền phạt",
+      "canonical_url": "https://cafef.vn/hon-25-trieu-ma-so-thue-chua-the-dong-de-xuat-giam-toi-70-tien-phat-188261102085857758.chn",
+      "published_at": "2026-11-02T09:40:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102082056988",
+      "title": "Xét xử nữ đại gia Chu Thị Thành: Tòa triệu tập đại diện 2 bộ và 6 cơ quan thuế",
+      "canonical_url": "https://cafef.vn/xet-xu-nu-dai-gia-chu-thi-thanh-toa-trieu-tap-dai-dien-2-bo-va-6-co-quan-thue-188261102082056988.chn",
+      "published_at": "2026-11-02T08:39:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102073238474",
+      "title": "Chủ tịch tỉnh Gia Lai yêu cầu quy hoạch lại không gian đô thị Quy Nhơn",
+      "canonical_url": "https://cafef.vn/chu-tich-tinh-gia-lai-yeu-cau-quy-hoach-lai-khong-gian-do-thi-quy-nhon-188261102073238474.chn",
+      "published_at": "2026-11-02T08:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102081849902",
+      "title": "Quốc hội thảo luận dự án Luật về hiến, lấy, ghép mô, bộ phận cơ thể người",
+      "canonical_url": "https://cafef.vn/quoc-hoi-thao-luan-du-an-luat-ve-hien-lay-ghep-mo-bo-phan-co-the-nguoi-188261102081849902.chn",
+      "published_at": "2026-11-02T08:18:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102072043943",
+      "title": "Ba Vì công bố ranh giới lập quy hoạch dự án Safari gần 300ha của Sun Group",
+      "canonical_url": "https://cafef.vn/ba-vi-cong-bo-ranh-gioi-lap-quy-hoach-du-an-safari-gan-300ha-cua-sun-group-188261102072043943.chn",
+      "published_at": "2026-11-02T07:59:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261102071129404",
+      "title": "Metro Thủ Dầu Một - TP Hồ Chí Minh dự kiến khởi công tháng 12",
+      "canonical_url": "https://cafef.vn/metro-thu-dau-mot-tp-ho-chi-minh-du-kien-khoi-cong-thang-12-188261102071129404.chn",
+      "published_at": "2026-11-02T07:31:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "188261101233315152",
+      "title": "Chỉ còn 1 ngày, tất cả những ai có Giấy chứng nhận quyền sử dụng đất cần khẩn trương hoàn thành việc này, quá hạn một ngày đã bị tính lãi",
+      "canonical_url": "https://cafef.vn/chi-con-1-ngay-tat-ca-nhung-ai-co-giay-chung-nhan-quyen-su-dung-dat-can-khan-truong-hoan-thanh-viec-nay-qua-han-mot-ngay-da-bi-tinh-lai-188261101233315152.chn",
+      "published_at": "2026-11-02T00:01:00+07:00",
+      "tickers": []
+    }
+  ]
+}

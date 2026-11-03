@@ -1,0 +1,17 @@
+# Orchestration and K3s isolated run pods
+dagster==1.13.27
+dagster-k8s==0.29.27
+
+# HTTP, source parsing, and YAML configuration
+httpx[http2]==0.28.1
+beautifulsoup4==4.13.3
+lxml==5.3.1
+PyYAML==6.0.2
+
+# MySQL Node 1 data and Node 2 scrape-audit persistence
+SQLAlchemy==2.0.38
+PyMySQL==1.1.1
+cryptography==44.0.1
+
+# OCI Object Storage S3-compatible client
+boto3>=1.34.0

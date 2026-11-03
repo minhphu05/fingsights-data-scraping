@@ -1,0 +1,274 @@
+version: 1
+source_of_truth: mysql-node-1.finsights_market.market_security_aliases
+securities:
+  - symbol: SHB
+    exchange_code: HOSE
+    aliases:
+      - text: SHB
+        alias_type: ticker
+        language_code: vi
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: Ngân hàng TMCP Sài Gòn – Hà Nội
+        alias_type: legal_name
+        language_code: vi
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+      - text: Ngân hàng SHB
+        alias_type: brand_name
+        language_code: vi
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.96
+
+  - symbol: VCB
+    exchange_code: HOSE
+    aliases:
+      - text: VCB
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: Vietcombank
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+      - text: Ngân hàng TMCP Ngoại thương Việt Nam
+        alias_type: legal_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: BID
+    exchange_code: HOSE
+    aliases:
+      - text: BID
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: BIDV
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+      - text: Ngân hàng TMCP Đầu tư và Phát triển Việt Nam
+        alias_type: legal_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: CTG
+    exchange_code: HOSE
+    aliases:
+      - text: CTG
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: VietinBank
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: TCB
+    exchange_code: HOSE
+    aliases:
+      - text: TCB
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: Techcombank
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: MBB
+    exchange_code: HOSE
+    aliases:
+      - text: MBB
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: MBBank
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+      - text: Ngân hàng Quân Đội
+        alias_type: legal_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: LPB
+    exchange_code: HOSE
+    aliases:
+      - text: LPB
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: LPBank
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+      - text: Ngân hàng Lộc Phát
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: HPG
+    exchange_code: HOSE
+    aliases:
+      - text: HPG
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: Hòa Phát
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.98
+      - text: Tập đoàn Hòa Phát
+        alias_type: legal_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: FPT
+    exchange_code: HOSE
+    aliases:
+      - text: FPT
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: Tập đoàn FPT
+        alias_type: legal_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: VHM
+    exchange_code: HOSE
+    aliases:
+      - text: VHM
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: Vinhomes
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: VIC
+    exchange_code: HOSE
+    aliases:
+      - text: VIC
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: Vingroup
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+      - text: Tập đoàn Vingroup
+        alias_type: legal_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: MWG
+    exchange_code: HOSE
+    aliases:
+      - text: MWG
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: Thế Giới Di Động
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: NVL
+    exchange_code: HOSE
+    aliases:
+      - text: NVL
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: Novaland
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+      - text: Tập đoàn Novaland
+        alias_type: legal_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: SSI
+    exchange_code: HOSE
+    aliases:
+      - text: SSI
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: Chứng khoán SSI
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: VND
+    exchange_code: HOSE
+    aliases:
+      - text: VND
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: VNDirect
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+      - text: Chứng khoán VNDIRECT
+        alias_type: legal_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99
+
+  - symbol: VNM
+    exchange_code: HOSE
+    aliases:
+      - text: VNM
+        alias_type: ticker
+        match_mode: exact_token
+        requires_financial_context: true
+        confidence: 0.98
+      - text: Vinamilk
+        alias_type: brand_name
+        match_mode: phrase
+        requires_financial_context: false
+        confidence: 0.99

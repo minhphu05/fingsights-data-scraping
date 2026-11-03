@@ -1,0 +1,114 @@
+{
+  "source": "thanhnien",
+  "target_date": "2026-11-02",
+  "collected_at": "2026-11-03T11:01:27.686720",
+  "total_articles": 10,
+  "unique_tickers_matched": [
+    "BID",
+    "CTG",
+    "FPT",
+    "HPG",
+    "LPB",
+    "MBB",
+    "SHB",
+    "TCB",
+    "VCB",
+    "VIC",
+    "VND"
+  ],
+  "total_fetch_attempts": 32,
+  "articles": [
+    {
+      "source_article_id": "185261102084925813",
+      "title": "Nền tảng thúc đẩy chiến lược ‘bất động sản giá trị thực’ tại Nam Long",
+      "canonical_url": "https://thanhnien.vn/nen-tang-thuc-day-chien-luoc-bat-dong-san-gia-tri-thuc-tai-nam-long-185261102084925813.htm",
+      "published_at": "2026-11-02T08:38:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "185261102073240542",
+      "title": "Giá USD hôm nay 2.11.2026: Đứng yên trong khi euro, yen Nhật đồng loạt giảm",
+      "canonical_url": "https://thanhnien.vn/gia-usd-hom-nay-2112026-dung-yen-trong-khi-euro-yen-nhat-dong-loat-giam-185261102073240542.htm",
+      "published_at": "2026-11-02T08:51:00+07:00",
+      "tickers": [
+        "VCB",
+        "VND"
+      ]
+    },
+    {
+      "source_article_id": "185261102085230611",
+      "title": "Giá vàng hôm nay 2.11.2026: Vàng miếng SJC tăng đầu tuần",
+      "canonical_url": "https://thanhnien.vn/gia-vang-hom-nay-2112026-vang-mieng-sjc-tang-dau-tuan-185261102085230611.htm",
+      "published_at": "2026-11-02T09:02:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "1852611020929442",
+      "title": "Loạt ngân hàng báo lãi 'khủng' trong quý 3, vì sao giá cổ phiếu vẫn giảm",
+      "canonical_url": "https://thanhnien.vn/loat-ngan-hang-bao-lai-khung-trong-quy-3-vi-sao-gia-co-phieu-van-giam-1852611020929442.htm",
+      "published_at": "2026-11-02T09:45:00+07:00",
+      "tickers": [
+        "SHB",
+        "VCB",
+        "BID",
+        "CTG",
+        "TCB",
+        "MBB",
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "185261102093635535",
+      "title": "Sacombank có quyền tổng giám đốc mới",
+      "canonical_url": "https://thanhnien.vn/sacombank-co-quyen-tong-giam-doc-moi-185261102093635535.htm",
+      "published_at": "2026-11-02T09:47:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "185261102100701027",
+      "title": "Báo Thái Lan: Tăng trưởng của Việt Nam định hình lại các bảng xếp hạng kinh tế khu vực",
+      "canonical_url": "https://thanhnien.vn/bao-thai-lan-tang-truong-cua-viet-nam-dinh-hinh-lai-cac-bang-xep-hang-kinh-te-khu-vuc-185261102100701027.htm",
+      "published_at": "2026-11-02T10:11:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "185261102143322983",
+      "title": "Cổ phiếu doanh nghiệp sản xuất Anh trai 'Say Hi' DatVietVAC lên sàn HOSE",
+      "canonical_url": "https://thanhnien.vn/co-phieu-doanh-nghiep-san-xuat-anh-trai-say-hi-datvietvac-len-san-hose-185261102143322983.htm",
+      "published_at": "2026-11-02T14:38:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "18526110215442046",
+      "title": "Chứng khoán Việt Nam giảm hơn 30 điểm, thanh khoản tăng đột biến",
+      "canonical_url": "https://thanhnien.vn/chung-khoan-viet-nam-giam-hon-30-diem-thanh-khoan-tang-dot-bien-18526110215442046.htm",
+      "published_at": "2026-11-02T16:12:00+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "MBB",
+        "LPB",
+        "FPT",
+        "VIC"
+      ]
+    },
+    {
+      "source_article_id": "185261102182734077",
+      "title": "Doanh nghiệp được hỗ trợ tối đa 6%/năm lãi suất vay đổi mới công nghệ",
+      "canonical_url": "https://thanhnien.vn/doanh-nghiep-duoc-ho-tro-toi-da-6-nam-lai-suat-vay-doi-moi-cong-nghe-185261102182734077.htm",
+      "published_at": "2026-11-02T18:52:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "185261102185938763",
+      "title": "El Nino, hạn mặn khốc liệt: Kinh nghiệm quản trị từ Hà Lan cho ĐBSCL",
+      "canonical_url": "https://thanhnien.vn/el-nino-han-man-khoc-liet-kinh-nghiem-quan-tri-tu-ha-lan-cho-dbscl-185261102185938763.htm",
+      "published_at": "2026-11-02T20:00:00+07:00",
+      "tickers": [
+        "HPG"
+      ]
+    }
+  ]
+}

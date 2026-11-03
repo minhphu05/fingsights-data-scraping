@@ -1,0 +1,117 @@
+[
+  {
+    "kind": "index",
+    "provider_code": "vietstock",
+    "trade_date": "2026-11-02",
+    "symbol_or_index": "VN-INDEX",
+    "observed_at": "2026-11-02T15:00:00+07:00",
+    "fields": {
+      "reference_price": 1710.72,
+      "close_price": 1702.49,
+      "price_change": -8.23,
+      "pct_change": -0.48,
+      "total_volume": 0,
+      "total_value_bil_vnd": 0.0
+    },
+    "raw_payload": {
+      "index_name": "VN-INDEX",
+      "ref_val": "1710.72",
+      "close_val": "1702.49",
+      "vol_val": "0",
+      "val_val": "0",
+      "source": "banggia.vietstock.vn"
+    }
+  },
+  {
+    "kind": "index",
+    "provider_code": "vietstock",
+    "trade_date": "2026-11-02",
+    "symbol_or_index": "HNX-INDEX",
+    "observed_at": "2026-11-02T15:00:00+07:00",
+    "fields": {
+      "reference_price": 250.55,
+      "close_price": 251.08,
+      "price_change": 0.53,
+      "pct_change": 0.21,
+      "total_volume": 817808,
+      "total_value_bil_vnd": 8.7024386
+    },
+    "raw_payload": {
+      "index_name": "HNX-INDEX",
+      "ref_val": "250.55",
+      "close_val": "251.08",
+      "vol_val": "817808",
+      "val_val": "8.7024386",
+      "source": "banggia.vietstock.vn"
+    }
+  },
+  {
+    "kind": "index",
+    "provider_code": "vietstock",
+    "trade_date": "2026-11-02",
+    "symbol_or_index": "UPCOM-INDEX",
+    "observed_at": "2026-11-02T15:00:00+07:00",
+    "fields": {
+      "reference_price": 121.95,
+      "close_price": 121.88,
+      "price_change": -0.07,
+      "pct_change": -0.06,
+      "total_volume": 284798,
+      "total_value_bil_vnd": 3.9297848
+    },
+    "raw_payload": {
+      "index_name": "UPCOM-INDEX",
+      "ref_val": "121.95",
+      "close_val": "121.88",
+      "vol_val": "284798",
+      "val_val": "3.9297848",
+      "source": "banggia.vietstock.vn"
+    }
+  },
+  {
+    "kind": "index",
+    "provider_code": "vietstock",
+    "trade_date": "2026-11-02",
+    "symbol_or_index": "VN30-INDEX",
+    "observed_at": "2026-11-02T15:00:00+07:00",
+    "fields": {
+      "reference_price": 1813.41,
+      "close_price": 1805.33,
+      "price_change": -8.08,
+      "pct_change": -0.45,
+      "total_volume": 0,
+      "total_value_bil_vnd": 0.0
+    },
+    "raw_payload": {
+      "index_name": "VN30-INDEX",
+      "ref_val": "1813.41",
+      "close_val": "1805.33",
+      "vol_val": "0",
+      "val_val": "0",
+      "source": "banggia.vietstock.vn"
+    }
+  },
+  {
+    "kind": "index",
+    "provider_code": "vietstock",
+    "trade_date": "2026-11-02",
+    "symbol_or_index": "HNX30-INDEX",
+    "observed_at": "2026-11-02T15:00:00+07:00",
+    "fields": {
+      "reference_price": 421.53,
+      "close_price": 424.12,
+      "price_change": 2.59,
+      "pct_change": 0.61,
+      "total_volume": 462948,
+      "total_value_bil_vnd": 6.1758204
+    },
+    "raw_payload": {
+      "index_name": "HNX30-INDEX",
+      "ref_val": "421.53",
+      "close_val": "424.12",
+      "vol_val": "462948",
+      "val_val": "6.1758204",
+      "source": "banggia.vietstock.vn"
+    }
+  }
+]

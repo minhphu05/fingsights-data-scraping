@@ -1,0 +1,16 @@
+policy:
+  source_of_truth: Node 1 finsights_market.market_security_aliases
+  normalize_unicode: NFKD
+  match_across: [title, subtitle, summary, article_content_blocks]
+  ticker_case_sensitive: true
+  require_financial_context_for_short_aliases: true
+  reject_common_words_as_ticker_only_matches: true
+  record_evidence: true
+  uncertain_match_review_status: pending
+  strong_match_review_status: auto
+  dedupe_before_persisting: true
+  dedupe_keys_in_order:
+    - provider_article_id
+    - canonical_url_sha256
+    - original_source_url_sha256
+    - normalized_content_sha256

@@ -1,0 +1,166 @@
+{
+  "source": "vietstock",
+  "target_date": "2026-11-02",
+  "collected_at": "2026-11-03T09:04:01.291353",
+  "total_articles": 19,
+  "unique_tickers_matched": [
+    "CTG",
+    "MBB",
+    "NVL",
+    "SHB",
+    "TCB",
+    "VCB",
+    "VIC",
+    "VNM"
+  ],
+  "total_fetch_attempts": 56,
+  "articles": [
+    {
+      "source_article_id": "144-1509819",
+      "title": "DatVietVAC dự kiến trả cổ tức 25%, tăng tốc mục tiêu lợi nhuận 420 tỷ đồng",
+      "canonical_url": "https://vietstock.vn/2026/11/datvietvac-du-kien-tra-co-tuc-25-tang-toc-muc-tieu-loi-nhuan-420-ty-dong-144-1509819.htm",
+      "published_at": "2026-11-02T06:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "830-1509864",
+      "title": "02/11: Đọc gì trước giờ giao dịch chứng khoán?",
+      "canonical_url": "https://vietstock.vn/2026/11/0211-doc-gi-truoc-gio-giao-dich-chung-khoan-830-1509864.htm",
+      "published_at": "2026-11-02T06:02:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "830-1509387",
+      "title": "Top cổ phiếu đáng chú ý đầu phiên 02/11",
+      "canonical_url": "https://vietstock.vn/2026/11/top-co-phieu-dang-chu-y-dau-phien-0211-830-1509387.htm",
+      "published_at": "2026-11-02T08:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "830-1497384",
+      "title": "[IR AWARDS] Lịch công bố thông tin tháng 11/2026 cần nhớ",
+      "canonical_url": "https://vietstock.vn/2026/11/ir-awards-lich-cong-bo-thong-tin-thang-112026-can-nho-830-1497384.htm",
+      "published_at": "2026-11-02T09:02:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "585-1509762",
+      "title": "Tuần 02-06/11/2026: 10 cổ phiếu nóng dưới góc nhìn PTKT của Vietstock",
+      "canonical_url": "https://vietstock.vn/2026/11/tuan-02-06112026-10-co-phieu-nong-duoi-goc-nhin-ptkt-cua-vietstock-585-1509762.htm",
+      "published_at": "2026-11-02T10:00:00+07:00",
+      "tickers": [
+        "VCB",
+        "CTG",
+        "VIC",
+        "VNM"
+      ]
+    },
+    {
+      "source_article_id": "145-1509876",
+      "title": "VPB, PVS và CTR có gì hấp dẫn?",
+      "canonical_url": "https://vietstock.vn/2026/11/vpb-pvs-va-ctr-co-gi-hap-dan-145-1509876.htm",
+      "published_at": "2026-11-02T12:09:04+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "739-1510099",
+      "title": "Ông Võ Phi Nhật Huy bán thêm 2 triệu cp BIG cho đối tác chiến lược",
+      "canonical_url": "https://vietstock.vn/2026/11/ong-vo-phi-nhat-huy-ban-them-2-trieu-cp-big-cho-doi-tac-chien-luoc-739-1510099.htm",
+      "published_at": "2026-11-02T12:41:20+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "145-1509912",
+      "title": "Chứng khoán tháng 11: Phân hóa tiếp diễn, cơ hội nằm ở đâu?",
+      "canonical_url": "https://vietstock.vn/2026/11/chung-khoan-thang-11-phan-hoa-tiep-dien-co-hoi-nam-o-dau-145-1509912.htm",
+      "published_at": "2026-11-02T13:02:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "585-1510129",
+      "title": "Phân tích kỹ thuật phiên chiều 02/11: Triển vọng tiếp tục xấu đi",
+      "canonical_url": "https://vietstock.vn/2026/11/phan-tich-ky-thuat-phien-chieu-0211-trien-vong-tiep-tuc-xau-di-585-1510129.htm",
+      "published_at": "2026-11-02T13:06:32+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "741-1510227",
+      "title": "DatVietVAC (DVV) chính thức niêm yết trên HOSE",
+      "canonical_url": "https://vietstock.vn/2026/11/datvietvac-dvv-chinh-thuc-niem-yet-tren-hose-741-1510227.htm",
+      "published_at": "2026-11-02T13:32:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "1636-1509945",
+      "title": "Nhịp đập Thị trường 02/11: Khối ngoại bán ròng mạnh nhóm ngân hàng, VN-Index tiếp tục bốc hơi hơn 30 điểm",
+      "canonical_url": "https://vietstock.vn/2026/11/nhip-dap-thi-truong-0211-khoi-ngoai-ban-rong-manh-nhom-ngan-hang-vn-index-tiep-tuc-boc-hoi-hon-30-diem-1636-1509945.htm",
+      "published_at": "2026-11-02T16:32:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "1636-1510464",
+      "title": "Vietstock Daily 03/11/2026: Sức ép bủa vây",
+      "canonical_url": "https://vietstock.vn/2026/11/vietstock-daily-03112026-suc-ep-bua-vay-1636-1510464.htm",
+      "published_at": "2026-11-02T18:27:15+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "739-1510230",
+      "title": "Lãnh đạo và người nhà doanh nghiệp bất động sản đua mua cổ phiếu tuần cuối tháng 10",
+      "canonical_url": "https://vietstock.vn/2026/11/lanh-dao-va-nguoi-nha-doanh-nghiep-bat-dong-san-dua-mua-co-phieu-tuan-cuoi-thang-10-739-1510230.htm",
+      "published_at": "2026-11-02T19:02:00+07:00",
+      "tickers": [
+        "NVL"
+      ]
+    },
+    {
+      "source_article_id": "830-1510575",
+      "title": "Theo dấu dòng tiền cá mập 02/11: Khối ngoại rút gần 600 tỷ đồng khỏi nhóm ngân hàng",
+      "canonical_url": "https://vietstock.vn/2026/11/theo-dau-dong-tien-ca-map-0211-khoi-ngoai-rut-gan-600-ty-dong-khoi-nhom-ngan-hang-830-1510575.htm",
+      "published_at": "2026-11-02T19:19:44+07:00",
+      "tickers": [
+        "SHB",
+        "VCB",
+        "TCB",
+        "MBB"
+      ]
+    },
+    {
+      "source_article_id": "1636-1510348",
+      "title": "Chứng khoán phái sinh ngày 03/11/2026: Khối lượng toàn thị trường tăng mạnh trở lại",
+      "canonical_url": "https://vietstock.vn/2026/11/chung-khoan-phai-sinh-ngay-03112026-khoi-luong-toan-thi-truong-tang-manh-tro-lai-1636-1510348.htm",
+      "published_at": "2026-11-02T19:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "145-1510627",
+      "title": "Góc nhìn 03/11: Có thể vẫn chưa chạm đáy?",
+      "canonical_url": "https://vietstock.vn/2026/11/goc-nhin-0311-co-the-van-chua-cham-day-145-1510627.htm",
+      "published_at": "2026-11-02T19:36:02+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "1636-1510379",
+      "title": "Thị trường chứng quyền ngày 03/11/2026: Tiếp tục áp đảo",
+      "canonical_url": "https://vietstock.vn/2026/11/thi-truong-chung-quyen-ngay-03112026-tiep-tuc-ap-dao-1636-1510379.htm",
+      "published_at": "2026-11-02T20:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "830-1510447",
+      "title": "Cổ phiếu chứng khoán bị rút tiền, dòng tiền ở nhóm bất động sản phân hóa",
+      "canonical_url": "https://vietstock.vn/2026/11/co-phieu-chung-khoan-bi-rut-tien-dong-tien-o-nhom-bat-dong-san-phan-hoa-830-1510447.htm",
+      "published_at": "2026-11-02T20:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "3118-1510691",
+      "title": "Cổ phiếu NVL bảo đảm trái phiếu giảm giá, hai công ty nhóm Novaland lùi hạn bổ sung tài sản",
+      "canonical_url": "https://vietstock.vn/2026/11/co-phieu-nvl-bao-dam-trai-phieu-giam-gia-hai-cong-ty-nhom-novaland-lui-han-bo-sung-tai-san-3118-1510691.htm",
+      "published_at": "2026-11-02T22:54:54+07:00",
+      "tickers": [
+        "NVL"
+      ]
+    }
+  ]
+}

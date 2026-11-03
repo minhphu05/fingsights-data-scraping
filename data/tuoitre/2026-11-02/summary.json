@@ -1,0 +1,170 @@
+{
+  "source": "tuoitre",
+  "target_date": "2026-11-02",
+  "collected_at": "2026-11-03T11:04:15.201338",
+  "total_articles": 15,
+  "unique_tickers_matched": [
+    "BID",
+    "CTG",
+    "FPT",
+    "HPG",
+    "LPB",
+    "MBB",
+    "MWG",
+    "SHB",
+    "SSI",
+    "TCB",
+    "VCB",
+    "VHM",
+    "VIC",
+    "VND",
+    "VNM"
+  ],
+  "total_fetch_attempts": 56,
+  "articles": [
+    {
+      "source_article_id": "10026110206532766",
+      "title": "Giá vàng hôm nay 2-11: Vàng thế giới mất mốc 3.900 USD, tuần mới ra sao?",
+      "canonical_url": "https://tuoitre.vn/gia-vang-hom-nay-2-11-vang-the-gioi-mat-moc-3900-usd-tuan-moi-ra-sao-10026110206532766.htm",
+      "published_at": "2026-11-02T07:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "100261102071920482",
+      "title": "Chứng khoán 2-11: Dòng tiền suy yếu, VN-Index khó bứt phá trong tuần mới",
+      "canonical_url": "https://tuoitre.vn/chung-khoan-2-11-dong-tien-suy-yeu-vn-index-kho-but-pha-trong-tuan-moi-100261102071920482.htm",
+      "published_at": "2026-11-02T07:38:00+07:00",
+      "tickers": [
+        "BID",
+        "FPT",
+        "VIC"
+      ]
+    },
+    {
+      "source_article_id": "100261102091101765",
+      "title": "Đại biểu đề nghị ngăn chặn đầu tư núp bóng, đầu tư chui để rửa tiền, buôn lậu, lừa đảo",
+      "canonical_url": "https://tuoitre.vn/dai-bieu-de-nghi-ngan-chan-dau-tu-nup-bong-dau-tu-chui-de-rua-tien-buon-lau-lua-dao-100261102091101765.htm",
+      "published_at": "2026-11-02T09:21:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "100261102085042422",
+      "title": "Giá cả đầu ngày: Sầu riêng nghịch vụ tăng giá, hơn 100 thương hiệu tham gia kích cầu mua sắm tại TP.HCM",
+      "canonical_url": "https://tuoitre.vn/gia-ca-dau-ngay-sau-rieng-nghich-vu-tang-gia-hon-100-thuong-hieu-tham-gia-kich-cau-mua-sam-tai-tphcm-100261102085042422.htm",
+      "published_at": "2026-11-02T10:29:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "100261102114328474",
+      "title": "Ông Loic Faussier thôi làm Tổng giám đốc, SACOMBANK có quyền Tổng giám đốc mới",
+      "canonical_url": "https://tuoitre.vn/ong-loic-faussier-thoi-lam-tong-giam-doc-sacombank-co-quyen-tong-giam-doc-moi-100261102114328474.htm",
+      "published_at": "2026-11-02T11:58:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "100261102115415542",
+      "title": "Lợi nhuận Bình Sơn, Petrolimex, PVOIL đồng loạt tăng mạnh khi giá dầu lên cao",
+      "canonical_url": "https://tuoitre.vn/loi-nhuan-binh-son-petrolimex-pvoil-dong-loat-tang-manh-khi-gia-dau-len-cao-100261102115415542.htm",
+      "published_at": "2026-11-02T12:04:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "100261102121744669",
+      "title": "Tiền gửi Kho bạc Nhà nước tại 3 ngân hàng lớn giảm hơn 35.000 tỉ đồng trong quý 3",
+      "canonical_url": "https://tuoitre.vn/tien-gui-kho-bac-nha-nuoc-tai-3-ngan-hang-lon-giam-hon-35000-ti-dong-trong-quy-3-100261102121744669.htm",
+      "published_at": "2026-11-02T12:42:00+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "CTG"
+      ]
+    },
+    {
+      "source_article_id": "10026110212064145",
+      "title": "Cổ phiếu DatVietVAC chính thức giao dịch trên HoSE, vốn hóa hơn 6.100 tỉ đồng",
+      "canonical_url": "https://tuoitre.vn/co-phieu-datvietvac-chinh-thuc-giao-dich-tren-hose-von-hoa-hon-6100-ti-dong-10026110212064145.htm",
+      "published_at": "2026-11-02T12:43:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "100261102141708894",
+      "title": "FWD Việt Nam và Vietcombank cùng tiếp sức học sinh đến trường",
+      "canonical_url": "https://tuoitre.vn/fwd-viet-nam-va-vietcombank-cung-tiep-suc-hoc-sinh-den-truong-100261102141708894.htm",
+      "published_at": "2026-11-02T14:00:00+07:00",
+      "tickers": [
+        "VCB"
+      ]
+    },
+    {
+      "source_article_id": "100261102154254366",
+      "title": "Chứng khoán giảm mạnh, hàng loạt cổ phiếu lớn lao dốc",
+      "canonical_url": "https://tuoitre.vn/chung-khoan-giam-manh-hang-loat-co-phieu-lon-lao-doc-100261102154254366.htm",
+      "published_at": "2026-11-02T15:53:00+07:00",
+      "tickers": [
+        "SHB",
+        "VCB",
+        "BID",
+        "CTG",
+        "TCB",
+        "MBB",
+        "LPB",
+        "HPG",
+        "FPT",
+        "VHM",
+        "VIC",
+        "MWG",
+        "SSI",
+        "VND"
+      ]
+    },
+    {
+      "source_article_id": "100261102161059607",
+      "title": "Doanh thu 9 tháng của Vietjet tăng 41%, mở rộng mạng bay quốc tế",
+      "canonical_url": "https://tuoitre.vn/doanh-thu-9-thang-cua-vietjet-tang-41-mo-rong-mang-bay-quoc-te-100261102161059607.htm",
+      "published_at": "2026-11-02T16:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "100261102162329407",
+      "title": "Đầu tư robot: Đừng để bẫy FOMO lấn át hiệu quả kinh tế",
+      "canonical_url": "https://tuoitre.vn/dau-tu-robot-dung-de-bay-fomo-lan-at-hieu-qua-kinh-te-100261102162329407.htm",
+      "published_at": "2026-11-02T16:47:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "100261102173805193",
+      "title": "Điều gì khiến VN-Index bất ngờ mất hơn 30 điểm đầu tuần?",
+      "canonical_url": "https://tuoitre.vn/dieu-gi-khien-vn-index-bat-ngo-mat-hon-30-diem-dau-tuan-100261102173805193.htm",
+      "published_at": "2026-11-02T18:04:00+07:00",
+      "tickers": [
+        "VIC"
+      ]
+    },
+    {
+      "source_article_id": "100261102191358722",
+      "title": "ECCO Việt Nam giải thể, dừng hoạt động nhà máy giày có hơn 1.600 công nhân",
+      "canonical_url": "https://tuoitre.vn/ecco-viet-nam-giai-the-dung-hoat-dong-nha-may-giay-co-hon-1600-cong-nhan-100261102191358722.htm",
+      "published_at": "2026-11-02T19:44:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "100261102192533388",
+      "title": "Khối ngoại bán ròng hơn 24.000 tỉ đồng, tỉ lệ sở hữu trên HOSE chạm đáy gần 8 năm",
+      "canonical_url": "https://tuoitre.vn/khoi-ngoai-ban-rong-hon-24000-ti-dong-ti-le-so-huu-tren-hose-cham-day-gan-8-nam-100261102192533388.htm",
+      "published_at": "2026-11-02T19:45:00+07:00",
+      "tickers": [
+        "VCB",
+        "CTG",
+        "TCB",
+        "FPT",
+        "VHM",
+        "VIC",
+        "MWG",
+        "SSI",
+        "VNM"
+      ]
+    }
+  ]
+}

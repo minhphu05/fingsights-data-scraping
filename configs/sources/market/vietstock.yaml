@@ -1,0 +1,50 @@
+source_code: vietstock_market
+name: Vietstock market board and historical market data
+base_url: https://banggia.vietstock.vn/
+timezone: Asia/Ho_Chi_Minh
+website: https://banggia.vietstock.vn/
+collection_policy:
+  daily_eod_recommended_time: '16:30'
+  intraday_interval_minutes: 15
+  intraday_enabled: false
+  initial_mode: daily_eod
+  require_provider_timestamp: true
+  require_response_trade_date_within_requested_window: true
+coverage:
+  securities:
+    mode: all_active_listed_symbols
+    exchanges: [HOSE, HNX, UPCOM]
+  indices:
+    # HOSE is an exchange, represented by VN-INDEX plus the VN30 benchmark.
+    required_codes: [VN-INDEX, VN30-INDEX, HNX-INDEX, HNX30-INDEX, UPCOM-INDEX]
+    # Broader exchange families are optional until confirmed in the licensed feed contract.
+    optional_extended_codes:
+      - VNALLSHARE
+      - VNMIDCAP
+      - VN100
+      - VNSMALLCAP
+      - HNX30TRI
+      - UPCOM-LARGE-INDEX
+      - UPCOM-MEDIUM-INDEX
+      - UPCOM-SMALL-INDEX
+    include_all_documented_sector_indices_when_licensed: true
+  validate_each_returned_trade_date: true
+  # Runtime checks at least one quote per exchange and every required index.
+  # Complete per-symbol coverage must be guaranteed by the provider or checked
+  # against a separate authoritative active-symbol roster.
+providers:
+  live_board:
+    url: https://banggia.vietstock.vn/
+    supports_historical_date_range: false
+    supports_current_snapshot_only: true
+  licensed_history:
+    enabled: false
+    # Enable only after obtaining Vietstock DataFeed/API documentation and credentials.
+    endpoint_env: VIETSTOCK_HISTORY_ENDPOINT
+    token_env: VIETSTOCK_API_TOKEN
+    request_mapping_file: configs/sources/market/vietstock-datafeed-mapping.yaml
+validation:
+  reject_historical_request_when_only_live_board_is_configured: true
+  reject_rows_outside_start_date_end_date: true
+  never_substitute_current_date_for_missing_trade_date: true
+  reject_partial_exchange_or_index_coverage: true

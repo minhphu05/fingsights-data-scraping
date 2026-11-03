@@ -1,0 +1,43 @@
+# Fill this mapping from the licensed Vietstock DataFeed/API contract.
+# Do not invent endpoint paths or parameter names. Keep this file disabled until
+# Vietstock provides the exact request and response schema.
+request:
+  endpoint: ''
+  start_date_parameter: ''
+  end_date_parameter: ''
+  api_key_header: ''
+  api_key_parameter: ''
+response:
+  records_json_path: ''
+  record_trade_date_field: ''
+  provider_instrument_field: ''
+  market_index_fields: {}
+  stock_quote_fields: {}
+coverage:
+  # Apply the exact provider-code aliases from the DataFeed contract.
+  # Values are the stable codes written to market_indices.code.
+  market_index_aliases:
+    VN-INDEX: VN-INDEX
+    VNINDEX: VN-INDEX
+    VN30: VN30-INDEX
+    VN30-INDEX: VN30-INDEX
+    HNX-INDEX: HNX-INDEX
+    HNX30: HNX30-INDEX
+    HNX30-INDEX: HNX30-INDEX
+    UPCOM-INDEX: UPCOM-INDEX
+    VNALLSHARE: VNALLSHARE
+    VNMIDCAP: VNMIDCAP
+    VN100: VN100
+    VNSMALLCAP: VNSMALLCAP
+    HNX30TRI: HNX30TRI
+    UPCOM-LARGE: UPCOM-LARGE-INDEX
+    UPCOM-LARGE-INDEX: UPCOM-LARGE-INDEX
+    UPCOM-MEDIUM: UPCOM-MEDIUM-INDEX
+    UPCOM-MEDIUM-INDEX: UPCOM-MEDIUM-INDEX
+    UPCOM-SMALL: UPCOM-SMALL-INDEX
+    UPCOM-SMALL-INDEX: UPCOM-SMALL-INDEX
+  exchange_aliases:
+    HOSE: HOSE
+    HSX: HOSE
+    HNX: HNX
+    UPCOM: UPCOM
