@@ -302,6 +302,8 @@ class BaoMoiClient(CafeFClient):
             "homepage_url": self.base_url,
             "discovered_from": category,
             "rights_status": self.config.get("rights", {}).get("status", "unknown"),
+            "download_binary_assets_only_if_rights_status_in": self.config.get("rights", {}).get("binary_asset_statuses", []),
+            "binary_asset_collection_enabled": bool(self.config.get("binary_asset_collection_enabled", True)),
             "original_source_url": original_source_url,
             "content_fingerprint_sha256": self._fingerprint(blocks),
         }
