@@ -39,8 +39,8 @@ SOURCE_CONFIGS: Dict[str, Dict[str, Any]] = {
     },
     "baomoi": {
         "job_name": "baomoi_news_job",
-        "op_name": "collect_configured_news",
-        "config_builder": lambda start, end, mode: {"source_key": "baomoi", "start_date": start, "end_date": end, "storage_mode": mode},
+        "op_name": "collect_baomoi_news",
+        "config_builder": lambda start, end, mode: {"start_date": start, "end_date": end, "storage_mode": mode},
     },
     "vnexpress": {
         "job_name": "vnexpress_news_job",

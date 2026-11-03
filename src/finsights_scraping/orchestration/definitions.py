@@ -30,7 +30,6 @@ LOCAL_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
 CONFIGURED_NEWS_SOURCES = {
     "thanhnien": ("thanhnien_news", "30 2 * * *"),
     "tuoitre": ("tuoitre_news", "45 2 * * *"),
-    "baomoi": ("baomoi_news", "0 3 * * *"),
     "vnexpress": ("vnexpress_news", "15 3 * * *"),
 }
 
@@ -206,6 +205,89 @@ def collect_cafef_news(context):
 
 
 @op(config_schema={
+    "start_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
+    "end_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
+    "storage_mode": Field(String, is_required=False, default_value="link_only", description="link_only (no OCI binary upload) or full_media"),
+})
+def collect_baomoi_news(context):
+    source_config = _yaml(CONFIG_DIR / "sources/news/baomoi.yaml")
+    window = _window(context.op_config, source_config.get("timezone", "Asia/Ho_Chi_Minh"))
+    storage_mode = context.op_config.get("storage_mode", "link_only")
+    writer = Node1NewsWriter(storage_mode=storage_mode)
+    client = BaoMoiClient(source_config, security_matcher=writer.matcher)
+    audit = ScrapeAuditWriter()
+    run_row_id = audit.start_run(
+        source_code=source_config["source_code"], source_kind="news",
+        display_name=source_config["name"], base_url=source_config["base_url"],
+        dagster_run_id=context.run_id, job_name="baomoi_news_job",
+        start_date=window.start_date, end_date=window.end_date,
+        config={"archive_mode": source_config["discovery"]["mode"], "storage_mode": storage_mode},
+    )
+    total_discovered = 0
+    total_persisted = 0
+    days_completed = 0
+
+    def _persist_day_batch(batch_date: date, day_articles: list[Article], category_code: str | None = None) -> None:
+        nonlocal total_discovered, total_persisted, days_completed
+        if not day_articles:
+            return
+        total_discovered += len(day_articles)
+        uids = writer.persist_articles(day_articles)
+        total_persisted += len(uids)
+        days_completed += 1
+        audit.save_items(run_row_id, source_config["source_code"], day_articles, uids)
+        audit.save_checkpoint(source_config["source_code"], "last_completed_day", {
+            "completed_day": batch_date.isoformat(),
+            "category": category_code,
+            "articles_persisted": len(uids),
+            "total_persisted_so_far": total_persisted,
+        })
+        cat_prefix = f"[{category_code}] " if category_code else ""
+        context.log.info(
+            f"Baomoi {cat_prefix}persisted day batch for {batch_date}: {len(uids)} articles (cumulative: {total_persisted})"
+        )
+
+    async def _execute_collection():
+        try:
+            await client.collect(window, on_batch=_persist_day_batch)
+        finally:
+            await client.close()
+
+    try:
+        asyncio.run(_execute_collection())
+        audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
+        audit.finish_run(run_row_id, "SUCCESS", discovered=total_discovered, persisted=total_persisted)
+        audit.save_checkpoint(source_config["source_code"], "last_completed_window", {
+            "start_date": window.start_date.isoformat(),
+            "end_date": window.end_date.isoformat(),
+            "persisted_articles": total_persisted,
+            "days_completed": days_completed,
+            "status": "SUCCESS",
+        })
+        context.log.info(
+            f"Baomoi completed collection: {total_persisted} articles persisted across {days_completed} days",
+            extra={
+                "start_date": window.start_date.isoformat(),
+                "end_date": window.end_date.isoformat(),
+                "articles_persisted": total_persisted,
+                "days_completed": days_completed,
+            },
+        )
+        return {"articles_persisted": total_persisted, "days_completed": days_completed}
+    except Exception as exc:
+        audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
+        audit.finish_run(run_row_id, "FAILED", discovered=total_discovered, persisted=total_persisted, failed=1, error=str(exc)[:4000])
+        audit.save_checkpoint(source_config["source_code"], "last_interrupted_run", {
+            "start_date": window.start_date.isoformat(),
+            "end_date": window.end_date.isoformat(),
+            "error": str(exc)[:500],
+            "fetch_attempts": len(client.fetch_attempts),
+            "persisted_before_failure": total_persisted,
+        })
+        raise
+
+
+@op(config_schema={
     "source_key": Field(String, is_required=True, description="Source config key: thanhnien, tuoitre, baomoi, vnexpress"),
     "start_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
     "end_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
@@ -350,6 +432,11 @@ def cafef_news_job():
     collect_cafef_news()
 
 
+@job(name="baomoi_news_job", tags=_pod_tags("baomoi", "512Mi"), description="Baomoi financial-news collection; one isolated K3s run pod.")
+def baomoi_news_job():
+    collect_baomoi_news()
+
+
 @job(name="vietstock_market_job", tags=_pod_tags("vietstock", "512Mi"), description="Licensed Vietstock data collection; one isolated K3s run pod.")
 def vietstock_market_job():
     collect_vietstock_market()
@@ -425,6 +512,21 @@ def cafef_daily_news_schedule(context):
 
 
 @schedule(
+    job=baomoi_news_job,
+    cron_schedule="0 3 * * *",
+    execution_timezone="Asia/Ho_Chi_Minh",
+    name="baomoi_daily_news_schedule",
+)
+def baomoi_daily_news_schedule(context):
+    publication_day = (
+        context.scheduled_execution_time.astimezone(LOCAL_TZ).date() - timedelta(days=1)
+    ).isoformat()
+    return RunRequest(run_key=f"baomoi-news-{publication_day}", run_config={
+        "ops": {"collect_baomoi_news": {"config": {"start_date": publication_day, "end_date": publication_day}}}
+    })
+
+
+@schedule(
     job=vietstock_market_job,
     cron_schedule="30 16 * * 1-5",
     execution_timezone="Asia/Ho_Chi_Minh",
@@ -440,9 +542,10 @@ def vietstock_eod_schedule(context):
 
 
 defs = Definitions(
-    jobs=[cafef_news_job, vietstock_market_job, *configured_news_jobs.values()],
+    jobs=[cafef_news_job, baomoi_news_job, vietstock_market_job, *configured_news_jobs.values()],
     schedules=[
         cafef_daily_news_schedule,
+        baomoi_daily_news_schedule,
         vietstock_eod_schedule,
         *configured_news_schedules.values(),
     ],
