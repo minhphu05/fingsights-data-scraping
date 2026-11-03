@@ -80,19 +80,31 @@ class Node1MarketWriter:
 
     @staticmethod
     def _provider_id(connection, provider_code: str) -> int:
-        if provider_code == "vietstock_datafeed":
+        known_providers = {
+            "vietstock_datafeed": ("Vietstock DataFeed", "https://api.vietstock.vn/", "licensed", "Vietstock DataFeed"),
+            "vietstock": ("Vietstock Public Board", "https://banggia.vietstock.vn/", "public_board", "Vietstock"),
+            "vietstock_market": ("Vietstock", "https://banggia.vietstock.vn/", "public_board", "Vietstock"),
+        }
+        if provider_code in known_providers:
+            name, url, license_type, attr = known_providers[provider_code]
             connection.execute(text("""
                 INSERT INTO market_providers (code, name, homepage_url, data_license, attribution_text, is_active)
-                VALUES (:code, 'Vietstock DataFeed', 'https://api.vietstock.vn/', 'licensed',
-                    'Vietstock DataFeed', 1)
+                VALUES (:code, :name, :url, :data_license, :attr, 1)
                 ON DUPLICATE KEY UPDATE name=VALUES(name), homepage_url=VALUES(homepage_url),
                     data_license=VALUES(data_license), attribution_text=VALUES(attribution_text), is_active=1
-            """), {"code": provider_code})
+            """), {"code": provider_code, "name": name, "url": url, "data_license": license_type, "attr": attr})
         value = connection.execute(
             text("SELECT id FROM market_providers WHERE code=:code AND is_active=1"), {"code": provider_code}
         ).scalar_one_or_none()
         if value is None:
-            raise RuntimeError(f"market_providers must be provisioned for provider {provider_code!r}")
+            connection.execute(text("""
+                INSERT INTO market_providers (code, name, homepage_url, data_license, attribution_text, is_active)
+                VALUES (:code, :name, 'https://vietstock.vn/', 'public_board', :name, 1)
+                ON DUPLICATE KEY UPDATE is_active=1
+            """), {"code": provider_code, "name": provider_code.title()})
+            value = connection.execute(
+                text("SELECT id FROM market_providers WHERE code=:code AND is_active=1"), {"code": provider_code}
+            ).scalar_one()
         return int(value)
 
     def _persist_quote(self, connection, record: MarketRecord) -> tuple[int, int]:

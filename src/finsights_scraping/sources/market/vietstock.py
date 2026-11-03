@@ -289,10 +289,14 @@ class VietstockPublicBoardClient:
             fields = {
                 "reference_price": ref,
                 "close_price": close,
+                "index_value": close,
                 "price_change": change,
+                "change_points": change,
                 "pct_change": pct_change,
+                "change_percent": pct_change,
                 "total_volume": vol,
                 "total_value_bil_vnd": val,
+                "turnover_vnd": int(val * 1_000_000_000),
             }
             raw_payload = {
                 "index_name": name,
