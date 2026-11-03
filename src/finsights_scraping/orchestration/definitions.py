@@ -16,6 +16,7 @@ from ..domain.windows import DateWindow
 from ..persistence import Node1MarketWriter, Node1NewsWriter, ScrapeAuditWriter
 from ..sources.market import VietstockHistoryClient, VietstockPublicBoardClient
 from ..sources.news import (
+    BaoMoiClient,
     CafeFClient,
     ConfiguredHtmlNewsClient,
     SourceAuthorizationError,
@@ -144,7 +145,7 @@ def collect_cafef_news(context):
     total_persisted = 0
     days_completed = 0
 
-    def _persist_day_batch(batch_date: date, day_articles: list[Article]) -> None:
+    def _persist_day_batch(batch_date: date, day_articles: list[Article], category_code: str | None = None) -> None:
         nonlocal total_discovered, total_persisted, days_completed
         if not day_articles:
             return
@@ -155,11 +156,13 @@ def collect_cafef_news(context):
         audit.save_items(run_row_id, source_config["source_code"], day_articles, uids)
         audit.save_checkpoint(source_config["source_code"], "last_completed_day", {
             "completed_day": batch_date.isoformat(),
+            "category": category_code,
             "articles_persisted": len(uids),
             "total_persisted_so_far": total_persisted,
         })
+        cat_prefix = f"[{category_code}] " if category_code else ""
         context.log.info(
-            f"CafeF persisted day batch for {batch_date}: {len(uids)} articles (cumulative: {total_persisted})"
+            f"CafeF {cat_prefix}persisted day batch for {batch_date}: {len(uids)} articles (cumulative: {total_persisted})"
         )
 
     async def _execute_collection():
@@ -219,7 +222,10 @@ def collect_configured_news(context):
     window = _window(context.op_config, source_config.get("timezone", "Asia/Ho_Chi_Minh"))
     storage_mode = context.op_config.get("storage_mode", "link_only")
     writer = Node1NewsWriter(storage_mode=storage_mode)
-    client = ConfiguredHtmlNewsClient(source_config, security_matcher=writer.matcher)
+    if source_key == "baomoi":
+        client = BaoMoiClient(source_config, security_matcher=writer.matcher)
+    else:
+        client = ConfiguredHtmlNewsClient(source_config, security_matcher=writer.matcher)
     audit = ScrapeAuditWriter()
     job_name = f"{source_key}_news_job"
     run_row_id = audit.start_run(
@@ -238,7 +244,7 @@ def collect_configured_news(context):
     total_persisted = 0
     days_completed = 0
 
-    def _persist_day_batch(batch_date: date, day_articles: list[Article]) -> None:
+    def _persist_day_batch(batch_date: date, day_articles: list[Article], category_code: str | None = None) -> None:
         nonlocal total_discovered, total_persisted, days_completed
         if not day_articles:
             return
@@ -249,11 +255,13 @@ def collect_configured_news(context):
         audit.save_items(run_row_id, source_config["source_code"], day_articles, uids)
         audit.save_checkpoint(source_config["source_code"], "last_completed_day", {
             "completed_day": batch_date.isoformat(),
+            "category": category_code,
             "articles_persisted": len(uids),
             "total_persisted_so_far": total_persisted,
         })
+        cat_prefix = f"[{category_code}] " if category_code else ""
         context.log.info(
-            f"{source_key} persisted day batch for {batch_date}: {len(uids)} articles (cumulative: {total_persisted})"
+            f"{source_key} {cat_prefix}persisted day batch for {batch_date}: {len(uids)} articles (cumulative: {total_persisted})"
         )
 
     async def _execute_collection():

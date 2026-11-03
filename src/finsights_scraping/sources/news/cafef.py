@@ -126,7 +126,7 @@ class CafeFClient:
         self.source_code = str(config["source_code"])
         self.publisher_code = str(config["publisher_code"])
         self.timezone_name = str(config.get("timezone", "Asia/Ho_Chi_Minh"))
-        self.rate = float(os.getenv("CAFEF_REQUEST_RATE_PER_SECOND", config.get("request_rate_per_second", 0.5)))
+        self.rate = float(os.getenv("CAFEF_REQUEST_RATE_PER_SECOND", config.get("request_rate_per_second", 0.0)))
         self.max_pages = int(os.getenv("CAFEF_MAX_PAGES_PER_CATEGORY", config.get("max_pages_per_category", 5000)))
         self._last_request = 0.0
         self.fetch_attempts: list[dict[str, Any]] = []
@@ -147,17 +147,19 @@ class CafeFClient:
                 pass
 
     async def _get(self, url: str) -> httpx.Response:
-        interval = 1.0 / self.rate if self.rate > 0 else 0
+        interval = (1.0 / self.rate) if self.rate > 0 else 0.0
         max_retries = 2
         for attempt in range(max_retries + 1):
-            elapsed = asyncio.get_running_loop().time() - self._last_request
-            if elapsed < interval:
-                await asyncio.sleep(interval - elapsed)
+            if interval > 0:
+                elapsed = asyncio.get_running_loop().time() - self._last_request
+                if elapsed < interval:
+                    await asyncio.sleep(interval - elapsed)
             requested_at = datetime.now(timezone.utc).replace(tzinfo=None)
             started = asyncio.get_running_loop().time()
             try:
                 response = await self._client.get(url)
-                self._last_request = asyncio.get_running_loop().time()
+                if interval > 0:
+                    self._last_request = asyncio.get_running_loop().time()
                 response.raise_for_status()
                 self.fetch_attempts.append({
                     "url": url, "requested_at": requested_at,
@@ -231,13 +233,16 @@ class CafeFClient:
         day_buffer: dict[date, list[Article]] = {}
         processed_uids: set[str] = set()
 
-        def _flush_days(min_date_cutoff: date | None = None):
+        def _flush_days(min_date_cutoff: date | None = None, category_code: str | None = None):
             for pub_date in sorted(list(day_buffer.keys()), reverse=True):
                 if min_date_cutoff is None or pub_date > min_date_cutoff:
                     batch = day_buffer.pop(pub_date, [])
                     if batch:
                         if on_batch:
-                            on_batch(pub_date, batch)
+                            try:
+                                on_batch(pub_date, batch, category_code)
+                            except TypeError:
+                                on_batch(pub_date, batch)
                         else:
                             for a in batch:
                                 results[a.source_article_id] = a
@@ -249,6 +254,7 @@ class CafeFClient:
 
         categories = self.config["discovery"]["archive_categories"]
         for category in categories:
+            cat_code = category.get("code", "archive")
             category_complete = False
             saw_any_articles = False
             template = category["page_template"]
@@ -295,14 +301,14 @@ class CafeFClient:
 
                 # Once a page finishes, flush any days strictly newer than the oldest article on this page
                 if page_dates:
-                    _flush_days(min_date_cutoff=min(page_dates).date())
+                    _flush_days(min_date_cutoff=min(page_dates).date(), category_code=cat_code)
 
                 # Stop only after fully parsing a page whose every item predates the start.
                 if page_dates and max(page_dates).date() < window.start_date:
                     category_complete = True
                     break
 
-            _flush_days(min_date_cutoff=None)
+            _flush_days(min_date_cutoff=None, category_code=cat_code)
 
             if not saw_any_articles or not category_complete:
                 if self.config.get("discovery", {}).get("fail_if_archive_boundary_not_proven", False):
@@ -329,7 +335,7 @@ class CafeFClient:
                     article_date = article.published_at.astimezone(ZoneInfo(self.timezone_name)).date()
                     day_buffer.setdefault(article_date, []).append(article)
 
-        _flush_days(min_date_cutoff=None)
+        _flush_days(min_date_cutoff=None, category_code="rss")
         return list(results.values())
 
     async def _rss_urls(self) -> list[str]:

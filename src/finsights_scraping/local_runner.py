@@ -14,6 +14,7 @@ from .domain.windows import DateWindow
 from .persistence.local_writer import LocalDataWriter
 from .persistence.security_matching import SecurityAliasMatcher
 from .sources.market.vietstock import VietstockPublicBoardClient
+from .sources.news.baomoi import BaoMoiClient
 from .sources.news.cafef import CafeFClient
 from .sources.news.configured_html import ConfiguredHtmlNewsClient
 
@@ -58,8 +59,12 @@ class LocalRunner:
 
         window = DateWindow.parse(date_str, date_str, config.get("timezone", "Asia/Ho_Chi_Minh"))
 
-        client_cls = CafeFClient if source_key == "cafef" else ConfiguredHtmlNewsClient
-        client = client_cls(config, security_matcher=self.matcher)
+        if source_key == "cafef":
+            client = CafeFClient(config, security_matcher=self.matcher)
+        elif source_key == "baomoi":
+            client = BaoMoiClient(config, security_matcher=self.matcher)
+        else:
+            client = ConfiguredHtmlNewsClient(config, security_matcher=self.matcher)
 
         try:
             articles = await client.collect(window)

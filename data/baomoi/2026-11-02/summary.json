@@ -1,12 +1,11 @@
 {
   "source": "baomoi",
   "target_date": "2026-11-02",
-  "collected_at": "2026-11-03T11:10:59.734723",
-  "total_articles": 117,
+  "collected_at": "2026-11-03T22:08:04.741200",
+  "total_articles": 123,
   "unique_tickers_matched": [
     "BID",
     "CTG",
-    "FPT",
     "LPB",
     "MBB",
     "NVL",
@@ -16,162 +15,839 @@
     "VCB",
     "VND"
   ],
-  "total_fetch_attempts": 601,
+  "total_fetch_attempts": 151,
   "articles": [
     {
-      "source_article_id": "c56406603",
-      "title": "Hỏi - đáp về kinh tế tập thể",
-      "canonical_url": "https://baomoi.com/hoi-dap-ve-kinh-te-tap-the-c56406603.epi",
-      "published_at": "2026-11-02T06:18:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56406619",
-      "title": "Tăng vốn ngân hàng, đừng trông chờ dòng tiền đầu cơ",
-      "canonical_url": "https://baomoi.com/tang-von-ngan-hang-dung-trong-cho-dong-tien-dau-co-c56406619.epi",
-      "published_at": "2026-11-02T06:30:00+07:00",
-      "tickers": [
-        "TCB"
-      ]
-    },
-    {
-      "source_article_id": "c56406630",
-      "title": "Giá vàng hôm nay (2-11): Giá vàng trong nước đi ngang",
-      "canonical_url": "https://baomoi.com/gia-vang-hom-nay-2-11-gia-vang-trong-nuoc-di-ngang-c56406630.epi",
-      "published_at": "2026-11-02T06:34:00+07:00",
-      "tickers": [
-        "VCB"
-      ]
-    },
-    {
-      "source_article_id": "c56406704",
-      "title": "Tỷ giá USD hôm nay (2-11): Đồng USD có khả năng duy trì đà tăng trong tuần này",
-      "canonical_url": "https://baomoi.com/ty-gia-usd-hom-nay-2-11-dong-usd-co-kha-nang-duy-tri-da-tang-trong-tuan-nay-c56406704.epi",
-      "published_at": "2026-11-02T06:48:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56406751",
-      "title": "Đề xuất cấm chuyển nhượng hợp đồng nhà ở hình thành trong tương lai: Thận trọng với quyền tài sản",
-      "canonical_url": "https://baomoi.com/de-xuat-cam-chuyen-nhuong-hop-dong-nha-o-hinh-thanh-trong-tuong-lai-than-trong-voi-quyen-tai-san-c56406751.epi",
-      "published_at": "2026-11-02T07:00:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56406728",
-      "title": "Lãi suất cao, nhiều người tính bán nhà",
-      "canonical_url": "https://baomoi.com/lai-suat-cao-nhieu-nguoi-tinh-ban-nha-c56406728.epi",
-      "published_at": "2026-11-02T07:00:07+07:00",
-      "tickers": [
-        "SSI"
-      ]
-    },
-    {
-      "source_article_id": "c56406933",
-      "title": "Khi lãi suất hạ nhiệt, dòng tiền chảy về đâu?",
-      "canonical_url": "https://baomoi.com/khi-lai-suat-ha-nhiet-dong-tien-chay-ve-dau-c56406933.epi",
-      "published_at": "2026-11-02T07:30:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56406928",
-      "title": "Giá vàng hôm nay ngày 2/11: Giá vàng trong nước bật tăng 1 triệu đồng/lượng",
-      "canonical_url": "https://baomoi.com/gia-vang-hom-nay-ngay-2-11-gia-vang-trong-nuoc-bat-tang-1-trieu-dong-luong-c56406928.epi",
-      "published_at": "2026-11-02T07:32:00+07:00",
-      "tickers": [
-        "VCB"
-      ]
-    },
-    {
-      "source_article_id": "c56406929",
-      "title": "Nam A Bank lãi 4.757 tỷ đồng sau 9 tháng, cho vay lĩnh vực nước và xử lý rác thải tăng gấp 5,3 lần",
-      "canonical_url": "https://baomoi.com/nam-a-bank-lai-4-757-ty-dong-sau-9-thang-cho-vay-linh-vuc-nuoc-va-xu-ly-rac-thai-tang-gap-5-3-lan-c56406929.epi",
-      "published_at": "2026-11-02T07:33:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56406975",
-      "title": "Nhà 3,25 tỷ đồng chưa bán được, người đàn ông tính vay tiền tậu thêm căn 5 tỷ giảm giá sốc",
-      "canonical_url": "https://baomoi.com/nha-3-25-ty-dong-chua-ban-duoc-nguoi-dan-ong-tinh-vay-tien-tau-them-can-5-ty-giam-gia-soc-c56406975.epi",
-      "published_at": "2026-11-02T07:36:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56406965",
-      "title": "Bài toán vốn và chi phí của doanh nghiệp cho năm 2027",
-      "canonical_url": "https://baomoi.com/bai-toan-von-va-chi-phi-cua-doanh-nghiep-cho-nam-2027-c56406965.epi",
-      "published_at": "2026-11-02T07:40:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56407054",
-      "title": "Tỷ giá ngoại tệ ngày 2/11: USD duy trì dưới 26.000 đồng, euro áp sát 29.700 đồng",
-      "canonical_url": "https://baomoi.com/ty-gia-ngoai-te-ngay-2-11-usd-duy-tri-duoi-26-000-dong-euro-ap-sat-29-700-dong-c56407054.epi",
-      "published_at": "2026-11-02T07:42:00+07:00",
-      "tickers": [
-        "VCB"
-      ]
-    },
-    {
-      "source_article_id": "c56407052",
-      "title": "Pháp luật về đầu tư - kinh nghiệm từ một số quốc gia Luật mới của Kyrgyzstan: Quy định rõ quyền lợi và trách nhiệm của nhà đầu tư",
-      "canonical_url": "https://baomoi.com/phap-luat-ve-dau-tu-kinh-nghiem-tu-mot-so-quoc-gia-luat-moi-cua-kyrgyzstan-quy-dinh-ro-quyen-loi-va-trach-nhiem-cua-nha-dau-tu-c56407052.epi",
-      "published_at": "2026-11-02T07:45:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56407137",
-      "title": "Dòng vốn ngân hàng đang chảy vào bất động sản như thế nào?",
-      "canonical_url": "https://baomoi.com/dong-von-ngan-hang-dang-chay-vao-bat-dong-san-nhu-the-nao-c56407137.epi",
-      "published_at": "2026-11-02T08:00:00+07:00",
+      "source_article_id": "c56414854",
+      "title": "Bao nhiêu vốn ngân hàng đang chảy vào bất động sản?",
+      "canonical_url": "https://baomoi.com/bao-nhieu-von-ngan-hang-dang-chay-vao-bat-dong-san-c56414854.epi",
+      "published_at": "2026-11-02T23:25:00+07:00",
       "tickers": [
         "SHB",
-        "BID",
         "TCB"
       ]
     },
     {
-      "source_article_id": "c56407141",
-      "title": "Ngân hàng con tại VIFC và bài toán hiệu quả đầu tư",
-      "canonical_url": "https://baomoi.com/ngan-hang-con-tai-vifc-va-bai-toan-hieu-qua-dau-tu-c56407141.epi",
-      "published_at": "2026-11-02T08:00:07+07:00",
+      "source_article_id": "c56414747",
+      "title": "Doanh nghiệp được hỗ trợ tối đa 6%/năm lãi suất vay đổi mới công nghệ",
+      "canonical_url": "https://baomoi.com/doanh-nghiep-duoc-ho-tro-toi-da-6-nam-lai-suat-vay-doi-moi-cong-nghe-c56414747.epi",
+      "published_at": "2026-11-02T22:56:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56414634",
+      "title": "Doanh nghiệp được hỗ trợ tối đa 6%/năm lãi suất vay đổi mới công nghệ",
+      "canonical_url": "https://baomoi.com/doanh-nghiep-duoc-ho-tro-toi-da-6-nam-lai-suat-vay-doi-moi-cong-nghe-c56414634.epi",
+      "published_at": "2026-11-02T22:19:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56414566",
+      "title": "Tăng cường đối thoại, hợp tác giữa Ngân hàng Nhà nước và cộng đồng ngân hàng nước ngoài tại Việt Nam",
+      "canonical_url": "https://baomoi.com/tang-cuong-doi-thoai-hop-tac-giua-ngan-hang-nha-nuoc-va-cong-dong-ngan-hang-nuoc-ngoai-tai-viet-nam-c56414566.epi",
+      "published_at": "2026-11-02T22:12:25+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56414575",
+      "title": "Thị trường trái phiếu trước sức ép vốn đắt và áp lực nợ đáo hạn",
+      "canonical_url": "https://baomoi.com/thi-truong-trai-phieu-truoc-suc-ep-von-dat-va-ap-luc-no-dao-han-c56414575.epi",
+      "published_at": "2026-11-02T22:06:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56414156",
+      "title": "Các ngân hàng niêm yết lãi hơn 310.000 tỷ đồng sau 9 tháng, kịch tính những màn bứt tốc và đổi ngôi",
+      "canonical_url": "https://baomoi.com/cac-ngan-hang-niem-yet-lai-hon-310-000-ty-dong-sau-9-thang-kich-tinh-nhung-man-but-toc-va-doi-ngoi-c56414156.epi",
+      "published_at": "2026-11-02T20:57:00+07:00",
+      "tickers": [
+        "VCB",
+        "TCB",
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56416099",
+      "title": "Agribank mở rộng kênh vốn cho nông dân An Giang đến năm 2030",
+      "canonical_url": "https://baomoi.com/agribank-mo-rong-kenh-von-cho-nong-dan-an-giang-den-nam-2030-c56416099.epi",
+      "published_at": "2026-11-02T20:41:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56413950",
+      "title": "Thủ tướng Bỉ Bart De Wever đệ trình đơn từ chức",
+      "canonical_url": "https://baomoi.com/thu-tuong-bi-bart-de-wever-de-trinh-don-tu-chuc-c56413950.epi",
+      "published_at": "2026-11-02T20:20:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56413738",
+      "title": "Thúc đẩy doanh nghiệp đổi mới công nghệ thông qua hỗ trợ lãi suất",
+      "canonical_url": "https://baomoi.com/thuc-day-doanh-nghiep-doi-moi-cong-nghe-thong-qua-ho-tro-lai-suat-c56413738.epi",
+      "published_at": "2026-11-02T19:54:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56413494",
+      "title": "Giá vàng chiều 2/11: Vàng SJC đi ngang",
+      "canonical_url": "https://baomoi.com/gia-vang-chieu-2-11-vang-sjc-di-ngang-c56413494.epi",
+      "published_at": "2026-11-02T19:11:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56413175",
+      "title": "Tổng nguồn vốn huy động của các tổ chức tín dụng ước đạt 36.300 tỷ đồng",
+      "canonical_url": "https://baomoi.com/tong-nguon-von-huy-dong-cua-cac-to-chuc-tin-dung-uoc-dat-36-300-ty-dong-c56413175.epi",
+      "published_at": "2026-11-02T18:33:22+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56413030",
+      "title": "VIB lãi 1.925 tỷ đồng trong quý III, đầu tư 220,5 tỷ cho công nghệ",
+      "canonical_url": "https://baomoi.com/vib-lai-1-925-ty-dong-trong-quy-iii-dau-tu-220-5-ty-cho-cong-nghe-c56413030.epi",
+      "published_at": "2026-11-02T18:18:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56413034",
+      "title": "Sacombank thay quyền tổng giám đốc, bà Nguyễn Thị Kiều Anh tiếp quản điều hành",
+      "canonical_url": "https://baomoi.com/sacombank-thay-quyen-tong-giam-doc-ba-nguyen-thi-kieu-anh-tiep-quan-dieu-hanh-c56413034.epi",
+      "published_at": "2026-11-02T18:18:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56412958",
+      "title": "Ngân hàng nào sẽ lo ngại khi thay đổi cách tính LDR?",
+      "canonical_url": "https://baomoi.com/ngan-hang-nao-se-lo-ngai-khi-thay-doi-cach-tinh-ldr-c56412958.epi",
+      "published_at": "2026-11-02T18:06:27+07:00",
+      "tickers": [
+        "CTG"
+      ]
+    },
+    {
+      "source_article_id": "c56412885",
+      "title": "Thủ tướng Bỉ đối mặt nguy cơ từ chức vì bế tắc ngân sách",
+      "canonical_url": "https://baomoi.com/thu-tuong-bi-doi-mat-nguy-co-tu-chuc-vi-be-tac-ngan-sach-c56412885.epi",
+      "published_at": "2026-11-02T18:00:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56412833",
+      "title": "Một số nội dung cốt lõi giúp người gửi tiền hiểu về chính sách Bảo hiểm tiền gửi",
+      "canonical_url": "https://baomoi.com/mot-so-noi-dung-cot-loi-giup-nguoi-gui-tien-hieu-ve-chinh-sach-bao-hiem-tien-gui-c56412833.epi",
+      "published_at": "2026-11-02T17:56:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56412747",
+      "title": "Luật Giao dịch hàng hóa phái sinh - Hiểu đúng bản chất, quản trị đúng rủi ro: Bài 1: Thị trường phái sinh phải phục vụ sản xuất, kinh doanh",
+      "canonical_url": "https://baomoi.com/luat-giao-dich-hang-hoa-phai-sinh-hieu-dung-ban-chat-quan-tri-dung-rui-ro-bai-1-thi-truong-phai-sinh-phai-phuc-vu-san-xuat-kinh-doanh-c56412747.epi",
+      "published_at": "2026-11-02T17:48:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56412732",
+      "title": "Hơn nửa triệu tỷ đồng tiền gửi của Kho bạc nằm tại ba ngân hàng quốc doanh",
+      "canonical_url": "https://baomoi.com/hon-nua-trieu-ty-dong-tien-gui-cua-kho-bac-nam-tai-ba-ngan-hang-quoc-doanh-c56412732.epi",
+      "published_at": "2026-11-02T17:45:00+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "CTG"
+      ]
+    },
+    {
+      "source_article_id": "c56412723",
+      "title": "VND vào nhóm 3 đồng tiền châu Á tăng giá mạnh nhất so với USD, bất chấp áp lực kép",
+      "canonical_url": "https://baomoi.com/vnd-vao-nhom-3-dong-tien-chau-a-tang-gia-manh-nhat-so-voi-usd-bat-chap-ap-luc-kep-c56412723.epi",
+      "published_at": "2026-11-02T17:37:09+07:00",
+      "tickers": [
+        "VND"
+      ]
+    },
+    {
+      "source_article_id": "c56412651",
+      "title": "Lợi nhuận Eximbank chạm đáy nhiều năm",
+      "canonical_url": "https://baomoi.com/loi-nhuan-eximbank-cham-day-nhieu-nam-c56412651.epi",
+      "published_at": "2026-11-02T17:36:29+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56414439",
+      "title": "Co-opBank bổ sung kênh nộp thuế điện tử qua Cổng Dịch vụ công của Cục Thuế",
+      "canonical_url": "https://baomoi.com/co-opbank-bo-sung-kenh-nop-thue-dien-tu-qua-cong-dich-vu-cong-cua-cuc-thue-c56414439.epi",
+      "published_at": "2026-11-02T17:00:35+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56412160",
+      "title": "Bốn 'ông lớn' ngành năng lượng đút túi tiền tỷ mỗi ngày nhờ mang tiền gửi ngân hàng",
+      "canonical_url": "https://baomoi.com/bon-ong-lon-nganh-nang-luong-dut-tui-tien-ty-moi-ngay-nho-mang-tien-gui-ngan-hang-c56412160.epi",
+      "published_at": "2026-11-02T16:51:00+07:00",
       "tickers": [
         "SHB",
         "VCB",
+        "BID",
+        "CTG"
+      ]
+    },
+    {
+      "source_article_id": "c56412090",
+      "title": "LPBank báo lãi trước thuế quý III/2026 đạt 4.448 tỷ đồng, tăng 29%",
+      "canonical_url": "https://baomoi.com/lpbank-bao-lai-truoc-thue-quy-iii-2026-dat-4-448-ty-dong-tang-29-c56412090.epi",
+      "published_at": "2026-11-02T16:30:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56412024",
+      "title": "SeABank hoàn tất tăng vốn điều lệ lên 34.688 tỷ đồng",
+      "canonical_url": "https://baomoi.com/seabank-hoan-tat-tang-von-dieu-le-len-34-688-ty-dong-c56412024.epi",
+      "published_at": "2026-11-02T16:29:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56411988",
+      "title": "Thanh tra Ngân hàng Nhà nước chỉ ra một số tồn tại, hạn chế tại BIDV Bình Thạnh",
+      "canonical_url": "https://baomoi.com/thanh-tra-ngan-hang-nha-nuoc-chi-ra-mot-so-ton-tai-han-che-tai-bidv-binh-thanh-c56411988.epi",
+      "published_at": "2026-11-02T16:26:00+07:00",
+      "tickers": [
+        "BID"
+      ]
+    },
+    {
+      "source_article_id": "c56412039",
+      "title": "SACOMBANK bổ nhiệm bà Nguyễn Thị Kiều Anh làm Quyền Tổng Giám đốc",
+      "canonical_url": "https://baomoi.com/sacombank-bo-nhiem-ba-nguyen-thi-kieu-anh-lam-quyen-tong-giam-doc-c56412039.epi",
+      "published_at": "2026-11-02T16:19:47+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56411850",
+      "title": "Khu vực châu Âu đang đối mặt với cuộc khủng hoảng nhà ở",
+      "canonical_url": "https://baomoi.com/khu-vuc-chau-au-dang-doi-mat-voi-cuoc-khung-hoang-nha-o-c56411850.epi",
+      "published_at": "2026-11-02T16:19:23+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56411814",
+      "title": "HDBank: Tín dụng tăng 31,8% sau 9 tháng, nợ xấu tăng hơn 11.000 tỷ đồng",
+      "canonical_url": "https://baomoi.com/hdbank-tin-dung-tang-31-8-sau-9-thang-no-xau-tang-hon-11-000-ty-dong-c56411814.epi",
+      "published_at": "2026-11-02T16:15:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56411749",
+      "title": "Giá dầu thô hạ nhiệt tạo lực đẩy cho thị trường vàng phục hồi",
+      "canonical_url": "https://baomoi.com/gia-dau-tho-ha-nhiet-tao-luc-day-cho-thi-truong-vang-phuc-hoi-c56411749.epi",
+      "published_at": "2026-11-02T16:07:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56411643",
+      "title": "'So găng' lợi nhuận 3 ngân hàng quốc doanh sau 9 tháng: Lương bình quân chạm 64,4 triệu đồng/tháng",
+      "canonical_url": "https://baomoi.com/so-gang-loi-nhuan-3-ngan-hang-quoc-doanh-sau-9-thang-luong-binh-quan-cham-64-4-trieu-dong-thang-c56411643.epi",
+      "published_at": "2026-11-02T15:58:00+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "CTG"
+      ]
+    },
+    {
+      "source_article_id": "c56411644",
+      "title": "Nghịch lý nhân sự ngân hàng: Nơi tinh giản kỷ lục, nơi rầm rộ tuyển dụng",
+      "canonical_url": "https://baomoi.com/nghich-ly-nhan-su-ngan-hang-noi-tinh-gian-ky-luc-noi-ram-ro-tuyen-dung-c56411644.epi",
+      "published_at": "2026-11-02T15:58:00+07:00",
+      "tickers": [
+        "VCB",
+        "BID"
+      ]
+    },
+    {
+      "source_article_id": "c56411692",
+      "title": "Hơn 521.000 tỷ đồng tiền gửi của Kho bạc đang nằm tại Big 4 ngân hàng",
+      "canonical_url": "https://baomoi.com/hon-521-000-ty-dong-tien-gui-cua-kho-bac-dang-nam-tai-big-4-ngan-hang-c56411692.epi",
+      "published_at": "2026-11-02T15:57:17+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "CTG"
+      ]
+    },
+    {
+      "source_article_id": "c56411754",
+      "title": "Sacombank tiếp tục thay Tổng Giám đốc, bà Nguyễn Thị Kiều Anh được giao quyền điều hành",
+      "canonical_url": "https://baomoi.com/sacombank-tiep-tuc-thay-tong-giam-doc-ba-nguyen-thi-kieu-anh-duoc-giao-quyen-dieu-hanh-c56411754.epi",
+      "published_at": "2026-11-02T15:56:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56411594",
+      "title": "Sacombank bổ nhiệm quyền tổng giám đốc mới",
+      "canonical_url": "https://baomoi.com/sacombank-bo-nhiem-quyen-tong-giam-doc-moi-c56411594.epi",
+      "published_at": "2026-11-02T15:48:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56412070",
+      "title": "[Bài 1] Ngân hàng trong thị trường hàng hóa: Đứng đâu để phát huy thế mạnh?",
+      "canonical_url": "https://baomoi.com/bai-1-ngan-hang-trong-thi-truong-hang-hoa-dung-dau-de-phat-huy-the-manh-c56412070.epi",
+      "published_at": "2026-11-02T15:39:30+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "CTG",
+        "TCB"
+      ]
+    },
+    {
+      "source_article_id": "c56411477",
+      "title": "Binance vừa khôi phục chức năng rút tiền, 3,6 tỷ USD 'chạy khỏi' sàn",
+      "canonical_url": "https://baomoi.com/binance-vua-khoi-phuc-chuc-nang-rut-tien-3-6-ty-usd-chay-khoi-san-c56411477.epi",
+      "published_at": "2026-11-02T15:37:53+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56411460",
+      "title": "Sức bền gây bất ngờ của kinh tế châu Âu",
+      "canonical_url": "https://baomoi.com/suc-ben-gay-bat-ngo-cua-kinh-te-chau-au-c56411460.epi",
+      "published_at": "2026-11-02T15:36:59+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56411417",
+      "title": "Sacombank liên tiếp bổ nhiệm nhân sự cấp cao",
+      "canonical_url": "https://baomoi.com/sacombank-lien-tiep-bo-nhiem-nhan-su-cap-cao-c56411417.epi",
+      "published_at": "2026-11-02T15:32:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56411408",
+      "title": "Bà Nguyễn Thị Kiều Anh được bổ nhiệm quyền Tổng giám đốc Sacombank",
+      "canonical_url": "https://baomoi.com/ba-nguyen-thi-kieu-anh-duoc-bo-nhiem-quyen-tong-giam-doc-sacombank-c56411408.epi",
+      "published_at": "2026-11-02T15:27:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56411319",
+      "title": "SACOMBANK bổ nhiệm bà Nguyễn Thị Kiều Anh giữ chức quyền Tổng Giám đốc",
+      "canonical_url": "https://baomoi.com/sacombank-bo-nhiem-ba-nguyen-thi-kieu-anh-giu-chuc-quyen-tong-giam-doc-c56411319.epi",
+      "published_at": "2026-11-02T15:21:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56411272",
+      "title": "Vietcombank bất ngờ chi 5.000 tỷ đồng trích lập dự phòng cho một lô trái phiếu",
+      "canonical_url": "https://baomoi.com/vietcombank-bat-ngo-chi-5-000-ty-dong-trich-lap-du-phong-cho-mot-lo-trai-phieu-c56411272.epi",
+      "published_at": "2026-11-02T15:17:00+07:00",
+      "tickers": [
+        "VCB"
+      ]
+    },
+    {
+      "source_article_id": "c56411197",
+      "title": "Ông Dương Công Minh trở lại làm người đại diện pháp luật của Sacombank",
+      "canonical_url": "https://baomoi.com/ong-duong-cong-minh-tro-lai-lam-nguoi-dai-dien-phap-luat-cua-sacombank-c56411197.epi",
+      "published_at": "2026-11-02T15:04:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56411109",
+      "title": "Bà Nguyễn Thị Kiều Anh làm Quyền Tổng Giám đốc SACOMBANK",
+      "canonical_url": "https://baomoi.com/ba-nguyen-thi-kieu-anh-lam-quyen-tong-giam-doc-sacombank-c56411109.epi",
+      "published_at": "2026-11-02T14:57:20+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56411077",
+      "title": "SACOMBANK bổ nhiệm Quyền Tổng Giám đốc mới, đẩy nhanh tiến độ hoàn thành Đề án tái cơ cấu",
+      "canonical_url": "https://baomoi.com/sacombank-bo-nhiem-quyen-tong-giam-doc-moi-day-nhanh-tien-do-hoan-thanh-de-an-tai-co-cau-c56411077.epi",
+      "published_at": "2026-11-02T14:57:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56411060",
+      "title": "Giá vàng hôm nay (chiều 2-11): Tăng mạnh",
+      "canonical_url": "https://baomoi.com/gia-vang-hom-nay-chieu-2-11-tang-manh-c56411060.epi",
+      "published_at": "2026-11-02T14:51:00+07:00",
+      "tickers": [
+        "VCB"
+      ]
+    },
+    {
+      "source_article_id": "c56411006",
+      "title": "Hàn Quốc có thể đạt kim ngạch xuất khẩu 1 nghìn tỷ USD lần đầu tiên trong năm nay",
+      "canonical_url": "https://baomoi.com/han-quoc-co-the-dat-kim-ngach-xuat-khau-1-nghin-ty-usd-lan-dau-tien-trong-nam-nay-c56411006.epi",
+      "published_at": "2026-11-02T14:47:09+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56411002",
+      "title": "Các quan chức Fed khẳng định cần tăng lãi suất thêm",
+      "canonical_url": "https://baomoi.com/cac-quan-chuc-fed-khang-dinh-can-tang-lai-suat-them-c56411002.epi",
+      "published_at": "2026-11-02T14:46:18+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56411008",
+      "title": "Gỡ vướng nghĩa vụ thuế cho doanh nghiệp ngừng hoạt động nhiều năm",
+      "canonical_url": "https://baomoi.com/go-vuong-nghia-vu-thue-cho-doanh-nghiep-ngung-hoat-dong-nhieu-nam-c56411008.epi",
+      "published_at": "2026-11-02T14:44:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56411018",
+      "title": "Diễn biến thị trường tài chính - tiền tệ quốc tế sáng 2/11",
+      "canonical_url": "https://baomoi.com/dien-bien-thi-truong-tai-chinh-tien-te-quoc-te-sang-2-11-c56411018.epi",
+      "published_at": "2026-11-02T14:30:29+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56410815",
+      "title": "Giá vàng miếng SJC và vàng nhẫn bật tăng 1 triệu đồng mỗi lượng",
+      "canonical_url": "https://baomoi.com/gia-vang-mieng-sjc-va-vang-nhan-bat-tang-1-trieu-dong-moi-luong-c56410815.epi",
+      "published_at": "2026-11-02T14:16:09+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56410823",
+      "title": "Giá vàng ngày 2/11: Bật tăng sau tuần lao dốc",
+      "canonical_url": "https://baomoi.com/gia-vang-ngay-2-11-bat-tang-sau-tuan-lao-doc-c56410823.epi",
+      "published_at": "2026-11-02T14:15:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56410868",
+      "title": "Tín hiệu từ lãi suất 5,51% của trái phiếu tiết kiệm Mỹ",
+      "canonical_url": "https://baomoi.com/tin-hieu-tu-lai-suat-5-51-cua-trai-phieu-tiet-kiem-my-c56410868.epi",
+      "published_at": "2026-11-02T14:11:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56410795",
+      "title": "Lộ trình tăng lãi suất của các NHTW lớn chưa kết thúc",
+      "canonical_url": "https://baomoi.com/lo-trinh-tang-lai-suat-cua-cac-nhtw-lon-chua-ket-thuc-c56410795.epi",
+      "published_at": "2026-11-02T14:00:42+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56410783",
+      "title": "Tháo điểm 'nghẽn' về thuế đối với doanh nghiệp ngừng hoạt động",
+      "canonical_url": "https://baomoi.com/thao-diem-nghen-ve-thue-doi-voi-doanh-nghiep-ngung-hoat-dong-c56410783.epi",
+      "published_at": "2026-11-02T13:59:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56410626",
+      "title": "Sacombank thay Tổng giám đốc",
+      "canonical_url": "https://baomoi.com/sacombank-thay-tong-giam-doc-c56410626.epi",
+      "published_at": "2026-11-02T13:36:44+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56410571",
+      "title": "SACOMBANK bổ nhiệm Quyền Tổng Giám đốc mới",
+      "canonical_url": "https://baomoi.com/sacombank-bo-nhiem-quyen-tong-giam-doc-moi-c56410571.epi",
+      "published_at": "2026-11-02T13:26:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56410490",
+      "title": "Bà Nguyễn Thị Kiều Anh làm Quyền Tổng giám đốc Sacombank",
+      "canonical_url": "https://baomoi.com/ba-nguyen-thi-kieu-anh-lam-quyen-tong-giam-doc-sacombank-c56410490.epi",
+      "published_at": "2026-11-02T13:22:49+07:00",
+      "tickers": [
+        "TCB",
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56410461",
+      "title": "Yêu cầu đa dạng nguồn vốn khi lãi suất tăng cao",
+      "canonical_url": "https://baomoi.com/yeu-cau-da-dang-nguon-von-khi-lai-suat-tang-cao-c56410461.epi",
+      "published_at": "2026-11-02T13:19:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56410409",
+      "title": "Indonesia trước sức ép cải cách thị trường vốn",
+      "canonical_url": "https://baomoi.com/indonesia-truoc-suc-ep-cai-cach-thi-truong-von-c56410409.epi",
+      "published_at": "2026-11-02T13:02:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56410359",
+      "title": "Sacombank bổ nhiệm quyền tổng giám đốc sinh năm 1983",
+      "canonical_url": "https://baomoi.com/sacombank-bo-nhiem-quyen-tong-giam-doc-sinh-nam-1983-c56410359.epi",
+      "published_at": "2026-11-02T12:51:31+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56410698",
+      "title": "Bồi dưỡng về phân tích kinh tế, tài chính vĩ mô cho kiểm toán viên",
+      "canonical_url": "https://baomoi.com/boi-duong-ve-phan-tich-kinh-te-tai-chinh-vi-mo-cho-kiem-toan-vien-c56410698.epi",
+      "published_at": "2026-11-02T12:47:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56410131",
+      "title": "MSB lãi quý III tăng gần 30%, dồn vốn cho hạ tầng phần mềm",
+      "canonical_url": "https://baomoi.com/msb-lai-quy-iii-tang-gan-30-don-von-cho-ha-tang-phan-mem-c56410131.epi",
+      "published_at": "2026-11-02T12:37:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56410133",
+      "title": "SHB: 9 tháng lãi hơn 14.300 tỷ đồng, tổng tài sản tiến sát 1 triệu tỷ",
+      "canonical_url": "https://baomoi.com/shb-9-thang-lai-hon-14-300-ty-dong-tong-tai-san-tien-sat-1-trieu-ty-c56410133.epi",
+      "published_at": "2026-11-02T12:37:00+07:00",
+      "tickers": [
+        "SHB"
+      ]
+    },
+    {
+      "source_article_id": "c56410073",
+      "title": "Ông Loic Faussier thôi nhiệm, bà Nguyễn Thị Kiều Anh làm Quyền Tổng Giám đốc SACOMBANK",
+      "canonical_url": "https://baomoi.com/ong-loic-faussier-thoi-nhiem-ba-nguyen-thi-kieu-anh-lam-quyen-tong-giam-doc-sacombank-c56410073.epi",
+      "published_at": "2026-11-02T12:31:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56410093",
+      "title": "Người dùng Binance rút ròng 3,64 tỷ USD sau vụ hack",
+      "canonical_url": "https://baomoi.com/nguoi-dung-binance-rut-rong-3-64-ty-usd-sau-vu-hack-c56410093.epi",
+      "published_at": "2026-11-02T12:27:33+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56410081",
+      "title": "Sacombank có quyền tổng giám đốc mới",
+      "canonical_url": "https://baomoi.com/sacombank-co-quyen-tong-giam-doc-moi-c56410081.epi",
+      "published_at": "2026-11-02T12:27:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56409881",
+      "title": "Lãi suất giảm, tiết kiệm vẫn giữ sức hút",
+      "canonical_url": "https://baomoi.com/lai-suat-giam-tiet-kiem-van-giu-suc-hut-c56409881.epi",
+      "published_at": "2026-11-02T12:10:48+07:00",
+      "tickers": [
+        "VCB"
+      ]
+    },
+    {
+      "source_article_id": "c56409816",
+      "title": "Làm thế nào để giữ khách hàng lớn mà không phụ thuộc vào họ?",
+      "canonical_url": "https://baomoi.com/lam-the-nao-de-giu-khach-hang-lon-ma-khong-phu-thuoc-vao-ho-c56409816.epi",
+      "published_at": "2026-11-02T12:04:41+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56409721",
+      "title": "Dòng vốn rút khỏi Binance dần ổn định sau vụ trộm 6,3 tỷ USD",
+      "canonical_url": "https://baomoi.com/dong-von-rut-khoi-binance-dan-on-dinh-sau-vu-trom-6-3-ty-usd-c56409721.epi",
+      "published_at": "2026-11-02T11:59:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56409784",
+      "title": "Bà Nguyễn Thị Kiều Anh làm quyền Tổng giám đốc Sacombank",
+      "canonical_url": "https://baomoi.com/ba-nguyen-thi-kieu-anh-lam-quyen-tong-giam-doc-sacombank-c56409784.epi",
+      "published_at": "2026-11-02T11:59:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56409673",
+      "title": "Novaland còn hơn 72.400 tỷ đồng dư nợ vay tài chính, ai là chủ nợ lớn nhất?",
+      "canonical_url": "https://baomoi.com/novaland-con-hon-72-400-ty-dong-du-no-vay-tai-chinh-ai-la-chu-no-lon-nhat-c56409673.epi",
+      "published_at": "2026-11-02T11:54:00+07:00",
+      "tickers": [
+        "MBB",
+        "NVL"
+      ]
+    },
+    {
+      "source_article_id": "c56409783",
+      "title": "Người cũ VPBank làm Quyền Tổng giám đốc Sacombank",
+      "canonical_url": "https://baomoi.com/nguoi-cu-vpbank-lam-quyen-tong-giam-doc-sacombank-c56409783.epi",
+      "published_at": "2026-11-02T11:53:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56409815",
+      "title": "TPBank: Cho vay bất động sản tăng gần 65%, nợ xấu vượt 7.000 tỷ đồng",
+      "canonical_url": "https://baomoi.com/tpbank-cho-vay-bat-dong-san-tang-gan-65-no-xau-vuot-7-000-ty-dong-c56409815.epi",
+      "published_at": "2026-11-02T11:52:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56409659",
+      "title": "Nam A Bank lãi gần 3.790 tỷ đồng sau 9 tháng",
+      "canonical_url": "https://baomoi.com/nam-a-bank-lai-gan-3-790-ty-dong-sau-9-thang-c56409659.epi",
+      "published_at": "2026-11-02T11:51:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56409601",
+      "title": "Vàng quay đầu tăng giá, vàng miếng SJC tăng 1 triệu đồng/lượng",
+      "canonical_url": "https://baomoi.com/vang-quay-dau-tang-gia-vang-mieng-sjc-tang-1-trieu-dong-luong-c56409601.epi",
+      "published_at": "2026-11-02T11:41:00+07:00",
+      "tickers": [
+        "VCB"
+      ]
+    },
+    {
+      "source_article_id": "c56408814",
+      "title": "Hai thương hiệu vàng trong nước đảo chiều tăng 1 triệu đồng mỗi lượng",
+      "canonical_url": "https://baomoi.com/hai-thuong-hieu-vang-trong-nuoc-dao-chieu-tang-1-trieu-dong-moi-luong-c56408814.epi",
+      "published_at": "2026-11-02T10:57:00+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "CTG"
+      ]
+    },
+    {
+      "source_article_id": "c56408711",
+      "title": "Sáng 2/11: Tỷ giá trung tâm giảm 6 đồng",
+      "canonical_url": "https://baomoi.com/sang-2-11-ty-gia-trung-tam-giam-6-dong-c56408711.epi",
+      "published_at": "2026-11-02T10:42:25+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56408709",
+      "title": "Lợi nhuận ngân hàng phân hóa rõ nét",
+      "canonical_url": "https://baomoi.com/loi-nhuan-ngan-hang-phan-hoa-ro-net-c56408709.epi",
+      "published_at": "2026-11-02T10:41:00+07:00",
+      "tickers": [
+        "SHB",
+        "VCB",
+        "BID",
         "CTG",
         "TCB",
         "LPB"
       ]
     },
     {
-      "source_article_id": "c56407142",
-      "title": "Người vay qua đời, bảo hiểm khoản vay có chi trả nợ ngân hàng không?",
-      "canonical_url": "https://baomoi.com/nguoi-vay-qua-doi-bao-hiem-khoan-vay-co-chi-tra-no-ngan-hang-khong-c56407142.epi",
-      "published_at": "2026-11-02T08:00:49+07:00",
+      "source_article_id": "c56408680",
+      "title": "Eximbank báo lãi 9 tháng giảm gần 59%, nợ cần chú ý tăng gấp đôi",
+      "canonical_url": "https://baomoi.com/eximbank-bao-lai-9-thang-giam-gan-59-no-can-chu-y-tang-gap-doi-c56408680.epi",
+      "published_at": "2026-11-02T10:40:00+07:00",
       "tickers": []
     },
     {
-      "source_article_id": "c56407153",
-      "title": "Bảo hiểm Quân đội (MIC): Đằng sau mức tăng hơn 40% của phí giữ lại",
-      "canonical_url": "https://baomoi.com/bao-hiem-quan-doi-mic-dang-sau-muc-tang-hon-40-cua-phi-giu-lai-c56407153.epi",
-      "published_at": "2026-11-02T08:04:00+07:00",
+      "source_article_id": "c56408714",
+      "title": "Điểm lại thông tin kinh tế tuần từ 26-30/10",
+      "canonical_url": "https://baomoi.com/diem-lai-thong-tin-kinh-te-tuan-tu-26-30-10-c56408714.epi",
+      "published_at": "2026-11-02T10:37:40+07:00",
+      "tickers": [
+        "VND"
+      ]
+    },
+    {
+      "source_article_id": "c56408267",
+      "title": "Cảnh báo rửa tiền công nghệ cao từ vụ tấn công nền tảng Binance",
+      "canonical_url": "https://baomoi.com/canh-bao-rua-tien-cong-nghe-cao-tu-vu-tan-cong-nen-tang-binance-c56408267.epi",
+      "published_at": "2026-11-02T10:34:00+07:00",
       "tickers": []
     },
     {
-      "source_article_id": "c56407177",
-      "title": "Ngân hàng tăng trưởng lợi nhuận nhờ hoạt động kinh doanh cốt lõi",
-      "canonical_url": "https://baomoi.com/ngan-hang-tang-truong-loi-nhuan-nho-hoat-dong-kinh-doanh-cot-loi-c56407177.epi",
-      "published_at": "2026-11-02T08:05:00+07:00",
+      "source_article_id": "c56408228",
+      "title": "Tỷ lệ nợ công so với GDP của Mỹ cao nhất 80 năm",
+      "canonical_url": "https://baomoi.com/ty-le-no-cong-so-voi-gdp-cua-my-cao-nhat-80-nam-c56408228.epi",
+      "published_at": "2026-11-02T10:29:22+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56408724",
+      "title": "SACOMBANK kiện toàn nhân sự cấp cao, đẩy nhanh tiến độ hoàn thành Đề án tái cơ cấu",
+      "canonical_url": "https://baomoi.com/sacombank-kien-toan-nhan-su-cap-cao-day-nhanh-tien-do-hoan-thanh-de-an-tai-co-cau-c56408724.epi",
+      "published_at": "2026-11-02T10:28:00+07:00",
+      "tickers": [
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56408239",
+      "title": "Giá vàng quay đầu tăng",
+      "canonical_url": "https://baomoi.com/gia-vang-quay-dau-tang-c56408239.epi",
+      "published_at": "2026-11-02T10:27:00+07:00",
+      "tickers": [
+        "VCB"
+      ]
+    },
+    {
+      "source_article_id": "c56408312",
+      "title": "Vinatex chính thức vượt kế hoạch lợi nhuận cả năm trước thời hạn một quý",
+      "canonical_url": "https://baomoi.com/vinatex-chinh-thuc-vuot-ke-hoach-loi-nhuan-ca-nam-truoc-thoi-han-mot-quy-c56408312.epi",
+      "published_at": "2026-11-02T10:23:34+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56408071",
+      "title": "Tăng trưởng kinh tế cao, vì sao sức cầu trong nước vẫn chưa bứt phá?",
+      "canonical_url": "https://baomoi.com/tang-truong-kinh-te-cao-vi-sao-suc-cau-trong-nuoc-van-chua-but-pha-c56408071.epi",
+      "published_at": "2026-11-02T10:13:23+07:00",
+      "tickers": [
+        "BID"
+      ]
+    },
+    {
+      "source_article_id": "c56408029",
+      "title": "BIDV lãi gần 29.500 tỷ đồng, bộ đệm mỏng dần",
+      "canonical_url": "https://baomoi.com/bidv-lai-gan-29-500-ty-dong-bo-dem-mong-dan-c56408029.epi",
+      "published_at": "2026-11-02T10:09:22+07:00",
+      "tickers": [
+        "BID"
+      ]
+    },
+    {
+      "source_article_id": "c56408113",
+      "title": "Lãi suất huy động các ngân hàng cập nhật mới nhất hôm nay (2/11/2026)",
+      "canonical_url": "https://baomoi.com/lai-suat-huy-dong-cac-ngan-hang-cap-nhat-moi-nhat-hom-nay-2-11-2026-c56408113.epi",
+      "published_at": "2026-11-02T10:04:00+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "CTG",
+        "TCB",
+        "LPB"
+      ]
+    },
+    {
+      "source_article_id": "c56407960",
+      "title": "Tỷ giá trung tâm giữ ổn định",
+      "canonical_url": "https://baomoi.com/ty-gia-trung-tam-giu-on-dinh-c56407960.epi",
+      "published_at": "2026-11-02T09:58:00+07:00",
       "tickers": [
         "VCB",
         "CTG"
       ]
     },
     {
-      "source_article_id": "c56407220",
-      "title": "Giá vàng thế giới phục hồi, trở lại mốc 3.900 USD/ounce",
-      "canonical_url": "https://baomoi.com/gia-vang-the-gioi-phuc-hoi-tro-lai-moc-3-900-usd-ounce-c56407220.epi",
-      "published_at": "2026-11-02T08:16:27+07:00",
+      "source_article_id": "c56407961",
+      "title": "Lãi suất ngân hàng hôm nay 2/11: Giảm tới 0,5 điểm phần trăm ở nhiều kỳ hạn",
+      "canonical_url": "https://baomoi.com/lai-suat-ngan-hang-hom-nay-2-11-giam-toi-0-5-diem-phan-tram-o-nhieu-ky-han-c56407961.epi",
+      "published_at": "2026-11-02T09:56:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56407882",
+      "title": "Chi phí phòng ngừa tỷ giá từ 3%/năm, chứng khoán Việt cạnh tranh dòng vốn ngoại ra sao?",
+      "canonical_url": "https://baomoi.com/chi-phi-phong-ngua-ty-gia-tu-3-nam-chung-khoan-viet-canh-tranh-dong-von-ngoai-ra-sao-c56407882.epi",
+      "published_at": "2026-11-02T09:50:00+07:00",
+      "tickers": [
+        "VND"
+      ]
+    },
+    {
+      "source_article_id": "c56407855",
+      "title": "Đạt lợi nhuận khủng, dàn lãnh đạo của HDBank hiện tại gồm những ai?",
+      "canonical_url": "https://baomoi.com/dat-loi-nhuan-khung-dan-lanh-dao-cua-hdbank-hien-tai-gom-nhung-ai-c56407855.epi",
+      "published_at": "2026-11-02T09:42:00+07:00",
+      "tickers": [
+        "CTG"
+      ]
+    },
+    {
+      "source_article_id": "c56407798",
+      "title": "HDBank quý 3/2026: Lãi ròng hơn 4.000 tỷ, áp lực nợ xấu gia tăng",
+      "canonical_url": "https://baomoi.com/hdbank-quy-3-2026-lai-rong-hon-4-000-ty-ap-luc-no-xau-gia-tang-c56407798.epi",
+      "published_at": "2026-11-02T09:41:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56407810",
+      "title": "Hơn 2,5 triệu mã số thuế chưa thể đóng: Đề xuất giảm tới 70% tiền phạt",
+      "canonical_url": "https://baomoi.com/hon-2-5-trieu-ma-so-thue-chua-the-dong-de-xuat-giam-toi-70-tien-phat-c56407810.epi",
+      "published_at": "2026-11-02T09:40:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56407751",
+      "title": "Tỷ giá hôm nay 2/11: Giá bán USD rời mốc 26.000 VND/USD",
+      "canonical_url": "https://baomoi.com/ty-gia-hom-nay-2-11-gia-ban-usd-roi-moc-26-000-vnd-usd-c56407751.epi",
+      "published_at": "2026-11-02T09:34:00+07:00",
+      "tickers": [
+        "VCB",
+        "BID",
+        "VND"
+      ]
+    },
+    {
+      "source_article_id": "c56407811",
+      "title": "Vàng SJC bán ra ở mức 139 triệu đồng/lượng",
+      "canonical_url": "https://baomoi.com/vang-sjc-ban-ra-o-muc-139-trieu-dong-luong-c56407811.epi",
+      "published_at": "2026-11-02T09:31:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56407679",
+      "title": "Chuyên gia: NHTW Nhật sẽ tăng lãi suất vào tháng 12",
+      "canonical_url": "https://baomoi.com/chuyen-gia-nhtw-nhat-se-tang-lai-suat-vao-thang-12-c56407679.epi",
+      "published_at": "2026-11-02T09:15:26+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56407592",
+      "title": "Muốn kinh tế bứt tốc, thị trường vốn phải 'chia lửa' với ngân hàng",
+      "canonical_url": "https://baomoi.com/muon-kinh-te-but-toc-thi-truong-von-phai-chia-lua-voi-ngan-hang-c56407592.epi",
+      "published_at": "2026-11-02T09:15:00+07:00",
+      "tickers": [
+        "BID"
+      ]
+    },
+    {
+      "source_article_id": "c56407564",
+      "title": "Khơi thông điểm nghẽn tồn kho, Vinatex nhân đôi dòng tiền kinh doanh",
+      "canonical_url": "https://baomoi.com/khoi-thong-diem-nghen-ton-kho-vinatex-nhan-doi-dong-tien-kinh-doanh-c56407564.epi",
+      "published_at": "2026-11-02T09:01:05+07:00",
+      "tickers": [
+        "SHB",
+        "BID"
+      ]
+    },
+    {
+      "source_article_id": "c56407546",
+      "title": "Hộ kinh doanh có doanh thu đến 10 tỷ đồng có thể được chọn cách nộp thuế?",
+      "canonical_url": "https://baomoi.com/ho-kinh-doanh-co-doanh-thu-den-10-ty-dong-co-the-duoc-chon-cach-nop-thue-c56407546.epi",
+      "published_at": "2026-11-02T09:00:00+07:00",
       "tickers": []
     },
     {
@@ -192,822 +868,169 @@
       ]
     },
     {
-      "source_article_id": "c56407564",
-      "title": "Khơi thông điểm nghẽn tồn kho, Vinatex nhân đôi dòng tiền kinh doanh",
-      "canonical_url": "https://baomoi.com/khoi-thong-diem-nghen-ton-kho-vinatex-nhan-doi-dong-tien-kinh-doanh-c56407564.epi",
-      "published_at": "2026-11-02T09:01:05+07:00",
-      "tickers": [
-        "SHB",
-        "BID"
-      ]
-    },
-    {
-      "source_article_id": "c56407592",
-      "title": "Muốn kinh tế bứt tốc, thị trường vốn phải 'chia lửa' với ngân hàng",
-      "canonical_url": "https://baomoi.com/muon-kinh-te-but-toc-thi-truong-von-phai-chia-lua-voi-ngan-hang-c56407592.epi",
-      "published_at": "2026-11-02T09:15:00+07:00",
-      "tickers": [
-        "BID"
-      ]
-    },
-    {
-      "source_article_id": "c56407679",
-      "title": "Chuyên gia: NHTW Nhật sẽ tăng lãi suất vào tháng 12",
-      "canonical_url": "https://baomoi.com/chuyen-gia-nhtw-nhat-se-tang-lai-suat-vao-thang-12-c56407679.epi",
-      "published_at": "2026-11-02T09:15:26+07:00",
+      "source_article_id": "c56407356",
+      "title": "Không thể cấm chuyển nhượng hợp đồng mua bán nhà ở hình thành trong tương lai",
+      "canonical_url": "https://baomoi.com/khong-the-cam-chuyen-nhuong-hop-dong-mua-ban-nha-o-hinh-thanh-trong-tuong-lai-c56407356.epi",
+      "published_at": "2026-11-02T08:31:00+07:00",
       "tickers": []
     },
     {
-      "source_article_id": "c56407811",
-      "title": "Vàng SJC bán ra ở mức 139 triệu đồng/lượng",
-      "canonical_url": "https://baomoi.com/vang-sjc-ban-ra-o-muc-139-trieu-dong-luong-c56407811.epi",
-      "published_at": "2026-11-02T09:31:00+07:00",
+      "source_article_id": "c56407220",
+      "title": "Giá vàng thế giới phục hồi, trở lại mốc 3.900 USD/ounce",
+      "canonical_url": "https://baomoi.com/gia-vang-the-gioi-phuc-hoi-tro-lai-moc-3-900-usd-ounce-c56407220.epi",
+      "published_at": "2026-11-02T08:16:27+07:00",
       "tickers": []
     },
     {
-      "source_article_id": "c56407751",
-      "title": "Tỷ giá hôm nay 2/11: Giá bán USD rời mốc 26.000 VND/USD",
-      "canonical_url": "https://baomoi.com/ty-gia-hom-nay-2-11-gia-ban-usd-roi-moc-26-000-vnd-usd-c56407751.epi",
-      "published_at": "2026-11-02T09:34:00+07:00",
-      "tickers": [
-        "VCB",
-        "BID",
-        "VND"
-      ]
-    },
-    {
-      "source_article_id": "c56407798",
-      "title": "HDBank quý 3/2026: Lãi ròng hơn 4.000 tỷ, áp lực nợ xấu gia tăng",
-      "canonical_url": "https://baomoi.com/hdbank-quy-3-2026-lai-rong-hon-4-000-ty-ap-luc-no-xau-gia-tang-c56407798.epi",
-      "published_at": "2026-11-02T09:41:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56407855",
-      "title": "Đạt lợi nhuận khủng, dàn lãnh đạo của HDBank hiện tại gồm những ai?",
-      "canonical_url": "https://baomoi.com/dat-loi-nhuan-khung-dan-lanh-dao-cua-hdbank-hien-tai-gom-nhung-ai-c56407855.epi",
-      "published_at": "2026-11-02T09:42:00+07:00",
-      "tickers": [
-        "CTG"
-      ]
-    },
-    {
-      "source_article_id": "c56407882",
-      "title": "Chi phí phòng ngừa tỷ giá từ 3%/năm, chứng khoán Việt cạnh tranh dòng vốn ngoại ra sao?",
-      "canonical_url": "https://baomoi.com/chi-phi-phong-ngua-ty-gia-tu-3-nam-chung-khoan-viet-canh-tranh-dong-von-ngoai-ra-sao-c56407882.epi",
-      "published_at": "2026-11-02T09:50:00+07:00",
-      "tickers": [
-        "VND"
-      ]
-    },
-    {
-      "source_article_id": "c56407961",
-      "title": "Lãi suất ngân hàng hôm nay 2/11: Giảm tới 0,5 điểm phần trăm ở nhiều kỳ hạn",
-      "canonical_url": "https://baomoi.com/lai-suat-ngan-hang-hom-nay-2-11-giam-toi-0-5-diem-phan-tram-o-nhieu-ky-han-c56407961.epi",
-      "published_at": "2026-11-02T09:56:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56407960",
-      "title": "Tỷ giá trung tâm giữ ổn định",
-      "canonical_url": "https://baomoi.com/ty-gia-trung-tam-giu-on-dinh-c56407960.epi",
-      "published_at": "2026-11-02T09:58:00+07:00",
+      "source_article_id": "c56407177",
+      "title": "Ngân hàng tăng trưởng lợi nhuận nhờ hoạt động kinh doanh cốt lõi",
+      "canonical_url": "https://baomoi.com/ngan-hang-tang-truong-loi-nhuan-nho-hoat-dong-kinh-doanh-cot-loi-c56407177.epi",
+      "published_at": "2026-11-02T08:05:00+07:00",
       "tickers": [
         "VCB",
         "CTG"
       ]
     },
     {
-      "source_article_id": "c56408113",
-      "title": "Lãi suất huy động các ngân hàng cập nhật mới nhất hôm nay (2/11/2026)",
-      "canonical_url": "https://baomoi.com/lai-suat-huy-dong-cac-ngan-hang-cap-nhat-moi-nhat-hom-nay-2-11-2026-c56408113.epi",
-      "published_at": "2026-11-02T10:04:00+07:00",
-      "tickers": [
-        "VCB",
-        "BID",
-        "CTG",
-        "TCB",
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56408029",
-      "title": "BIDV lãi gần 29.500 tỷ đồng, bộ đệm mỏng dần",
-      "canonical_url": "https://baomoi.com/bidv-lai-gan-29-500-ty-dong-bo-dem-mong-dan-c56408029.epi",
-      "published_at": "2026-11-02T10:09:22+07:00",
-      "tickers": [
-        "BID"
-      ]
-    },
-    {
-      "source_article_id": "c56408071",
-      "title": "Tăng trưởng kinh tế cao, vì sao sức cầu trong nước vẫn chưa bứt phá?",
-      "canonical_url": "https://baomoi.com/tang-truong-kinh-te-cao-vi-sao-suc-cau-trong-nuoc-van-chua-but-pha-c56408071.epi",
-      "published_at": "2026-11-02T10:13:23+07:00",
-      "tickers": [
-        "BID"
-      ]
-    },
-    {
-      "source_article_id": "c56408312",
-      "title": "Vinatex chính thức vượt kế hoạch lợi nhuận cả năm trước thời hạn một quý",
-      "canonical_url": "https://baomoi.com/vinatex-chinh-thuc-vuot-ke-hoach-loi-nhuan-ca-nam-truoc-thoi-han-mot-quy-c56408312.epi",
-      "published_at": "2026-11-02T10:23:34+07:00",
+      "source_article_id": "c56407153",
+      "title": "Bảo hiểm Quân đội (MIC): Đằng sau mức tăng hơn 40% của phí giữ lại",
+      "canonical_url": "https://baomoi.com/bao-hiem-quan-doi-mic-dang-sau-muc-tang-hon-40-cua-phi-giu-lai-c56407153.epi",
+      "published_at": "2026-11-02T08:04:00+07:00",
       "tickers": []
     },
     {
-      "source_article_id": "c56408239",
-      "title": "Giá vàng quay đầu tăng",
-      "canonical_url": "https://baomoi.com/gia-vang-quay-dau-tang-c56408239.epi",
-      "published_at": "2026-11-02T10:27:00+07:00",
-      "tickers": [
-        "VCB"
-      ]
-    },
-    {
-      "source_article_id": "c56408724",
-      "title": "SACOMBANK kiện toàn nhân sự cấp cao, đẩy nhanh tiến độ hoàn thành Đề án tái cơ cấu",
-      "canonical_url": "https://baomoi.com/sacombank-kien-toan-nhan-su-cap-cao-day-nhanh-tien-do-hoan-thanh-de-an-tai-co-cau-c56408724.epi",
-      "published_at": "2026-11-02T10:28:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56408228",
-      "title": "Tỷ lệ nợ công so với GDP của Mỹ cao nhất 80 năm",
-      "canonical_url": "https://baomoi.com/ty-le-no-cong-so-voi-gdp-cua-my-cao-nhat-80-nam-c56408228.epi",
-      "published_at": "2026-11-02T10:29:22+07:00",
+      "source_article_id": "c56407142",
+      "title": "Người vay qua đời, bảo hiểm khoản vay có chi trả nợ ngân hàng không?",
+      "canonical_url": "https://baomoi.com/nguoi-vay-qua-doi-bao-hiem-khoan-vay-co-chi-tra-no-ngan-hang-khong-c56407142.epi",
+      "published_at": "2026-11-02T08:00:49+07:00",
       "tickers": []
     },
     {
-      "source_article_id": "c56408267",
-      "title": "Cảnh báo rửa tiền công nghệ cao từ vụ tấn công nền tảng Binance",
-      "canonical_url": "https://baomoi.com/canh-bao-rua-tien-cong-nghe-cao-tu-vu-tan-cong-nen-tang-binance-c56408267.epi",
-      "published_at": "2026-11-02T10:34:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56408714",
-      "title": "Điểm lại thông tin kinh tế tuần từ 26-30/10",
-      "canonical_url": "https://baomoi.com/diem-lai-thong-tin-kinh-te-tuan-tu-26-30-10-c56408714.epi",
-      "published_at": "2026-11-02T10:37:40+07:00",
-      "tickers": [
-        "VND"
-      ]
-    },
-    {
-      "source_article_id": "c56408680",
-      "title": "Eximbank báo lãi 9 tháng giảm gần 59%, nợ cần chú ý tăng gấp đôi",
-      "canonical_url": "https://baomoi.com/eximbank-bao-lai-9-thang-giam-gan-59-no-can-chu-y-tang-gap-doi-c56408680.epi",
-      "published_at": "2026-11-02T10:40:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56408709",
-      "title": "Lợi nhuận ngân hàng phân hóa rõ nét",
-      "canonical_url": "https://baomoi.com/loi-nhuan-ngan-hang-phan-hoa-ro-net-c56408709.epi",
-      "published_at": "2026-11-02T10:41:00+07:00",
+      "source_article_id": "c56407141",
+      "title": "Ngân hàng con tại VIFC và bài toán hiệu quả đầu tư",
+      "canonical_url": "https://baomoi.com/ngan-hang-con-tai-vifc-va-bai-toan-hieu-qua-dau-tu-c56407141.epi",
+      "published_at": "2026-11-02T08:00:07+07:00",
       "tickers": [
         "SHB",
         "VCB",
-        "BID",
         "CTG",
         "TCB",
         "LPB"
       ]
     },
     {
-      "source_article_id": "c56408711",
-      "title": "Sáng 2/11: Tỷ giá trung tâm giảm 6 đồng",
-      "canonical_url": "https://baomoi.com/sang-2-11-ty-gia-trung-tam-giam-6-dong-c56408711.epi",
-      "published_at": "2026-11-02T10:42:25+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56408814",
-      "title": "Hai thương hiệu vàng trong nước đảo chiều tăng 1 triệu đồng mỗi lượng",
-      "canonical_url": "https://baomoi.com/hai-thuong-hieu-vang-trong-nuoc-dao-chieu-tang-1-trieu-dong-moi-luong-c56408814.epi",
-      "published_at": "2026-11-02T10:57:00+07:00",
+      "source_article_id": "c56407137",
+      "title": "Dòng vốn ngân hàng đang chảy vào bất động sản như thế nào?",
+      "canonical_url": "https://baomoi.com/dong-von-ngan-hang-dang-chay-vao-bat-dong-san-nhu-the-nao-c56407137.epi",
+      "published_at": "2026-11-02T08:00:00+07:00",
       "tickers": [
-        "VCB",
-        "BID",
-        "CTG"
-      ]
-    },
-    {
-      "source_article_id": "c56409601",
-      "title": "Vàng quay đầu tăng giá, vàng miếng SJC tăng 1 triệu đồng/lượng",
-      "canonical_url": "https://baomoi.com/vang-quay-dau-tang-gia-vang-mieng-sjc-tang-1-trieu-dong-luong-c56409601.epi",
-      "published_at": "2026-11-02T11:41:00+07:00",
-      "tickers": [
-        "VCB"
-      ]
-    },
-    {
-      "source_article_id": "c56409659",
-      "title": "Nam A Bank lãi gần 3.790 tỷ đồng sau 9 tháng",
-      "canonical_url": "https://baomoi.com/nam-a-bank-lai-gan-3-790-ty-dong-sau-9-thang-c56409659.epi",
-      "published_at": "2026-11-02T11:51:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56409815",
-      "title": "TPBank: Cho vay bất động sản tăng gần 65%, nợ xấu vượt 7.000 tỷ đồng",
-      "canonical_url": "https://baomoi.com/tpbank-cho-vay-bat-dong-san-tang-gan-65-no-xau-vuot-7-000-ty-dong-c56409815.epi",
-      "published_at": "2026-11-02T11:52:00+07:00",
-      "tickers": [
-        "FPT"
-      ]
-    },
-    {
-      "source_article_id": "c56409783",
-      "title": "Người cũ VPBank làm Quyền Tổng giám đốc Sacombank",
-      "canonical_url": "https://baomoi.com/nguoi-cu-vpbank-lam-quyen-tong-giam-doc-sacombank-c56409783.epi",
-      "published_at": "2026-11-02T11:53:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56409673",
-      "title": "Novaland còn hơn 72.400 tỷ đồng dư nợ vay tài chính, ai là chủ nợ lớn nhất?",
-      "canonical_url": "https://baomoi.com/novaland-con-hon-72-400-ty-dong-du-no-vay-tai-chinh-ai-la-chu-no-lon-nhat-c56409673.epi",
-      "published_at": "2026-11-02T11:54:00+07:00",
-      "tickers": [
-        "MBB",
-        "NVL"
-      ]
-    },
-    {
-      "source_article_id": "c56409784",
-      "title": "Bà Nguyễn Thị Kiều Anh làm quyền Tổng giám đốc Sacombank",
-      "canonical_url": "https://baomoi.com/ba-nguyen-thi-kieu-anh-lam-quyen-tong-giam-doc-sacombank-c56409784.epi",
-      "published_at": "2026-11-02T11:59:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56409881",
-      "title": "Lãi suất giảm, tiết kiệm vẫn giữ sức hút",
-      "canonical_url": "https://baomoi.com/lai-suat-giam-tiet-kiem-van-giu-suc-hut-c56409881.epi",
-      "published_at": "2026-11-02T12:10:48+07:00",
-      "tickers": [
-        "VCB"
-      ]
-    },
-    {
-      "source_article_id": "c56410081",
-      "title": "Sacombank có quyền tổng giám đốc mới",
-      "canonical_url": "https://baomoi.com/sacombank-co-quyen-tong-giam-doc-moi-c56410081.epi",
-      "published_at": "2026-11-02T12:27:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56410093",
-      "title": "Người dùng Binance rút ròng 3,64 tỷ USD sau vụ hack",
-      "canonical_url": "https://baomoi.com/nguoi-dung-binance-rut-rong-3-64-ty-usd-sau-vu-hack-c56410093.epi",
-      "published_at": "2026-11-02T12:27:33+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56410073",
-      "title": "Ông Loic Faussier thôi nhiệm, bà Nguyễn Thị Kiều Anh làm Quyền Tổng Giám đốc SACOMBANK",
-      "canonical_url": "https://baomoi.com/ong-loic-faussier-thoi-nhiem-ba-nguyen-thi-kieu-anh-lam-quyen-tong-giam-doc-sacombank-c56410073.epi",
-      "published_at": "2026-11-02T12:31:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56410131",
-      "title": "MSB lãi quý III tăng gần 30%, dồn vốn cho hạ tầng phần mềm",
-      "canonical_url": "https://baomoi.com/msb-lai-quy-iii-tang-gan-30-don-von-cho-ha-tang-phan-mem-c56410131.epi",
-      "published_at": "2026-11-02T12:37:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56410133",
-      "title": "SHB: 9 tháng lãi hơn 14.300 tỷ đồng, tổng tài sản tiến sát 1 triệu tỷ",
-      "canonical_url": "https://baomoi.com/shb-9-thang-lai-hon-14-300-ty-dong-tong-tai-san-tien-sat-1-trieu-ty-c56410133.epi",
-      "published_at": "2026-11-02T12:37:00+07:00",
-      "tickers": [
-        "SHB"
-      ]
-    },
-    {
-      "source_article_id": "c56410698",
-      "title": "Bồi dưỡng về phân tích kinh tế, tài chính vĩ mô cho kiểm toán viên",
-      "canonical_url": "https://baomoi.com/boi-duong-ve-phan-tich-kinh-te-tai-chinh-vi-mo-cho-kiem-toan-vien-c56410698.epi",
-      "published_at": "2026-11-02T12:47:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56410359",
-      "title": "Sacombank bổ nhiệm quyền tổng giám đốc sinh năm 1983",
-      "canonical_url": "https://baomoi.com/sacombank-bo-nhiem-quyen-tong-giam-doc-sinh-nam-1983-c56410359.epi",
-      "published_at": "2026-11-02T12:51:31+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56410409",
-      "title": "Indonesia trước sức ép cải cách thị trường vốn",
-      "canonical_url": "https://baomoi.com/indonesia-truoc-suc-ep-cai-cach-thi-truong-von-c56410409.epi",
-      "published_at": "2026-11-02T13:02:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56410461",
-      "title": "Yêu cầu đa dạng nguồn vốn khi lãi suất tăng cao",
-      "canonical_url": "https://baomoi.com/yeu-cau-da-dang-nguon-von-khi-lai-suat-tang-cao-c56410461.epi",
-      "published_at": "2026-11-02T13:19:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56410490",
-      "title": "Bà Nguyễn Thị Kiều Anh làm Quyền Tổng giám đốc Sacombank",
-      "canonical_url": "https://baomoi.com/ba-nguyen-thi-kieu-anh-lam-quyen-tong-giam-doc-sacombank-c56410490.epi",
-      "published_at": "2026-11-02T13:22:49+07:00",
-      "tickers": [
-        "TCB",
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56410571",
-      "title": "SACOMBANK bổ nhiệm Quyền Tổng Giám đốc mới",
-      "canonical_url": "https://baomoi.com/sacombank-bo-nhiem-quyen-tong-giam-doc-moi-c56410571.epi",
-      "published_at": "2026-11-02T13:26:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56410626",
-      "title": "Sacombank thay Tổng giám đốc",
-      "canonical_url": "https://baomoi.com/sacombank-thay-tong-giam-doc-c56410626.epi",
-      "published_at": "2026-11-02T13:36:44+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56410783",
-      "title": "Tháo điểm 'nghẽn' về thuế đối với doanh nghiệp ngừng hoạt động",
-      "canonical_url": "https://baomoi.com/thao-diem-nghen-ve-thue-doi-voi-doanh-nghiep-ngung-hoat-dong-c56410783.epi",
-      "published_at": "2026-11-02T13:59:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56410795",
-      "title": "Lộ trình tăng lãi suất của các NHTW lớn chưa kết thúc",
-      "canonical_url": "https://baomoi.com/lo-trinh-tang-lai-suat-cua-cac-nhtw-lon-chua-ket-thuc-c56410795.epi",
-      "published_at": "2026-11-02T14:00:42+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56410868",
-      "title": "Tín hiệu từ lãi suất 5,51% của trái phiếu tiết kiệm Mỹ",
-      "canonical_url": "https://baomoi.com/tin-hieu-tu-lai-suat-5-51-cua-trai-phieu-tiet-kiem-my-c56410868.epi",
-      "published_at": "2026-11-02T14:11:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56410823",
-      "title": "Giá vàng ngày 2/11: Bật tăng sau tuần lao dốc",
-      "canonical_url": "https://baomoi.com/gia-vang-ngay-2-11-bat-tang-sau-tuan-lao-doc-c56410823.epi",
-      "published_at": "2026-11-02T14:15:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56410815",
-      "title": "Giá vàng miếng SJC và vàng nhẫn bật tăng 1 triệu đồng mỗi lượng",
-      "canonical_url": "https://baomoi.com/gia-vang-mieng-sjc-va-vang-nhan-bat-tang-1-trieu-dong-moi-luong-c56410815.epi",
-      "published_at": "2026-11-02T14:16:09+07:00",
-      "tickers": [
-        "VCB"
-      ]
-    },
-    {
-      "source_article_id": "c56411018",
-      "title": "Diễn biến thị trường tài chính - tiền tệ quốc tế sáng 2/11",
-      "canonical_url": "https://baomoi.com/dien-bien-thi-truong-tai-chinh-tien-te-quoc-te-sang-2-11-c56411018.epi",
-      "published_at": "2026-11-02T14:30:29+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56411002",
-      "title": "Các quan chức Fed khẳng định cần tăng lãi suất thêm",
-      "canonical_url": "https://baomoi.com/cac-quan-chuc-fed-khang-dinh-can-tang-lai-suat-them-c56411002.epi",
-      "published_at": "2026-11-02T14:46:18+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56411006",
-      "title": "Hàn Quốc có thể đạt kim ngạch xuất khẩu 1 nghìn tỷ USD lần đầu tiên trong năm nay",
-      "canonical_url": "https://baomoi.com/han-quoc-co-the-dat-kim-ngach-xuat-khau-1-nghin-ty-usd-lan-dau-tien-trong-nam-nay-c56411006.epi",
-      "published_at": "2026-11-02T14:47:09+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56411060",
-      "title": "Giá vàng hôm nay (chiều 2-11): Tăng mạnh",
-      "canonical_url": "https://baomoi.com/gia-vang-hom-nay-chieu-2-11-tang-manh-c56411060.epi",
-      "published_at": "2026-11-02T14:51:00+07:00",
-      "tickers": [
-        "VCB"
-      ]
-    },
-    {
-      "source_article_id": "c56411077",
-      "title": "SACOMBANK bổ nhiệm Quyền Tổng Giám đốc mới, đẩy nhanh tiến độ hoàn thành Đề án tái cơ cấu",
-      "canonical_url": "https://baomoi.com/sacombank-bo-nhiem-quyen-tong-giam-doc-moi-day-nhanh-tien-do-hoan-thanh-de-an-tai-co-cau-c56411077.epi",
-      "published_at": "2026-11-02T14:57:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56411109",
-      "title": "Bà Nguyễn Thị Kiều Anh làm Quyền Tổng Giám đốc SACOMBANK",
-      "canonical_url": "https://baomoi.com/ba-nguyen-thi-kieu-anh-lam-quyen-tong-giam-doc-sacombank-c56411109.epi",
-      "published_at": "2026-11-02T14:57:20+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56411197",
-      "title": "Ông Dương Công Minh trở lại làm người đại diện pháp luật của Sacombank",
-      "canonical_url": "https://baomoi.com/ong-duong-cong-minh-tro-lai-lam-nguoi-dai-dien-phap-luat-cua-sacombank-c56411197.epi",
-      "published_at": "2026-11-02T15:04:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56411272",
-      "title": "Vietcombank bất ngờ chi 5.000 tỷ đồng trích lập dự phòng cho một lô trái phiếu",
-      "canonical_url": "https://baomoi.com/vietcombank-bat-ngo-chi-5-000-ty-dong-trich-lap-du-phong-cho-mot-lo-trai-phieu-c56411272.epi",
-      "published_at": "2026-11-02T15:17:00+07:00",
-      "tickers": [
-        "VCB"
-      ]
-    },
-    {
-      "source_article_id": "c56411319",
-      "title": "SACOMBANK bổ nhiệm bà Nguyễn Thị Kiều Anh giữ chức quyền Tổng Giám đốc",
-      "canonical_url": "https://baomoi.com/sacombank-bo-nhiem-ba-nguyen-thi-kieu-anh-giu-chuc-quyen-tong-giam-doc-c56411319.epi",
-      "published_at": "2026-11-02T15:21:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56411408",
-      "title": "Bà Nguyễn Thị Kiều Anh được bổ nhiệm quyền Tổng giám đốc Sacombank",
-      "canonical_url": "https://baomoi.com/ba-nguyen-thi-kieu-anh-duoc-bo-nhiem-quyen-tong-giam-doc-sacombank-c56411408.epi",
-      "published_at": "2026-11-02T15:27:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56411417",
-      "title": "Sacombank liên tiếp bổ nhiệm nhân sự cấp cao",
-      "canonical_url": "https://baomoi.com/sacombank-lien-tiep-bo-nhiem-nhan-su-cap-cao-c56411417.epi",
-      "published_at": "2026-11-02T15:32:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56411460",
-      "title": "Sức bền gây bất ngờ của kinh tế châu Âu",
-      "canonical_url": "https://baomoi.com/suc-ben-gay-bat-ngo-cua-kinh-te-chau-au-c56411460.epi",
-      "published_at": "2026-11-02T15:36:59+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56411477",
-      "title": "Binance vừa khôi phục chức năng rút tiền, 3,6 tỷ USD 'chạy khỏi' sàn",
-      "canonical_url": "https://baomoi.com/binance-vua-khoi-phuc-chuc-nang-rut-tien-3-6-ty-usd-chay-khoi-san-c56411477.epi",
-      "published_at": "2026-11-02T15:37:53+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56412070",
-      "title": "[Bài 1] Ngân hàng trong thị trường hàng hóa: Đứng đâu để phát huy thế mạnh?",
-      "canonical_url": "https://baomoi.com/bai-1-ngan-hang-trong-thi-truong-hang-hoa-dung-dau-de-phat-huy-the-manh-c56412070.epi",
-      "published_at": "2026-11-02T15:39:30+07:00",
-      "tickers": [
-        "VCB",
-        "BID",
-        "CTG",
+        "SHB",
         "TCB"
       ]
     },
     {
-      "source_article_id": "c56411594",
-      "title": "Sacombank bổ nhiệm quyền tổng giám đốc mới",
-      "canonical_url": "https://baomoi.com/sacombank-bo-nhiem-quyen-tong-giam-doc-moi-c56411594.epi",
-      "published_at": "2026-11-02T15:48:00+07:00",
+      "source_article_id": "c56407052",
+      "title": "Pháp luật về đầu tư - kinh nghiệm từ một số quốc gia Luật mới của Kyrgyzstan: Quy định rõ quyền lợi và trách nhiệm của nhà đầu tư",
+      "canonical_url": "https://baomoi.com/phap-luat-ve-dau-tu-kinh-nghiem-tu-mot-so-quoc-gia-luat-moi-cua-kyrgyzstan-quy-dinh-ro-quyen-loi-va-trach-nhiem-cua-nha-dau-tu-c56407052.epi",
+      "published_at": "2026-11-02T07:45:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56407054",
+      "title": "Tỷ giá ngoại tệ ngày 2/11: USD duy trì dưới 26.000 đồng, euro áp sát 29.700 đồng",
+      "canonical_url": "https://baomoi.com/ty-gia-ngoai-te-ngay-2-11-usd-duy-tri-duoi-26-000-dong-euro-ap-sat-29-700-dong-c56407054.epi",
+      "published_at": "2026-11-02T07:42:00+07:00",
       "tickers": [
-        "LPB"
+        "VCB"
       ]
     },
     {
-      "source_article_id": "c56411754",
-      "title": "Sacombank tiếp tục thay Tổng Giám đốc, bà Nguyễn Thị Kiều Anh được giao quyền điều hành",
-      "canonical_url": "https://baomoi.com/sacombank-tiep-tuc-thay-tong-giam-doc-ba-nguyen-thi-kieu-anh-duoc-giao-quyen-dieu-hanh-c56411754.epi",
-      "published_at": "2026-11-02T15:56:00+07:00",
+      "source_article_id": "c56406965",
+      "title": "Bài toán vốn và chi phí của doanh nghiệp cho năm 2027",
+      "canonical_url": "https://baomoi.com/bai-toan-von-va-chi-phi-cua-doanh-nghiep-cho-nam-2027-c56406965.epi",
+      "published_at": "2026-11-02T07:40:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56406975",
+      "title": "Nhà 3,25 tỷ đồng chưa bán được, người đàn ông tính vay tiền tậu thêm căn 5 tỷ giảm giá sốc",
+      "canonical_url": "https://baomoi.com/nha-3-25-ty-dong-chua-ban-duoc-nguoi-dan-ong-tinh-vay-tien-tau-them-can-5-ty-giam-gia-soc-c56406975.epi",
+      "published_at": "2026-11-02T07:36:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56406929",
+      "title": "Nam A Bank lãi 4.757 tỷ đồng sau 9 tháng, cho vay lĩnh vực nước và xử lý rác thải tăng gấp 5,3 lần",
+      "canonical_url": "https://baomoi.com/nam-a-bank-lai-4-757-ty-dong-sau-9-thang-cho-vay-linh-vuc-nuoc-va-xu-ly-rac-thai-tang-gap-5-3-lan-c56406929.epi",
+      "published_at": "2026-11-02T07:33:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56406949",
+      "title": "EU siết quy định sàng lọc đầu tư nước ngoài từ năm 2028",
+      "canonical_url": "https://baomoi.com/eu-siet-quy-dinh-sang-loc-dau-tu-nuoc-ngoai-tu-nam-2028-c56406949.epi",
+      "published_at": "2026-11-02T07:33:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56406928",
+      "title": "Giá vàng hôm nay ngày 2/11: Giá vàng trong nước bật tăng 1 triệu đồng/lượng",
+      "canonical_url": "https://baomoi.com/gia-vang-hom-nay-ngay-2-11-gia-vang-trong-nuoc-bat-tang-1-trieu-dong-luong-c56406928.epi",
+      "published_at": "2026-11-02T07:32:00+07:00",
       "tickers": [
-        "LPB"
+        "VCB"
       ]
     },
     {
-      "source_article_id": "c56411692",
-      "title": "Hơn 521.000 tỷ đồng tiền gửi của Kho bạc đang nằm tại Big 4 ngân hàng",
-      "canonical_url": "https://baomoi.com/hon-521-000-ty-dong-tien-gui-cua-kho-bac-dang-nam-tai-big-4-ngan-hang-c56411692.epi",
-      "published_at": "2026-11-02T15:57:17+07:00",
+      "source_article_id": "c56406933",
+      "title": "Khi lãi suất hạ nhiệt, dòng tiền chảy về đâu?",
+      "canonical_url": "https://baomoi.com/khi-lai-suat-ha-nhiet-dong-tien-chay-ve-dau-c56406933.epi",
+      "published_at": "2026-11-02T07:30:00+07:00",
+      "tickers": []
+    },
+    {
+      "source_article_id": "c56406728",
+      "title": "Lãi suất cao, nhiều người tính bán nhà",
+      "canonical_url": "https://baomoi.com/lai-suat-cao-nhieu-nguoi-tinh-ban-nha-c56406728.epi",
+      "published_at": "2026-11-02T07:00:07+07:00",
       "tickers": [
-        "VCB",
-        "BID",
-        "CTG"
+        "SSI"
       ]
     },
     {
-      "source_article_id": "c56411643",
-      "title": "'So găng' lợi nhuận 3 ngân hàng quốc doanh sau 9 tháng: Lương bình quân chạm 64,4 triệu đồng/tháng",
-      "canonical_url": "https://baomoi.com/so-gang-loi-nhuan-3-ngan-hang-quoc-doanh-sau-9-thang-luong-binh-quan-cham-64-4-trieu-dong-thang-c56411643.epi",
-      "published_at": "2026-11-02T15:58:00+07:00",
-      "tickers": [
-        "VCB",
-        "BID",
-        "CTG"
-      ]
-    },
-    {
-      "source_article_id": "c56411644",
-      "title": "Nghịch lý nhân sự ngân hàng: Nơi tinh giản kỷ lục, nơi rầm rộ tuyển dụng",
-      "canonical_url": "https://baomoi.com/nghich-ly-nhan-su-ngan-hang-noi-tinh-gian-ky-luc-noi-ram-ro-tuyen-dung-c56411644.epi",
-      "published_at": "2026-11-02T15:58:00+07:00",
-      "tickers": [
-        "VCB",
-        "BID",
-        "CTG"
-      ]
-    },
-    {
-      "source_article_id": "c56411749",
-      "title": "Giá dầu thô hạ nhiệt tạo lực đẩy cho thị trường vàng phục hồi",
-      "canonical_url": "https://baomoi.com/gia-dau-tho-ha-nhiet-tao-luc-day-cho-thi-truong-vang-phuc-hoi-c56411749.epi",
-      "published_at": "2026-11-02T16:07:00+07:00",
+      "source_article_id": "c56406751",
+      "title": "Đề xuất cấm chuyển nhượng hợp đồng nhà ở hình thành trong tương lai: Thận trọng với quyền tài sản",
+      "canonical_url": "https://baomoi.com/de-xuat-cam-chuyen-nhuong-hop-dong-nha-o-hinh-thanh-trong-tuong-lai-than-trong-voi-quyen-tai-san-c56406751.epi",
+      "published_at": "2026-11-02T07:00:00+07:00",
       "tickers": []
     },
     {
-      "source_article_id": "c56411814",
-      "title": "HDBank: Tín dụng tăng 31,8% sau 9 tháng, nợ xấu tăng hơn 11.000 tỷ đồng",
-      "canonical_url": "https://baomoi.com/hdbank-tin-dung-tang-31-8-sau-9-thang-no-xau-tang-hon-11-000-ty-dong-c56411814.epi",
-      "published_at": "2026-11-02T16:15:00+07:00",
+      "source_article_id": "c56406704",
+      "title": "Tỷ giá USD hôm nay (2-11): Đồng USD có khả năng duy trì đà tăng trong tuần này",
+      "canonical_url": "https://baomoi.com/ty-gia-usd-hom-nay-2-11-dong-usd-co-kha-nang-duy-tri-da-tang-trong-tuan-nay-c56406704.epi",
+      "published_at": "2026-11-02T06:48:00+07:00",
       "tickers": []
     },
     {
-      "source_article_id": "c56411850",
-      "title": "Khu vực châu Âu đang đối mặt với cuộc khủng hoảng nhà ở",
-      "canonical_url": "https://baomoi.com/khu-vuc-chau-au-dang-doi-mat-voi-cuoc-khung-hoang-nha-o-c56411850.epi",
-      "published_at": "2026-11-02T16:19:23+07:00",
+      "source_article_id": "c56406630",
+      "title": "Giá vàng hôm nay (2-11): Giá vàng trong nước đi ngang",
+      "canonical_url": "https://baomoi.com/gia-vang-hom-nay-2-11-gia-vang-trong-nuoc-di-ngang-c56406630.epi",
+      "published_at": "2026-11-02T06:34:00+07:00",
       "tickers": []
     },
     {
-      "source_article_id": "c56412039",
-      "title": "SACOMBANK bổ nhiệm bà Nguyễn Thị Kiều Anh làm Quyền Tổng Giám đốc",
-      "canonical_url": "https://baomoi.com/sacombank-bo-nhiem-ba-nguyen-thi-kieu-anh-lam-quyen-tong-giam-doc-c56412039.epi",
-      "published_at": "2026-11-02T16:19:47+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56411988",
-      "title": "Thanh tra Ngân hàng Nhà nước chỉ ra một số tồn tại, hạn chế tại BIDV Bình Thạnh",
-      "canonical_url": "https://baomoi.com/thanh-tra-ngan-hang-nha-nuoc-chi-ra-mot-so-ton-tai-han-che-tai-bidv-binh-thanh-c56411988.epi",
-      "published_at": "2026-11-02T16:26:00+07:00",
-      "tickers": [
-        "BID"
-      ]
-    },
-    {
-      "source_article_id": "c56412024",
-      "title": "SeABank hoàn tất tăng vốn điều lệ lên 34.688 tỷ đồng",
-      "canonical_url": "https://baomoi.com/seabank-hoan-tat-tang-von-dieu-le-len-34-688-ty-dong-c56412024.epi",
-      "published_at": "2026-11-02T16:29:00+07:00",
+      "source_article_id": "c56406619",
+      "title": "Tăng vốn ngân hàng, đừng trông chờ dòng tiền đầu cơ",
+      "canonical_url": "https://baomoi.com/tang-von-ngan-hang-dung-trong-cho-dong-tien-dau-co-c56406619.epi",
+      "published_at": "2026-11-02T06:30:00+07:00",
       "tickers": []
     },
     {
-      "source_article_id": "c56412090",
-      "title": "LPBank báo lãi trước thuế quý III/2026 đạt 4.448 tỷ đồng, tăng 29%",
-      "canonical_url": "https://baomoi.com/lpbank-bao-lai-truoc-thue-quy-iii-2026-dat-4-448-ty-dong-tang-29-c56412090.epi",
-      "published_at": "2026-11-02T16:30:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56412160",
-      "title": "Bốn 'ông lớn' ngành năng lượng đút túi tiền tỷ mỗi ngày nhờ mang tiền gửi ngân hàng",
-      "canonical_url": "https://baomoi.com/bon-ong-lon-nganh-nang-luong-dut-tui-tien-ty-moi-ngay-nho-mang-tien-gui-ngan-hang-c56412160.epi",
-      "published_at": "2026-11-02T16:51:00+07:00",
-      "tickers": [
-        "SHB",
-        "VCB",
-        "BID",
-        "CTG"
-      ]
-    },
-    {
-      "source_article_id": "c56414439",
-      "title": "Co-opBank bổ sung kênh nộp thuế điện tử qua Cổng Dịch vụ công của Cục Thuế",
-      "canonical_url": "https://baomoi.com/co-opbank-bo-sung-kenh-nop-thue-dien-tu-qua-cong-dich-vu-cong-cua-cuc-thue-c56414439.epi",
-      "published_at": "2026-11-02T17:00:35+07:00",
+      "source_article_id": "c56406603",
+      "title": "Hỏi - đáp về kinh tế tập thể",
+      "canonical_url": "https://baomoi.com/hoi-dap-ve-kinh-te-tap-the-c56406603.epi",
+      "published_at": "2026-11-02T06:18:00+07:00",
       "tickers": []
-    },
-    {
-      "source_article_id": "c56412651",
-      "title": "Lợi nhuận Eximbank chạm đáy nhiều năm",
-      "canonical_url": "https://baomoi.com/loi-nhuan-eximbank-cham-day-nhieu-nam-c56412651.epi",
-      "published_at": "2026-11-02T17:36:29+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56412723",
-      "title": "VND vào nhóm 3 đồng tiền châu Á tăng giá mạnh nhất so với USD, bất chấp áp lực kép",
-      "canonical_url": "https://baomoi.com/vnd-vao-nhom-3-dong-tien-chau-a-tang-gia-manh-nhat-so-voi-usd-bat-chap-ap-luc-kep-c56412723.epi",
-      "published_at": "2026-11-02T17:37:09+07:00",
-      "tickers": [
-        "VND"
-      ]
-    },
-    {
-      "source_article_id": "c56412732",
-      "title": "Hơn nửa triệu tỷ đồng tiền gửi của Kho bạc nằm tại ba ngân hàng quốc doanh",
-      "canonical_url": "https://baomoi.com/hon-nua-trieu-ty-dong-tien-gui-cua-kho-bac-nam-tai-ba-ngan-hang-quoc-doanh-c56412732.epi",
-      "published_at": "2026-11-02T17:45:00+07:00",
-      "tickers": [
-        "VCB",
-        "BID",
-        "CTG"
-      ]
-    },
-    {
-      "source_article_id": "c56412747",
-      "title": "Luật Giao dịch hàng hóa phái sinh - Hiểu đúng bản chất, quản trị đúng rủi ro: Bài 1: Thị trường phái sinh phải phục vụ sản xuất, kinh doanh",
-      "canonical_url": "https://baomoi.com/luat-giao-dich-hang-hoa-phai-sinh-hieu-dung-ban-chat-quan-tri-dung-rui-ro-bai-1-thi-truong-phai-sinh-phai-phuc-vu-san-xuat-kinh-doanh-c56412747.epi",
-      "published_at": "2026-11-02T17:48:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56412833",
-      "title": "Một số nội dung cốt lõi giúp người gửi tiền hiểu về chính sách Bảo hiểm tiền gửi",
-      "canonical_url": "https://baomoi.com/mot-so-noi-dung-cot-loi-giup-nguoi-gui-tien-hieu-ve-chinh-sach-bao-hiem-tien-gui-c56412833.epi",
-      "published_at": "2026-11-02T17:56:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56412885",
-      "title": "Thủ tướng Bỉ đối mặt nguy cơ từ chức vì bế tắc ngân sách",
-      "canonical_url": "https://baomoi.com/thu-tuong-bi-doi-mat-nguy-co-tu-chuc-vi-be-tac-ngan-sach-c56412885.epi",
-      "published_at": "2026-11-02T18:00:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56412958",
-      "title": "Ngân hàng nào sẽ lo ngại khi thay đổi cách tính LDR?",
-      "canonical_url": "https://baomoi.com/ngan-hang-nao-se-lo-ngai-khi-thay-doi-cach-tinh-ldr-c56412958.epi",
-      "published_at": "2026-11-02T18:06:27+07:00",
-      "tickers": [
-        "CTG",
-        "TCB"
-      ]
-    },
-    {
-      "source_article_id": "c56413030",
-      "title": "VIB lãi 1.925 tỷ đồng trong quý III, đầu tư 220,5 tỷ cho công nghệ",
-      "canonical_url": "https://baomoi.com/vib-lai-1-925-ty-dong-trong-quy-iii-dau-tu-220-5-ty-cho-cong-nghe-c56413030.epi",
-      "published_at": "2026-11-02T18:18:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56413034",
-      "title": "Sacombank thay quyền tổng giám đốc, bà Nguyễn Thị Kiều Anh tiếp quản điều hành",
-      "canonical_url": "https://baomoi.com/sacombank-thay-quyen-tong-giam-doc-ba-nguyen-thi-kieu-anh-tiep-quan-dieu-hanh-c56413034.epi",
-      "published_at": "2026-11-02T18:18:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56413175",
-      "title": "Tổng nguồn vốn huy động của các tổ chức tín dụng ước đạt 36.300 tỷ đồng",
-      "canonical_url": "https://baomoi.com/tong-nguon-von-huy-dong-cua-cac-to-chuc-tin-dung-uoc-dat-36-300-ty-dong-c56413175.epi",
-      "published_at": "2026-11-02T18:33:22+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56413395",
-      "title": "Sacombank 4 lần thay Tổng giám đốc trong hơn một năm",
-      "canonical_url": "https://baomoi.com/sacombank-4-lan-thay-tong-giam-doc-trong-hon-mot-nam-c56413395.epi",
-      "published_at": "2026-11-02T19:00:00+07:00",
-      "tickers": [
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56413494",
-      "title": "Giá vàng chiều 2/11: Vàng SJC đi ngang",
-      "canonical_url": "https://baomoi.com/gia-vang-chieu-2-11-vang-sjc-di-ngang-c56413494.epi",
-      "published_at": "2026-11-02T19:11:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56413738",
-      "title": "Thúc đẩy doanh nghiệp đổi mới công nghệ thông qua hỗ trợ lãi suất",
-      "canonical_url": "https://baomoi.com/thuc-day-doanh-nghiep-doi-moi-cong-nghe-thong-qua-ho-tro-lai-suat-c56413738.epi",
-      "published_at": "2026-11-02T19:54:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56413950",
-      "title": "Thủ tướng Bỉ Bart De Wever đệ trình đơn từ chức",
-      "canonical_url": "https://baomoi.com/thu-tuong-bi-bart-de-wever-de-trinh-don-tu-chuc-c56413950.epi",
-      "published_at": "2026-11-02T20:20:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56416099",
-      "title": "Agribank mở rộng kênh vốn cho nông dân An Giang đến năm 2030",
-      "canonical_url": "https://baomoi.com/agribank-mo-rong-kenh-von-cho-nong-dan-an-giang-den-nam-2030-c56416099.epi",
-      "published_at": "2026-11-02T20:41:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56414156",
-      "title": "Các ngân hàng niêm yết lãi hơn 310.000 tỷ đồng sau 9 tháng, kịch tính những màn bứt tốc và đổi ngôi",
-      "canonical_url": "https://baomoi.com/cac-ngan-hang-niem-yet-lai-hon-310-000-ty-dong-sau-9-thang-kich-tinh-nhung-man-but-toc-va-doi-ngoi-c56414156.epi",
-      "published_at": "2026-11-02T20:57:00+07:00",
-      "tickers": [
-        "SHB",
-        "VCB",
-        "BID",
-        "CTG",
-        "TCB",
-        "LPB"
-      ]
-    },
-    {
-      "source_article_id": "c56414575",
-      "title": "Thị trường trái phiếu trước sức ép vốn đắt và áp lực nợ đáo hạn",
-      "canonical_url": "https://baomoi.com/thi-truong-trai-phieu-truoc-suc-ep-von-dat-va-ap-luc-no-dao-han-c56414575.epi",
-      "published_at": "2026-11-02T22:06:00+07:00",
-      "tickers": [
-        "BID"
-      ]
-    },
-    {
-      "source_article_id": "c56414566",
-      "title": "Tăng cường đối thoại, hợp tác giữa Ngân hàng Nhà nước và cộng đồng ngân hàng nước ngoài tại Việt Nam",
-      "canonical_url": "https://baomoi.com/tang-cuong-doi-thoai-hop-tac-giua-ngan-hang-nha-nuoc-va-cong-dong-ngan-hang-nuoc-ngoai-tai-viet-nam-c56414566.epi",
-      "published_at": "2026-11-02T22:12:25+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56414634",
-      "title": "Doanh nghiệp được hỗ trợ tối đa 6%/năm lãi suất vay đổi mới công nghệ",
-      "canonical_url": "https://baomoi.com/doanh-nghiep-duoc-ho-tro-toi-da-6-nam-lai-suat-vay-doi-moi-cong-nghe-c56414634.epi",
-      "published_at": "2026-11-02T22:19:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56414747",
-      "title": "Doanh nghiệp được hỗ trợ tối đa 6%/năm lãi suất vay đổi mới công nghệ",
-      "canonical_url": "https://baomoi.com/doanh-nghiep-duoc-ho-tro-toi-da-6-nam-lai-suat-vay-doi-moi-cong-nghe-c56414747.epi",
-      "published_at": "2026-11-02T22:56:00+07:00",
-      "tickers": []
-    },
-    {
-      "source_article_id": "c56414854",
-      "title": "Bao nhiêu vốn ngân hàng đang chảy vào bất động sản?",
-      "canonical_url": "https://baomoi.com/bao-nhieu-von-ngan-hang-dang-chay-vao-bat-dong-san-c56414854.epi",
-      "published_at": "2026-11-02T23:25:00+07:00",
-      "tickers": [
-        "SHB",
-        "TCB"
-      ]
     }
   ]
 }

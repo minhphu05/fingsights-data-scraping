@@ -49,6 +49,7 @@ class LocalDataWriter:
                 "publisher_code": art.publisher_code,
                 "source_article_id": art.source_article_id,
                 "canonical_url": art.canonical_url,
+                "original_source_url": art.original_source_url,
                 "title": art.title,
                 "published_at": art.published_at.isoformat() if art.published_at else None,
                 "summary": art.summary,
