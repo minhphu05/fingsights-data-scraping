@@ -38,9 +38,10 @@ ENV/
 *.swo
 
 # Dagster local runs & storage
-dagster_home/
-.dagster/
-storage/
+/dagster_home/
+/.dagster/
+/storage/
+!src/finsights_scraping/storage/
 
 # Logs
 *.log

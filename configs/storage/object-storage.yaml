@@ -1,0 +1,30 @@
+provider: oci_object_storage
+bucket_strategy:
+  guidance: Multi-account mirrored storage across Tokyo (Account 1) and Singapore (Account 2) (20GB each = 40GB total).
+  accounts:
+    tokyo:
+      account_alias: account1
+      region: ap-tokyo-1
+      namespace: nryqf437jjy5
+      bucket_name: finsights-data-assets-tokyo
+      bucket_code: finsights-tokyo-raw
+      assigned_sources: [cafef_news, thanhnien_news, tuoitre_news, baomoi_news, vnexpress_news]
+    singapore:
+      account_alias: account2
+      region: ap-singapore-1
+      namespace: axrxyxi3tkjc
+      bucket_name: finsights-data-assets-singapore
+      bucket_code: finsights-singapore-raw
+      assigned_sources: [vietstock_market, default]
+key_templates:
+  news_image: raw/news/{publisher_code}/{yyyy}/{mm}/{dd}/{article_uid}/images/{asset_uid}.{extension}
+  news_audio: raw/news/{publisher_code}/{yyyy}/{mm}/{dd}/{article_uid}/audio/{asset_uid}.{extension}
+  news_table: raw/news/{publisher_code}/{yyyy}/{mm}/{dd}/{article_uid}/tables/{asset_uid}.{extension}
+  article_html_snapshot: raw/news/{publisher_code}/{yyyy}/{mm}/{dd}/{article_uid}/html/{asset_uid}.html
+  market_attachment: raw/market/{provider_code}/{yyyy}/{mm}/{dd}/{symbol}/{asset_uid}.{extension}
+key_rules:
+  - Every binary gets a UUID asset_uid; never use the article title as an object key.
+  - Keep publisher and local publication date as prefixes for browsing and lifecycle rules.
+  - Store OCI namespace, bucket, object key, object version, checksum, and storage class in finsights_assets.
+  - Do not store access keys, passwords, or signed URLs in MySQL metadata.
+  - Use SHA-256 plus size for content-level deduplication; the UUID remains the stable logical asset ID.
