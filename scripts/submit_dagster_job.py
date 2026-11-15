@@ -77,6 +77,9 @@ def execute_graphql(endpoint_url: str, query: str, variables: Optional[Dict[str,
             if "errors" in data and data["errors"]:
                 raise RuntimeError(f"GraphQL errors: {data['errors']}")
             return data.get("data", {})
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"Dagster returned HTTP {exc.code}: {body[:4000]}") from exc
     except urllib.error.URLError as exc:
         raise ConnectionError(f"Failed to connect to Dagster at {endpoint_url}: {exc}") from exc
 
@@ -150,8 +153,8 @@ def launch_dagster_job(
     }
 
     mutation = """
-    mutation LaunchExecution($executionParams: ExecutionParams!) {
-      launchExecution(executionParams: $executionParams) {
+    mutation LaunchRun($executionParams: ExecutionParams!) {
+      launchRun(executionParams: $executionParams) {
         __typename
         ... on LaunchRunSuccess {
           run {
@@ -191,7 +194,7 @@ def launch_dagster_job(
 
     print(f"\n🚀 Submitting job '{job_name}' for source '{source}' [{start_date} -> {end_date}]...")
     resp = execute_graphql(endpoint_url, mutation, variables)
-    result = resp.get("launchExecution", {})
+    result = resp.get("launchRun", {})
     typename = result.get("__typename")
 
     if typename == "LaunchRunSuccess":
