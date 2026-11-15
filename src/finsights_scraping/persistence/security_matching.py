@@ -41,7 +41,13 @@ class SecurityMatch:
 
 
 class SecurityAliasMatcher:
-    def __init__(self, market_engine: Engine | None = None, alias_file: str | Path | None = None):
+    def __init__(
+        self,
+        market_engine: Engine | None = None,
+        alias_file: str | Path | None = None,
+        *,
+        fallback_to_file: bool = True,
+    ):
         self.market_engine = market_engine
         self.aliases: list[dict[str, Any]] = []
         if self.market_engine is not None:
@@ -57,7 +63,7 @@ class SecurityAliasMatcher:
             except Exception as exc:
                 logger.warning(f"Could not load aliases from market_engine: {exc}. Falling back to alias_file.")
 
-        if not self.aliases:
+        if not self.aliases and fallback_to_file:
             self._load_from_file(alias_file)
 
     def _load_from_file(self, alias_file: str | Path | None = None) -> None:

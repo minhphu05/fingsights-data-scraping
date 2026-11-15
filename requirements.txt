@@ -10,7 +10,7 @@ beautifulsoup4==4.13.3
 lxml==5.3.1
 PyYAML==6.0.2
 
-# MySQL Node 1 data and Node 2 scrape-audit persistence
+# MySQL Node 2 canonical collection data and scrape-audit persistence
 SQLAlchemy==2.0.38
 PyMySQL==1.1.1
 cryptography==44.0.1

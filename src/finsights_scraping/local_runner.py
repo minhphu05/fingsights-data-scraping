@@ -17,6 +17,7 @@ from .sources.market.vietstock import VietstockPublicBoardClient
 from .sources.news.baomoi import BaoMoiClient
 from .sources.news.cafef import CafeFClient
 from .sources.news.configured_html import ConfiguredHtmlNewsClient
+from .sources.news.rss import RssNewsClient
 
 logging.basicConfig(
     level=logging.INFO,
@@ -28,7 +29,10 @@ logger = logging.getLogger("finsights.local_runner")
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG_DIR = ROOT / "configs"
 
-ALL_SOURCES = ["cafef", "baomoi", "thanhnien", "tuoitre", "vnexpress", "vietstock"]
+FINANCIAL_NEWS_SOURCES = ["cafef", "tuoitre", "thanhnien", "vnexpress", "vneconomy"]
+LEGACY_SOURCES = ["baomoi", "vietstock"]
+ALL_SOURCES = FINANCIAL_NEWS_SOURCES
+SOURCE_CHOICES = [*FINANCIAL_NEWS_SOURCES, *LEGACY_SOURCES]
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
@@ -49,17 +53,19 @@ class LocalRunner:
             alias_file=alias_file if alias_file.exists() else None,
         )
 
-    async def run_news_source(self, source_key: str, date_str: str) -> dict[str, Any]:
-        logger.info(f"==> Starting local scraping for news source: {source_key} on {date_str}")
+    async def run_news_source(self, source_key: str, start_date: str, end_date: str) -> dict[str, Any]:
+        logger.info(f"==> Starting local collection for news source: {source_key} [{start_date}..{end_date}]")
         start_ts = time.time()
         cfg_path = CONFIG_DIR / f"sources/news/{source_key}.yaml"
         if not cfg_path.exists():
             raise FileNotFoundError(f"Configuration file not found: {cfg_path}")
         config = load_yaml(cfg_path)
 
-        window = DateWindow.parse(date_str, date_str, config.get("timezone", "Asia/Ho_Chi_Minh"))
+        window = DateWindow.parse(start_date, end_date, config.get("timezone", "Asia/Ho_Chi_Minh"))
 
-        if source_key == "cafef":
+        if config.get("discovery", {}).get("mode") == "rss_only":
+            client = RssNewsClient(config, security_matcher=self.matcher)
+        elif source_key == "cafef":
             client = CafeFClient(config, security_matcher=self.matcher)
         elif source_key == "baomoi":
             client = BaoMoiClient(config, security_matcher=self.matcher)
@@ -69,16 +75,30 @@ class LocalRunner:
         try:
             articles = await client.collect(window)
             elapsed = time.time() - start_ts
-            out_file = self.writer.save_articles(source_key, date_str, articles, client.fetch_attempts)
+            window_key = start_date if start_date == end_date else f"{start_date}_to_{end_date}"
+            collection_stats = getattr(client, "collection_stats", {})
+            out_file = self.writer.save_articles(
+                source_key,
+                window_key,
+                articles,
+                client.fetch_attempts,
+                collection_stats=collection_stats,
+                start_date=start_date,
+                end_date=end_date,
+            )
+            partial = collection_stats.get("coverage_status") == "RSS_RETENTION_LIMITED"
             logger.info(
-                f"[SUCCESS] {source_key}: collected {len(articles)} articles in {elapsed:.1f}s -> {out_file}"
+                f"[{ 'PARTIAL' if partial else 'SUCCESS' }] {source_key}: collected {len(articles)} RSS items "
+                f"in {elapsed:.1f}s -> {out_file}"
             )
             return {
                 "source": source_key,
-                "status": "SUCCESS",
+                "status": "PARTIAL" if partial else "SUCCESS",
                 "kind": "news",
-                "date": date_str,
+                "start_date": start_date,
+                "end_date": end_date,
                 "articles_count": len(articles),
+                "collection_stats": collection_stats,
                 "elapsed_seconds": round(elapsed, 2),
                 "output_path": str(out_file),
             }
@@ -89,7 +109,8 @@ class LocalRunner:
                 "source": source_key,
                 "status": "FAILED",
                 "kind": "news",
-                "date": date_str,
+                "start_date": start_date,
+                "end_date": end_date,
                 "error": str(exc),
                 "elapsed_seconds": round(elapsed, 2),
             }
@@ -144,15 +165,22 @@ class LocalRunner:
         results["elapsed_seconds"] = round(elapsed, 2)
         return results
 
-    async def run(self, source: str, date_str: str) -> list[dict[str, Any]]:
+    async def run(self, source: str, start_date: str, end_date: str) -> list[dict[str, Any]]:
         sources_to_run = ALL_SOURCES if source in {"all", "*"} else [source]
         summaries: list[dict[str, Any]] = []
 
         for src in sources_to_run:
             if src == "vietstock":
-                res = await self.run_vietstock(date_str)
+                if start_date != end_date:
+                    summaries.append({
+                        "source": src,
+                        "status": "FAILED",
+                        "error": "The local Vietstock public-board adapter accepts one current snapshot date only.",
+                    })
+                    continue
+                res = await self.run_vietstock(end_date)
             else:
-                res = await self.run_news_source(src, date_str)
+                res = await self.run_news_source(src, start_date, end_date)
             summaries.append(res)
 
         return summaries

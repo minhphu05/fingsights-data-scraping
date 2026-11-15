@@ -1,5 +1,5 @@
 policy:
-  source_of_truth: Node 1 finsights_market.market_security_aliases
+  source_of_truth: Node 2 finsights_market_data.market_security_aliases
   normalize_unicode: NFKD
   match_across: [title, subtitle, summary, article_content_blocks]
   ticker_case_sensitive: true

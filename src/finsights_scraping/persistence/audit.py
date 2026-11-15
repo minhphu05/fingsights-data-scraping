@@ -74,7 +74,7 @@ class ScrapeAuditWriter:
                         json.dumps(item.raw_payload, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")
                     ).hexdigest()
                     destination_uid = None
-                    destination_domain, destination_db = "market", "finsights_market"
+                    destination_domain, destination_db = "market", "finsights_market_data"
                 identity = hashlib.sha256(f"{source_code}:{source_item_id}".encode()).hexdigest()
                 url_hash = hashlib.sha256(canonical_url.encode()).hexdigest()
                 connection.execute(text("""

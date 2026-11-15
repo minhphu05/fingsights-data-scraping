@@ -48,13 +48,13 @@ def _decimal_or_raw(value):
         raise ValueError(f"Vietstock numeric value is not an unambiguous decimal: {raw!r}") from exc
 
 
-class Node1MarketWriter:
+class Node2MarketWriter:
     def __init__(self, engine: Engine | None = None):
         url = os.getenv("MARKET_DATABASE_URL", "").strip()
         if engine is None:
             if not url:
-                raise RuntimeError("MARKET_DATABASE_URL is required for Node 1 market persistence")
-            engine = create_tls_mysql_engine(url, os.getenv("MYSQL_NODE_1_TLS_CA_FILE", ""))
+                raise RuntimeError("MARKET_DATABASE_URL is required for Node 2 canonical market persistence")
+            engine = create_tls_mysql_engine(url, os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""))
         self.engine = engine
 
     def persist_records(self, records: list[MarketRecord]) -> int:
@@ -106,6 +106,7 @@ class Node1MarketWriter:
                 text("SELECT id FROM market_providers WHERE code=:code AND is_active=1"), {"code": provider_code}
             ).scalar_one()
         return int(value)
+
 
     def _persist_quote(self, connection, record: MarketRecord) -> tuple[int, int]:
         provider_id = self._provider_id(connection, record.provider_code)
@@ -337,4 +338,8 @@ class Node1MarketWriter:
                 text("SELECT id FROM market_exchanges WHERE code=:code"), {"code": code}
             ).scalar_one()
         return int(value)
+
+
+# Backwards-compatible import for deployed definitions that have not reloaded yet.
+Node1MarketWriter = Node2MarketWriter
 

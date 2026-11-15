@@ -48,8 +48,8 @@ def _plain_text(blocks: list[ContentBlock]) -> str:
     return content
 
 
-class Node1NewsWriter:
-    """Idempotent writes to Node 1 news; binary assets remain link-only by default."""
+class Node2NewsWriter:
+    """Idempotent canonical news writes to Node 2; binaries remain link-only by default."""
 
     def __init__(
         self,
@@ -64,18 +64,21 @@ class Node1NewsWriter:
         assets_url = os.getenv("ASSETS_DATABASE_URL", "").strip()
         if news_engine is None:
             if not news_url:
-                raise RuntimeError("NEWS_DATABASE_URL is required for Node 1 news persistence")
-            news_engine = create_tls_mysql_engine(news_url, os.getenv("MYSQL_NODE_1_TLS_CA_FILE", ""))
+                raise RuntimeError("NEWS_DATABASE_URL is required for Node 2 canonical news persistence")
+            news_engine = create_tls_mysql_engine(news_url, os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""))
         if market_engine is None:
             if not market_url:
-                raise RuntimeError("MARKET_DATABASE_URL is required for canonical ticker/company matching")
-            market_engine = create_tls_mysql_engine(market_url, os.getenv("MYSQL_NODE_1_TLS_CA_FILE", ""))
+                raise RuntimeError("MARKET_DATABASE_URL is required for Node 2 canonical ticker/company matching")
+            market_engine = create_tls_mysql_engine(market_url, os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""))
         if assets_engine is None and assets_url:
-            assets_engine = create_tls_mysql_engine(assets_url, os.getenv("MYSQL_NODE_1_TLS_CA_FILE", ""))
+            assets_engine = create_tls_mysql_engine(assets_url, os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""))
         self.news_engine = news_engine
         self.market_engine = market_engine
         self.assets_engine = assets_engine
-        self.matcher = SecurityAliasMatcher(market_engine) if market_engine is not None else None
+        self.matcher = (
+            SecurityAliasMatcher(market_engine, fallback_to_file=False)
+            if market_engine is not None else None
+        )
         self.uploader = OciS3Uploader()
 
     def persist_articles(self, articles: list[Article]) -> dict[str, str]:
@@ -102,10 +105,11 @@ class Node1NewsWriter:
         with self.news_engine.begin() as connection:
             connection.execute(text("""
                 INSERT INTO news_publishers
-                    (code, name, domain, homepage_url, language_code, attribution_name, content_rights, is_active)
-                VALUES (:code, :name, :domain, :homepage_url, 'vi', :attribution_name, :content_rights, 1)
+                    (code, name, domain, homepage_url, language_code, attribution_name, content_rights, terms_url, is_active)
+                VALUES (:code, :name, :domain, :homepage_url, 'vi', :attribution_name, :content_rights, :terms_url, 1)
                 ON DUPLICATE KEY UPDATE name=VALUES(name), homepage_url=VALUES(homepage_url),
-                    attribution_name=VALUES(attribution_name), content_rights=VALUES(content_rights), is_active=1
+                    attribution_name=VALUES(attribution_name), content_rights=VALUES(content_rights),
+                    terms_url=VALUES(terms_url), is_active=1
             """), {
                 "code": article.publisher_code,
                 "name": article.metadata.get("publisher_name", article.publisher_code),
@@ -113,6 +117,7 @@ class Node1NewsWriter:
                 "homepage_url": article.metadata.get("homepage_url", "https://cafef.vn/"),
                 "attribution_name": article.metadata.get("attribution_name", article.publisher_code),
                 "content_rights": article.metadata.get("rights_status", "unknown"),
+                "terms_url": article.metadata.get("terms_url"),
             })
             publisher_id = connection.execute(
                 text("SELECT id FROM news_publishers WHERE code=:code"), {"code": article.publisher_code}
@@ -388,4 +393,8 @@ class Node1NewsWriter:
                         "review_status": "auto" if match.confidence >= 0.95 and match.method == "ticker_boundary" else "pending",
                     })
         return article_uid
+
+
+# Backwards-compatible import for deployed definitions that have not reloaded yet.
+Node1NewsWriter = Node2NewsWriter
 

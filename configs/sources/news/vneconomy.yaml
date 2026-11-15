@@ -1,0 +1,59 @@
+source_code: vneconomy_news
+publisher_code: vneconomy
+name: Tạp chí Kinh tế Việt Nam - VnEconomy
+base_url: https://vneconomy.vn
+publisher_domain: vneconomy.vn
+attribution_name: Tạp chí Kinh tế Việt Nam / VnEconomy
+terms_url: https://vneconomy.vn/rss.html
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 0.5
+collection_enabled: true
+use_scope: personal_academic_research
+binary_asset_collection_enabled: false
+
+access:
+  use_scope: personal_academic_research
+  internal_only: true
+  attribution_required: true
+  redistribution_allowed: false
+  respect_robots_txt: true
+rights:
+  status: rss_excerpt_only
+  binary_asset_statuses: []
+
+discovery:
+  mode: rss_only
+  rss_feeds:
+    - url: https://vneconomy.vn/tin-moi.rss
+      category: latest
+    - url: https://vneconomy.vn/tai-chinh.rss
+      category: finance
+    - url: https://vneconomy.vn/chung-khoan.rss
+      category: securities
+    - url: https://vneconomy.vn/nhip-cau-doanh-nghiep.rss
+      category: business
+
+article:
+  full_text_required: false
+
+financial_relevance:
+  terms:
+    - chứng khoán
+    - cổ phiếu
+    - VN-Index
+    - VN30
+    - HOSE
+    - HNX
+    - UPCoM
+    - doanh nghiệp niêm yết
+    - báo cáo tài chính
+    - cổ tức
+    - trái phiếu
+    - lãi suất
+    - tỷ giá
+    - ngân hàng
+    - khối ngoại
+    - thanh khoản
+    - công bố thông tin
+    - thị trường
+    - tài chính

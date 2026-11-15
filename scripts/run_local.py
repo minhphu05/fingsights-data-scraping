@@ -5,12 +5,14 @@ import argparse
 import asyncio
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from src.finsights_scraping.local_runner import ALL_SOURCES, LocalRunner
+from src.finsights_scraping.local_runner import ALL_SOURCES, SOURCE_CHOICES, LocalRunner
 
 
 def main() -> int:
@@ -21,14 +23,21 @@ def main() -> int:
         "--source",
         "-s",
         default="all",
-        choices=[*ALL_SOURCES, "all"],
-        help="Source to run (cafef, baomoi, thanhnien, tuoitre, vnexpress, vietstock, or all)",
+        choices=[*SOURCE_CHOICES, "all"],
+        help="Source to run; all runs the five Financial News RSS publishers",
     )
     parser.add_argument(
         "--date",
         "-d",
-        default="2026-11-02",
-        help="Target publication/trade date (YYYY-MM-DD), default: 2026-11-02",
+        help="Legacy single-day option (YYYY-MM-DD); use --start-date/--end-date for a range",
+    )
+    parser.add_argument(
+        "--start-date",
+        help="Inclusive start date (YYYY-MM-DD, Asia/Ho_Chi_Minh)",
+    )
+    parser.add_argument(
+        "--end-date",
+        help="Inclusive end date (YYYY-MM-DD, Asia/Ho_Chi_Minh)",
     )
     parser.add_argument(
         "--data-dir",
@@ -37,22 +46,31 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    today = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).date().isoformat()
+    if args.date and (args.start_date or args.end_date):
+        parser.error("--date cannot be combined with --start-date or --end-date")
+    if args.date:
+        start_date = end_date = args.date
+    else:
+        start_date = args.start_date or args.end_date or today
+        end_date = args.end_date or args.start_date or today
+
     print("=" * 70)
     print("FINSIGHTS DATA COLLECTION - LOCAL MODE")
-    print(f"Target Date : {args.date}")
+    print(f"Date Window : {start_date} -> {end_date}")
     print(f"Source(s)   : {args.source}")
     print(f"Output Dir  : {args.data_dir}")
     print("=" * 70)
 
     runner = LocalRunner(data_dir=args.data_dir)
-    results = asyncio.run(runner.run(args.source, args.date))
+    results = asyncio.run(runner.run(args.source, start_date, end_date))
 
     print("\n" + "=" * 70)
     print("RUN SUMMARY")
     print("=" * 70)
     print(json.dumps(results, ensure_ascii=False, indent=2))
 
-    success = all(r.get("status") == "SUCCESS" for r in results)
+    success = all(r.get("status") in {"SUCCESS", "PARTIAL"} for r in results)
     return 0 if success else 1
 
 

@@ -1,5 +1,5 @@
 version: 1
-source_of_truth: mysql-node-1.finsights_market.market_security_aliases
+source_of_truth: mysql-node-2.finsights_market_data.market_security_aliases
 securities:
   - symbol: SHB
     exchange_code: HOSE

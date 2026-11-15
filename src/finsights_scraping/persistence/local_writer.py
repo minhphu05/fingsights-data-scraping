@@ -32,6 +32,10 @@ class LocalDataWriter:
         date_str: str,
         articles: list[Article],
         fetch_attempts: list[dict[str, Any]] | None = None,
+        *,
+        collection_stats: dict[str, Any] | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> Path:
         out_dir = self.base_dir / source / date_str
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -80,10 +84,13 @@ class LocalDataWriter:
         summary = {
             "source": source,
             "target_date": date_str,
+            "start_date": start_date or date_str,
+            "end_date": end_date or date_str,
             "collected_at": datetime.now().isoformat(),
             "total_articles": len(articles),
             "unique_tickers_matched": sorted(unique_tickers),
             "total_fetch_attempts": len(fetch_attempts or []),
+            "collection_stats": self._json_serialize(collection_stats or {}),
             "articles": [
                 {
                     "source_article_id": a["source_article_id"],

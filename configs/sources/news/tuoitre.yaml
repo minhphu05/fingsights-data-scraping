@@ -8,7 +8,7 @@ timezone: Asia/Ho_Chi_Minh
 request_rate_per_second: 0.5
 collection_enabled: true
 use_scope: personal_academic_research
-binary_asset_collection_enabled: true
+binary_asset_collection_enabled: false
 
 # Personal thesis research: keep collected records internal and attribute the source.
 access:
@@ -18,38 +18,18 @@ access:
   redistribution_allowed: false
   respect_robots_txt: true
 rights:
-  status: unknown
+  status: rss_excerpt_only
   binary_asset_statuses: []
 
 article_id_regex: '-(?P<article_id>\d{6,})\.htm$'
 discovery:
-  mode: rss-overlap-and-paginated-archive
-  max_pages: 5
-  rss_recent_days: 7
+  mode: rss_only
   rss_feeds:
     - url: https://tuoitre.vn/kinh-doanh.rss
       category: business_finance
-  archive_categories:
-    - code: stock_market
-      first_page: https://tuoitre.vn/chung-khoan/tin-tuc-thi-truong.htm
-      next_link_selectors: ["a[rel='next']", "a.next", "a[href*='page=']"]
-    - code: business_finance
-      first_page: https://tuoitre.vn/kinh-doanh.htm
-      next_link_selectors: ["a[rel='next']", "a.next", "a[href*='page=']"]
-  pagination_order: newest_to_oldest
-  stop_only_after_article_before_start_date: true
-  fail_if_archive_boundary_not_proven: false
-  link_selectors: ["a[href]"]
 
 article:
-  title_selectors: ["h1.article-title", "h1"]
-  summary_selectors: [".detail__summary", ".detail-summary", "h2.sapo"]
-  subtitle_selectors: [".detail__sub-title", ".detail-subtitle"]
-  author_selectors: [".author-info", ".detail-author", "[rel='author']"]
-  content_selectors: ["#main-detail-body", ".detail__content", ".detail-content"]
-  full_text_required: true
-  retain_paragraph_boundaries: true
-  block_types: [heading, paragraph, line_break, quote, image, audio, video, table, list]
+  full_text_required: false
 
 financial_relevance:
   terms:

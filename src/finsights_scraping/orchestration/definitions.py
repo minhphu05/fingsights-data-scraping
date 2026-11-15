@@ -13,12 +13,12 @@ from dagster import Definitions, Field, RunRequest, SkipReason, String, job, op,
 
 from ..domain.models import Article
 from ..domain.windows import DateWindow
-from ..persistence import Node1MarketWriter, Node1NewsWriter, ScrapeAuditWriter
+from ..persistence import Node2MarketWriter, Node2NewsWriter, ScrapeAuditWriter
 from ..sources.market import VietstockHistoryClient, VietstockPublicBoardClient
 from ..sources.news import (
     BaoMoiClient,
-    CafeFClient,
     ConfiguredHtmlNewsClient,
+    RssNewsClient,
     SourceAuthorizationError,
     source_collection_enabled,
 )
@@ -31,7 +31,9 @@ CONFIGURED_NEWS_SOURCES = {
     "thanhnien": ("thanhnien_news", "30 2 * * *"),
     "tuoitre": ("tuoitre_news", "45 2 * * *"),
     "vnexpress": ("vnexpress_news", "15 3 * * *"),
+    "vneconomy": ("vneconomy_news", "0 4 * * *"),
 }
+FINANCIAL_NEWS_SOURCES = ("cafef", "thanhnien", "tuoitre", "vnexpress", "vneconomy")
 
 
 def _yaml(path: Path) -> dict:
@@ -94,6 +96,125 @@ def _window(config: dict | None = None, timezone_name: str = "Asia/Ho_Chi_Minh")
     return DateWindow.parse(start, end, timezone_name)
 
 
+def _collect_rss_source(
+    context,
+    source_key: str,
+    source_config: dict,
+    window: DateWindow,
+    storage_mode: str = "link_only",
+    job_name: str | None = None,
+) -> dict:
+    if not source_collection_enabled(source_config):
+        raise SourceAuthorizationError(
+            f"{source_key} is disabled; check its internal-only RSS access policy."
+        )
+
+    writer = Node2NewsWriter(storage_mode=storage_mode)
+    client = RssNewsClient(source_config, security_matcher=writer.matcher)
+    audit = ScrapeAuditWriter()
+    source_code = source_config["source_code"]
+    audit_run_id = f"{context.run_id}:{source_code}"[:64]
+    db_run_id = audit.start_run(
+        source_code=source_code,
+        source_kind="news",
+        display_name=source_config["name"],
+        base_url=source_config["base_url"],
+        dagster_run_id=audit_run_id,
+        job_name=job_name or context.job_name,
+        start_date=window.start_date,
+        end_date=window.end_date,
+        config={
+            "collection_method": "rss_only",
+            "storage_mode": storage_mode,
+            "terms_url": source_config.get("terms_url"),
+            "redistribution_allowed": source_config.get("access", {}).get("redistribution_allowed", False),
+        },
+    )
+    total_discovered = 0
+    total_persisted = 0
+    days_completed = 0
+
+    def persist_day(batch_date: date, articles: list[Article], category_code: str | None = None) -> None:
+        nonlocal total_discovered, total_persisted, days_completed
+        total_discovered += len(articles)
+        article_uids = writer.persist_articles(articles)
+        total_persisted += len(article_uids)
+        days_completed += 1
+        audit.save_items(db_run_id, source_code, articles, article_uids)
+        audit.save_checkpoint(source_code, "last_completed_day", {
+            "completed_day": batch_date.isoformat(),
+            "articles_persisted": len(article_uids),
+            "total_persisted_so_far": total_persisted,
+        })
+        context.log.info(
+            f"{source_key} RSS persisted {len(article_uids)} article records for {batch_date} "
+            f"(cumulative: {total_persisted})"
+        )
+
+    async def execute_collection():
+        try:
+            return await client.collect(window, on_batch=persist_day)
+        finally:
+            await client.close()
+
+    try:
+        articles = asyncio.run(execute_collection())
+        stats = client.collection_stats
+        audit.save_attempts(db_run_id, source_code, client.fetch_attempts)
+        coverage = str(stats.get("coverage_status", "RSS_WINDOW_NOT_PROVEN"))
+        run_status = "PARTIAL" if coverage == "RSS_RETENTION_LIMITED" else "SUCCESS"
+        audit.finish_run(
+            db_run_id,
+            run_status,
+            discovered=total_discovered,
+            persisted=total_persisted,
+            failed=0,
+        )
+        audit.save_checkpoint(source_code, "last_completed_window", {
+            "start_date": window.start_date.isoformat(),
+            "end_date": window.end_date.isoformat(),
+            "persisted_articles": total_persisted,
+            "days_completed": days_completed,
+            "coverage_status": coverage,
+            "status": run_status,
+        })
+        if run_status == "PARTIAL":
+            context.log.warning(
+                f"{source_key} RSS only retains items from {stats.get('oldest_feed_publication_date')}; "
+                f"requested start {window.start_date.isoformat()} is not covered."
+            )
+        context.log.info(
+            f"{source_key} RSS collection finished: {total_persisted} stored, "
+            f"coverage={coverage}, window={window.start_date}..{window.end_date}"
+        )
+        return {
+            "source": source_key,
+            "run_status": run_status,
+            "articles_discovered": total_discovered,
+            "articles_persisted": total_persisted,
+            "days_completed": days_completed,
+            "collection_stats": stats,
+        }
+    except Exception as exc:
+        audit.save_attempts(db_run_id, source_code, client.fetch_attempts)
+        audit.finish_run(
+            db_run_id,
+            "FAILED",
+            discovered=total_discovered,
+            persisted=total_persisted,
+            failed=1,
+            error=str(exc)[:4000],
+        )
+        audit.save_checkpoint(source_code, "last_interrupted_run", {
+            "start_date": window.start_date.isoformat(),
+            "end_date": window.end_date.isoformat(),
+            "error": str(exc)[:500],
+            "fetch_attempts": len(client.fetch_attempts),
+            "persisted_before_failure": total_persisted,
+        })
+        raise
+
+
 def _news_source_config(source_key: str) -> dict:
     if source_key not in CONFIGURED_NEWS_SOURCES:
         raise ValueError(f"Unknown configured news source: {source_key!r}")
@@ -130,78 +251,9 @@ def collect_cafef_news(context):
     source_config = _yaml(CONFIG_DIR / "sources/news/cafef.yaml")
     window = _window(context.op_config, source_config.get("timezone", "Asia/Ho_Chi_Minh"))
     storage_mode = context.op_config.get("storage_mode", "link_only")
-    writer = Node1NewsWriter(storage_mode=storage_mode)
-    client = CafeFClient(source_config, security_matcher=writer.matcher)
-    audit = ScrapeAuditWriter()
-    run_row_id = audit.start_run(
-        source_code=source_config["source_code"], source_kind="news",
-        display_name=source_config["name"], base_url=source_config["base_url"],
-        dagster_run_id=context.run_id, job_name="cafef_news_job",
-        start_date=window.start_date, end_date=window.end_date,
-        config={"archive_mode": source_config["discovery"]["mode"], "storage_mode": storage_mode},
+    return _collect_rss_source(
+        context, "cafef", source_config, window, storage_mode, job_name="cafef_news_job"
     )
-    total_discovered = 0
-    total_persisted = 0
-    days_completed = 0
-
-    def _persist_day_batch(batch_date: date, day_articles: list[Article], category_code: str | None = None) -> None:
-        nonlocal total_discovered, total_persisted, days_completed
-        if not day_articles:
-            return
-        total_discovered += len(day_articles)
-        uids = writer.persist_articles(day_articles)
-        total_persisted += len(uids)
-        days_completed += 1
-        audit.save_items(run_row_id, source_config["source_code"], day_articles, uids)
-        audit.save_checkpoint(source_config["source_code"], "last_completed_day", {
-            "completed_day": batch_date.isoformat(),
-            "category": category_code,
-            "articles_persisted": len(uids),
-            "total_persisted_so_far": total_persisted,
-        })
-        cat_prefix = f"[{category_code}] " if category_code else ""
-        context.log.info(
-            f"CafeF {cat_prefix}persisted day batch for {batch_date}: {len(uids)} articles (cumulative: {total_persisted})"
-        )
-
-    async def _execute_collection():
-        try:
-            await client.collect(window, on_batch=_persist_day_batch)
-        finally:
-            await client.close()
-
-    try:
-        asyncio.run(_execute_collection())
-        audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
-        audit.finish_run(run_row_id, "SUCCESS", discovered=total_discovered, persisted=total_persisted)
-        audit.save_checkpoint(source_config["source_code"], "last_completed_window", {
-            "start_date": window.start_date.isoformat(),
-            "end_date": window.end_date.isoformat(),
-            "persisted_articles": total_persisted,
-            "days_completed": days_completed,
-            "status": "SUCCESS",
-        })
-        context.log.info(
-            f"CafeF completed collection: {total_persisted} articles persisted across {days_completed} days",
-            extra={
-                "start_date": window.start_date.isoformat(),
-                "end_date": window.end_date.isoformat(),
-                "articles_persisted": total_persisted,
-                "days_completed": days_completed,
-            },
-        )
-        return {"articles_persisted": total_persisted, "days_completed": days_completed}
-    except Exception as exc:
-        audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
-        audit.finish_run(run_row_id, "FAILED", discovered=total_discovered, persisted=total_persisted, failed=1, error=str(exc)[:4000])
-        audit.save_checkpoint(source_config["source_code"], "last_interrupted_run", {
-            "start_date": window.start_date.isoformat(),
-            "end_date": window.end_date.isoformat(),
-            "error": str(exc)[:500],
-            "fetch_attempts": len(client.fetch_attempts),
-            "persisted_before_failure": total_persisted,
-        })
-        raise
 
 
 @op(config_schema={
@@ -213,7 +265,7 @@ def collect_baomoi_news(context):
     source_config = _yaml(CONFIG_DIR / "sources/news/baomoi.yaml")
     window = _window(context.op_config, source_config.get("timezone", "Asia/Ho_Chi_Minh"))
     storage_mode = context.op_config.get("storage_mode", "link_only")
-    writer = Node1NewsWriter(storage_mode=storage_mode)
+    writer = Node2NewsWriter(storage_mode=storage_mode)
     client = BaoMoiClient(source_config, security_matcher=writer.matcher)
     audit = ScrapeAuditWriter()
     run_row_id = audit.start_run(
@@ -288,7 +340,7 @@ def collect_baomoi_news(context):
 
 
 @op(config_schema={
-    "source_key": Field(String, is_required=True, description="Source config key: thanhnien, tuoitre, baomoi, vnexpress"),
+    "source_key": Field(String, is_required=True, description="Configured source key: thanhnien, tuoitre, vnexpress, or vneconomy"),
     "start_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
     "end_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
     "storage_mode": Field(String, is_required=False, default_value="link_only", description="link_only (no OCI binary upload) or full_media"),
@@ -303,7 +355,13 @@ def collect_configured_news(context):
 
     window = _window(context.op_config, source_config.get("timezone", "Asia/Ho_Chi_Minh"))
     storage_mode = context.op_config.get("storage_mode", "link_only")
-    writer = Node1NewsWriter(storage_mode=storage_mode)
+    if source_config.get("discovery", {}).get("mode") == "rss_only":
+        return _collect_rss_source(
+            context, source_key, source_config, window, storage_mode,
+            job_name=f"{source_key}_news_job",
+        )
+
+    writer = Node2NewsWriter(storage_mode=storage_mode)
     if source_key == "baomoi":
         client = BaoMoiClient(source_config, security_matcher=writer.matcher)
     else:
@@ -384,6 +442,42 @@ def collect_configured_news(context):
 
 
 @op(config_schema={
+    "start_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
+    "end_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
+    "storage_mode": Field(String, is_required=False, default_value="link_only", description="RSS summaries and links only; full article media is not fetched"),
+})
+def collect_financial_news_batch(context):
+    window = _window(context.op_config)
+    storage_mode = context.op_config.get("storage_mode", "link_only")
+    results: dict[str, dict] = {}
+    errors: dict[str, str] = {}
+    for source_key in FINANCIAL_NEWS_SOURCES:
+        source_config = _yaml(CONFIG_DIR / f"sources/news/{source_key}.yaml")
+        try:
+            results[source_key] = _collect_rss_source(
+                context,
+                source_key,
+                source_config,
+                window,
+                storage_mode,
+                job_name="financial_news_job",
+            )
+        except Exception as exc:
+            errors[source_key] = f"{type(exc).__name__}: {exc}"[:1000]
+            context.log.error(f"{source_key} batch failed: {errors[source_key]}")
+
+    summary = {
+        "start_date": window.start_date.isoformat(),
+        "end_date": window.end_date.isoformat(),
+        "sources": results,
+        "errors": errors,
+    }
+    if errors:
+        raise RuntimeError(f"Financial News batch had source failures: {errors}")
+    return summary
+
+
+@op(config_schema={
     "start_date": Field(String, is_required=False, description="Inclusive provider trading date YYYY-MM-DD (defaults to today)"),
     "end_date": Field(String, is_required=False, description="Inclusive provider trading date YYYY-MM-DD (defaults to today)"),
 })
@@ -412,7 +506,7 @@ def collect_vietstock_market(context):
     )
     try:
         records = asyncio.run(client.collect(window))
-        persisted = Node1MarketWriter().persist_records(records)
+        persisted = Node2MarketWriter().persist_records(records)
         audit.save_items(run_row_id, source_config["source_code"], records)
         audit.save_attempts(run_row_id, source_config["source_code"], client.fetch_attempts)
         audit.finish_run(run_row_id, "SUCCESS", discovered=len(records), persisted=persisted)
@@ -440,6 +534,11 @@ def baomoi_news_job():
 @job(name="vietstock_market_job", tags=_pod_tags("vietstock", "512Mi"), description="Licensed Vietstock data collection; one isolated K3s run pod.")
 def vietstock_market_job():
     collect_vietstock_market()
+
+
+@job(name="financial_news_job", tags=_pod_tags("financial-news", "1Gi"), description="Batch collect the five configured RSS-only financial news publishers.")
+def financial_news_job():
+    collect_financial_news_batch()
 
 
 def _build_configured_news_job(source_key: str):
@@ -542,7 +641,7 @@ def vietstock_eod_schedule(context):
 
 
 defs = Definitions(
-    jobs=[cafef_news_job, baomoi_news_job, vietstock_market_job, *configured_news_jobs.values()],
+    jobs=[cafef_news_job, baomoi_news_job, vietstock_market_job, financial_news_job, *configured_news_jobs.values()],
     schedules=[
         cafef_daily_news_schedule,
         baomoi_daily_news_schedule,

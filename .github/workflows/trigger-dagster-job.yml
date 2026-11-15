@@ -6,16 +6,18 @@ on:
       source:
         description: 'Source adapter to scrape'
         required: true
-        default: 'cafef'
+        default: 'financial_news'
         type: choice
         options:
           - all
+          - financial_news
           - cafef
           - vietstock
           - thanhnien
           - tuoitre
           - baomoi
           - vnexpress
+          - vneconomy
       start_date:
         description: 'Inclusive Start Date (YYYY-MM-DD in Asia/Ho_Chi_Minh)'
         required: true

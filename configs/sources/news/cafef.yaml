@@ -6,39 +6,27 @@ publisher_domain: cafef.vn
 attribution_name: cafef
 timezone: Asia/Ho_Chi_Minh
 request_rate_per_second: 0
-max_pages_per_category: 1000
+collection_enabled: true
+use_scope: personal_academic_research
+binary_asset_collection_enabled: false
+access:
+  use_scope: personal_academic_research
+  internal_only: true
+  attribution_required: true
+  redistribution_allowed: false
+  respect_robots_txt: true
 article_id_regex: '-(?P<article_id>188[0-9]{11,})\.chn$'
 discovery:
-  mode: archive-pagination-with-rss-overlap
+  mode: rss_only
   rss_feeds:
     - https://cafef.vn/thi-truong-chung-khoan.rss
     - https://cafef.vn/doanh-nghiep.rss
     - https://cafef.vn/tai-chinh-ngan-hang.rss
     - https://cafef.vn/vi-mo-dau-tu.rss
-  archive_categories:
-    - code: stock_market
-      first_page: https://cafef.vn/timelinelist/18831/1.chn
-      page_template: https://cafef.vn/timelinelist/18831/{page}.chn
-    - code: business_finance
-      first_page: https://cafef.vn/timelinelist/18836/1.chn
-      page_template: https://cafef.vn/timelinelist/18836/{page}.chn
-    - code: banking_finance
-      first_page: https://cafef.vn/timelinelist/18834/1.chn
-      page_template: https://cafef.vn/timelinelist/18834/{page}.chn
-    - code: macro_finance
-      first_page: https://cafef.vn/timelinelist/18833/1.chn
-      page_template: https://cafef.vn/timelinelist/18833/{page}.chn
-  pagination_order: newest_to_oldest
-  stop_after_oldest_listing_date_before_start_date: true
 article:
-  canonical_link: rel=canonical
-  published_time: article:published_time
-  modified_time: article:modified_time
-  retain_paragraph_boundaries: true
-  content_selectors: [.contentdetail, "#mainContent", .detail-content, "article"]
-  block_types: [heading, paragraph, quote, image, audio, video, table, list]
+  full_text_required: false
 rights:
-  status: link_only
+  status: rss_excerpt_only
   binary_asset_statuses: []
 financial_relevance:
   require_one_term_or_company_alias: true

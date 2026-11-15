@@ -1,6 +1,6 @@
 # Finsights data collection
 
-Python source adapters and Dagster jobs for financial news and market data. Each configured source has its own Dagster job. With the K3s run launcher, one triggered job runs in one short-lived pod; the CafeF and Vietstock jobs do not share a scraping pod.
+Python source adapters and Dagster jobs for financial news and market data. Each configured source has its own Dagster job, and `financial_news_job` runs the five Financial News RSS publishers in one date-window batch. With the K3s run launcher, each triggered job runs in an isolated pod.
 
 ## Data ownership
 
@@ -8,11 +8,11 @@ Python source adapters and Dagster jobs for financial news and market data. Each
 | --- | --- | --- |
 | Dagster run and event history | PostgreSQL `dagster` | Dagster's own orchestration state |
 | Source, run, item, fetch-attempt and checkpoint audit | MySQL Node 2 `finsights_scraping` | Scrape history and retry/reconciliation evidence only |
-| Articles, ordered text/media/table blocks, authors and security matches | MySQL Node 1 `finsights_news` | News product data |
-| Securities, daily prices, index/quote snapshots and canonical aliases | MySQL Node 1 `finsights_market` | Market facts and symbol/company matching |
-| Binary assets and object location metadata | OCI Object Storage; article/block metadata in MySQL Node 1 | News image/audio/table uploads are enabled per source config when OCI credentials are present |
+| Articles, RSS summaries, publishers, authors and security matches | MySQL Node 2 `finsights_news` | Canonical news product data |
+| Securities, daily prices, index/quote snapshots and canonical aliases | MySQL Node 2 `finsights_market_data` | Canonical market facts and symbol/company matching |
+| Binary assets and object location metadata | OCI Object Storage; references in MySQL Node 2 | Financial News RSS collection stores links and feed excerpts only; it does not download publisher media |
 
-Node 2 does not hold a second copy of news bodies or market facts. `finsights_scraping` records stable source IDs and the destination UID so a run can be audited without becoming a content database.
+`finsights_scraping` records stable source IDs and the destination UID so a run can be audited without becoming a content database. Node 1 is reserved for AI-service-owned databases and is not written by these backend collectors.
 
 ## Layout
 
@@ -21,16 +21,16 @@ configs/
   news/ticker-matching.yaml
   reference/security-aliases.yaml
   sources/news/cafef.yaml
-  sources/news/{thanhnien,tuoitre,baomoi,vnexpress}.yaml
+  sources/news/{thanhnien,tuoitre,vnexpress,vneconomy,baomoi}.yaml
   sources/market/vietstock.yaml
   sources/market/vietstock-datafeed-mapping.example.yaml
   storage/object-storage.yaml
 src/finsights_scraping/
   domain/                 # Date-window and normalized data contracts
-  sources/news/cafef.py   # CafeF RSS + archive + article detail adapter
-  sources/news/configured_html.py # Shared config-driven adapter for other publishers
+  sources/news/rss.py     # Shared RSS-only metadata collector
+  sources/news/configured_html.py # Legacy/config-driven archive adapter
   sources/market/vietstock.py # Licensed historical DataFeed adapter
-  persistence/            # Node 1 product writes and Node 2 audit writes
+  persistence/            # Node 2 canonical data writes and collection audit writes
   storage/                # UUID asset identity and object-key rules
   orchestration/          # One Dagster job/schedule per source
 legacy/previous-src/      # Archived pre-rewrite modules, retained for reference
@@ -38,15 +38,13 @@ legacy/previous-src/      # Archived pre-rewrite modules, retained for reference
 
 ## Exact date windows
 
-All manual jobs require `start_date` and `end_date` as `YYYY-MM-DD`, inclusive in `Asia/Ho_Chi_Minh`.
+Manual news jobs accept inclusive `start_date` and `end_date` values in `YYYY-MM-DD` format, interpreted in `Asia/Ho_Chi_Minh`. Locally, use `scripts/run_local.py --source all --start-date ... --end-date ...`; output is grouped under a date-window directory.
 
-CafeF uses RSS only as a recent-discovery overlap. For backfills and exact day collection, it paginates configured financial archives, fetches each article detail, reads a publisher or structured-data publication timestamp, and filters on that timestamp in Vietnam time. It stops only when a fully parsed archive page is older than `start_date`. If dates are absent, an archive is empty unexpectedly, or the page limit is reached before that boundary, the run fails so it cannot report a partial window as complete.
+The Financial News group is CafeF, Tuổi Trẻ, Thanh Niên, VnExpress, and VnEconomy. It reads each publisher's RSS feeds only and stores title, feed summary, source link, publication time, author/category when present, and ticker matches. It does not fetch article pages or media. Publisher IDs (or a stable URL hash where the RSS feed has no ID) and canonical URLs make repeated runs idempotent. RSS entries are filtered to the requested inclusive date window and written in publication-day batches.
 
-CafeF publisher IDs are extracted from `.chn` URLs and stored with the normalized article. Canonical URL and publisher ID are unique ingestion keys. Body content is stored as ordered blocks, preserving paragraph breaks and the order of headings, quotes, images, audio, video, lists, and tables. Reprints keep their source-origin URL separately when the page exposes it.
+RSS endpoints generally expose a rolling set of recent items rather than a historical export. The run reports each feed's oldest/newest item and marks a requested window as `RSS_RETENTION_LIMITED` when its start predates the visible feed. A successful RSS request therefore does not claim that every article since `start_date` was available. For a deeper backfill, use a publisher-provided archive or a licensed historical feed after confirming its allowed use.
 
-Thanh Niên, Tuổi Trẻ, Báo Mới, and VnExpress each have a source YAML and a separate Dagster job/pod. The shared adapter reads recent RSS where the publisher supplies it, uses a source archive for backfills, parses the article's publisher ID and publication timestamp, applies the inclusive Vietnam-local date window, and keeps the same ordered content-block format as CafeF. A job fails if it cannot reach an article older than `start_date`, or if an article has no reliable publication timestamp. RSS is only a recent overlap; it is never treated as historical coverage.
-
-All four sources are enabled in `personal_academic_research` scope for this thesis. Their source configs set internal-only use, attribution required, redistribution disabled, and robots.txt checks on. Set `collection_enabled: false` to pause an individual source. The adapter uses publisher pages and documented RSS only; it does not call undocumented APIs. Báo Mới is configured as an excerpt/aggregator record and does not claim its text is the original publisher's complete article. Date-window guarantees still depend on the configured archive pagination and selectors matching the publisher's live pages; a run fails when it cannot prove the requested boundary.
+The five publisher configs require internal-only collection, attribution, no redistribution, and robots.txt checks. Set `collection_enabled: false` to pause a source. VnEconomy is the added finance-focused source; its RSS page lists finance, securities, latest, and business feeds and asks that publishers identify the source: https://vneconomy.vn/rss.html.
 
 Source publication and quote timestamps are converted to UTC for `DATETIME` columns; `business_date` / `trade_date` remain Vietnam-local calendar dates for exact range filtering.
 
@@ -54,7 +52,7 @@ The public Vietstock board is a live/current view. The job therefore uses only a
 
 ## Financial relevance and ticker matching
 
-CafeF starts with the stock-market, company finance, banking, and macro-investment feeds/archives, then applies financial relevance terms. Matching against a listed company uses `market_security_aliases` in Node 1: ticker, legal/short names, brand or former names, with effective dates. A short symbol must appear as a whole token and have financial context; company-name phrase matches retain the matched alias, evidence snippet, method, and confidence for review. This reduces false positives from ordinary words and abbreviations.
+CafeF starts with stock-market, company finance, banking, and macro-investment RSS feeds, then applies financial relevance terms. Matching against a listed company uses `market_security_aliases` in Node 2 `finsights_market_data`: ticker, legal/short names, brand or former names, with effective dates. A short symbol must appear as a whole token and have financial context; company-name phrase matches retain the matched alias, evidence snippet, method, and confidence for review. This reduces false positives from ordinary words and abbreviations.
 
 An exact `SHB` symbol hit is strong only as a token in financial context. Company aliases such as the legal bank name and known former/brand names should be maintained in `market_security_aliases`; the scraper does not hard-code company name guesses.
 
@@ -72,7 +70,7 @@ raw/news/{publisher}/{yyyy}/{mm}/{dd}/{article_uid}/html/{asset_uid}.html
 raw/market/{provider}/{yyyy}/{mm}/{dd}/{symbol}/{asset_uid}.{ext}
 ```
 
-Every object has a UUID `asset_uid`; SHA-256 and size support content deduplication. The four new source configs enable image/audio/table uploads for internal thesis research; uploads require the matching Tokyo OCI credentials in the runtime environment. If credentials are absent, the uploader stays in dry-run mode. CafeF remains link-only until its config explicitly enables binary collection. Object keys and asset IDs are stored in news media/block metadata; a separate normalized registry write into `finsights_assets` is not implemented yet. No access keys or expiring URLs belong in the database.
+Every object has a UUID `asset_uid`; SHA-256 and size support content deduplication. The Financial News batch is link-only and does not upload images, audio, tables, or source HTML. The storage code remains available for other authorized collectors; no access keys or expiring URLs belong in the database.
 
 ## Schedules and collection frequency
 
@@ -84,6 +82,8 @@ Every object has a UUID `asset_uid`; SHA-256 and size support content deduplicat
 | `tuoitre_news_job` | Daily at 02:45 Vietnam time | Collect the previous calendar day |
 | `baomoi_news_job` | Daily at 03:00 Vietnam time | Collect the previous calendar day |
 | `vnexpress_news_job` | Daily at 03:15 Vietnam time | Collect the previous calendar day |
+| `vneconomy_news_job` | Daily at 04:00 Vietnam time | Collect the previous calendar day |
+| `financial_news_job` | Manual batch | Run all five RSS publishers for the requested date range |
 
 For stock/index metrics, start with one EOD snapshot per trading day, then a second reconciliation around 16:30–17:00 if the provider revises closing data. If intraday analysis becomes necessary, add 15-minute snapshots during market sessions after confirming the licensed rate and storage limits; there is no need to collect every stock every five minutes at the start.
 
@@ -91,9 +91,9 @@ The scraper pods request 100m CPU/256 MiB and have limits of 500m CPU/512–768 
 
 ## Configuration and secrets
 
-Set `NEWS_DATABASE_URL`, `MARKET_DATABASE_URL`, and `SCRAPING_DATABASE_URL` as Kubernetes Secret-backed variables. They must use the dedicated Node 1/Node 2 app users. Mount the Node-specific CA files and set `MYSQL_NODE_1_TLS_CA_FILE` / `MYSQL_NODE_2_TLS_CA_FILE`; the SQLAlchemy engines refuse to connect without a CA and verify the trusted certificate chain. See `.env.example` for names and placeholders; do not commit populated values. `VIETSTOCK_API_TOKEN` is a secret. The DataFeed URL/field mapping is filled only from Vietstock's licensed contract.
+Set `NEWS_DATABASE_URL`, `MARKET_DATABASE_URL`, and `SCRAPING_DATABASE_URL` to Node 2 databases `finsights_news`, `finsights_market_data`, and `finsights_scraping`. `MARKET_DATABASE_URL` uses the market-data app account, whose password CoreDB provisions from `MYSQL_SCRAPING_APP_PASSWORD`. `ASSETS_DATABASE_URL` is optional until normalized asset rows are written. All MySQL writers use `MYSQL_NODE_2_TLS_CA_FILE` and refuse plaintext connections. These collectors write to Node 2 and do not write to Node 1 or the MarketService read-model database `finsights_market`. See `.env.example` for names/placeholders; do not commit populated values. `VIETSTOCK_API_TOKEN` is a secret.
 
-For run pods, Dagster's `runK8sConfig` (or the equivalent run-level K8s configuration) must expose those variables and mount both CA files. Create keys for the three database URLs in the `finsights-scraper-runtime` Kubernetes Secret, plus the Vietstock API token in `vietstock-datafeed`; expose the non-secret endpoint/mapping path separately. The code location pod alone does not pass its process environment into K3s run pods automatically.
+Dagster's run launcher supplies the Node 2 database URLs, app-password secrets, and MySQL CA ConfigMap to isolated K3s run pods. The code-server image or its container-context config must roll out after configuration changes so new runs use the same Node 2 settings.
 
 For local Dagster UI:
 
