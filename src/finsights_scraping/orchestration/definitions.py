@@ -350,6 +350,13 @@ def _collect_html_backfill(
 
 
 def _pod_tags(source: str, memory_limit: str = "768Mi") -> dict:
+    # Node 2 currently has intermittent pod DNS failures when resolving Dagster's
+    # PostgreSQL service. Keep scraper workers on the healthy control-plane node
+    # until the cluster networking issue is corrected; operators may override it.
+    run_node = os.getenv("DAGSTER_SCRAPER_RUN_NODE", "finsights-prod-node-01").strip()
+    pod_spec_config = {"restart_policy": "Never"}
+    if run_node:
+        pod_spec_config["node_selector"] = {"kubernetes.io/hostname": run_node}
     return {
         "dagster-k8s/config": {
             "container_config": {
@@ -358,7 +365,7 @@ def _pod_tags(source: str, memory_limit: str = "768Mi") -> dict:
                     "limits": {"cpu": "500m", "memory": memory_limit},
                 },
             },
-            "pod_spec_config": {"restart_policy": "Never"},
+            "pod_spec_config": pod_spec_config,
             "pod_template_spec_metadata": {
                 "labels": {
                     "app.kubernetes.io/part-of": "finsights-data-scraping",
