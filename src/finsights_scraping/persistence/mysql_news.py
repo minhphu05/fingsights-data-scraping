@@ -4,13 +4,17 @@ import hashlib
 import json
 import logging
 import os
+import random
 import re
+import time as time_module
 import uuid
 from datetime import datetime, time, timedelta, timezone
+from functools import wraps
 from typing import Any
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError as SQLAlchemyOperationalError
 from sqlalchemy.engine import Engine
 
 from ..domain.models import Article, ContentBlock
@@ -19,6 +23,37 @@ from .mysql_engine import create_tls_mysql_engine
 from .security_matching import SecurityAliasMatcher
 
 logger = logging.getLogger("finsights.persistence.news")
+
+
+def _retry_mysql_deadlocks(method):
+    """Retry an idempotent article transaction after transient InnoDB lock errors."""
+    @wraps(method)
+    def wrapped(self, article):
+        max_attempts = 5
+        for attempt in range(max_attempts):
+            try:
+                return method(self, article)
+            except SQLAlchemyOperationalError as exc:
+                original = getattr(exc, "orig", None)
+                error_code = original.args[0] if getattr(original, "args", None) else None
+                if error_code not in {1205, 1213} or attempt + 1 >= max_attempts:
+                    raise
+
+                delay = min(2.0, 0.25 * (2 ** attempt)) + random.uniform(0.0, 0.2)
+                logger.warning(
+                    "Retrying Node 2 news transaction after MySQL lock error %s for %s/%s "
+                    "(attempt %d/%d, sleep %.2fs)",
+                    error_code,
+                    article.publisher_code,
+                    article.source_article_id,
+                    attempt + 2,
+                    max_attempts,
+                    delay,
+                )
+                time_module.sleep(delay)
+        raise AssertionError("unreachable")
+
+    return wrapped
 
 
 def _sha256(value: str) -> str:
@@ -87,6 +122,7 @@ class Node2NewsWriter:
             article_uids[article.source_article_id] = self._persist_article(article)
         return article_uids
 
+    @_retry_mysql_deadlocks
     def _persist_article(self, article: Article) -> str:
         canonical_hash = _sha256(article.canonical_url)
         plaintext = _plain_text(article.blocks)
