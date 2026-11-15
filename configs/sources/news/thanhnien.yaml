@@ -18,12 +18,45 @@ access:
   redistribution_allowed: false
   respect_robots_txt: true
 rights:
-  status: rss_excerpt_only
+  status: unknown
   binary_asset_statuses: []
 
 article_id_regex: '-(?P<article_id>\d{6,})\.htm$'
 discovery:
   mode: rss_only
+  html_backfill:
+    strategy: sitemap
+    sitemap_index_url: https://thanhnien.vn/sitemap.xml
+    partition_type: five_day
+    max_article_failure_ratio: 0.25
+    headline_filter_terms:
+      - chứng khoán
+      - cổ phiếu
+      - VN-Index
+      - VN30
+      - HOSE
+      - HNX
+      - UPCoM
+      - doanh nghiệp
+      - niêm yết
+      - báo cáo tài chính
+      - cổ tức
+      - trái phiếu
+      - lãi suất
+      - tỷ giá
+      - ngân hàng
+      - khối ngoại
+      - thanh khoản
+      - công bố thông tin
+      - tài chính
+      - kinh tế
+      - đầu tư
+      - thị trường
+      - lợi nhuận
+      - doanh thu
+      - bảo hiểm
+      - quỹ đầu tư
+      - IPO
   rss_feeds:
     - url: https://thanhnien.vn/rss/kinh-te/chung-khoan.rss
       category: stocks
@@ -33,7 +66,12 @@ discovery:
       category: listed_companies
 
 article:
-  full_text_required: false
+  title_selectors: ["h1.detail-title", "h1"]
+  summary_selectors: ["h2.detail-sapo", "div.detail-sapo", ".detail-sapo"]
+  subtitle_selectors: [".detail-subtitle", ".detail-title-sub"]
+  author_selectors: [".author-name", ".detail-author", "span.name", "[rel='author']"]
+  content_selectors: [".detail-content", "#contentDetail", "#mainContent"]
+  full_text_required: true
 
 financial_relevance:
   terms:

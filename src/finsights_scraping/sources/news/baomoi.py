@@ -16,6 +16,7 @@ import httpx
 from ...domain.models import Article, ContentBlock
 from ...domain.windows import DateWindow
 from .cafef import CafeFClient, IncompleteArchiveError, UnusableArticleError
+from .configured_html import SourceAuthorizationError, source_collection_enabled
 
 logger = logging.getLogger("finsights.sources.news.baomoi")
 
@@ -31,6 +32,13 @@ class BaoMoiClient(CafeFClient):
             config.get("max_pages_per_category", config.get("discovery", {}).get("max_pages", 1000))
         ))
         self.base_url = str(config.get("base_url", "https://baomoi.com")).rstrip("/")
+
+    async def _get(self, url: str) -> httpx.Response:
+        if self.config.get("access", {}).get("respect_robots_txt", True):
+            await self._load_robots(url)
+            if self._robots_parser and not self._robots_parser.can_fetch("FinsightsDataResearch", url):
+                raise SourceAuthorizationError(f"robots.txt disallows this URL for {self.source_code}: {url}")
+        return await super()._get(url)
 
     async def _find_start_page(self, category: dict[str, Any], end_date: date) -> int:
         """Binary search page index when target date is significantly in the past."""
@@ -99,8 +107,8 @@ class BaoMoiClient(CafeFClient):
                     except Exception:
                         pass
             if pub_dt is None:
-                # Fallback to now if no date present on card
-                pub_dt = datetime.now(ZoneInfo(self.timezone_name))
+                # Do not invent a publication date; undated cards cannot prove archive coverage.
+                continue
             items.append((clean_url, pub_dt, {"title": a.get_text(strip=True), "url": clean_url}))
         return items
 
@@ -108,8 +116,14 @@ class BaoMoiClient(CafeFClient):
         self,
         window: DateWindow,
         on_batch: Any | None = None,
+        archive_only: bool = False,
     ) -> list[Article]:
-        """Stream news day-by-day directly into persistence to maintain zero memory footprint."""
+        """Collect the Baomoi HTML archive and stream publication-day batches."""
+        if not source_collection_enabled(self.config):
+            raise SourceAuthorizationError(
+                "Baomoi collection requires enabled, attributed, internal-only access and robots.txt checks"
+            )
+
         discovered: dict[str, tuple[str, str]] = {}
         seen_article_urls: set[str] = set()
         results: dict[str, Article] = {}
@@ -132,6 +146,18 @@ class BaoMoiClient(CafeFClient):
 
         today = datetime.now(ZoneInfo(self.timezone_name)).date()
         categories = self.config["discovery"]["archive_categories"]
+        stats = {
+            "method": "html_archive_backfill" if archive_only else "html_archive_latest",
+            "archive_categories": len(categories),
+            "archive_pages": 0,
+            "article_urls_discovered": 0,
+            "article_pages_fetched": 0,
+            "article_pages_failed": 0,
+            "financial_articles": 0,
+            "coverage_proven": True,
+            "requested_start_date": window.start_date.isoformat(),
+            "requested_end_date": window.end_date.isoformat(),
+        }
         for category in categories:
             cat_code = category.get("code", "archive")
             category_complete = False
@@ -157,6 +183,8 @@ class BaoMoiClient(CafeFClient):
                     break
 
                 saw_any_articles = True
+                stats["archive_pages"] += 1
+                stats["article_urls_discovered"] += len(items)
                 page_dates = [it[1] for it in items]
 
                 for article_url, article_dt, raw_item in items:
@@ -173,11 +201,25 @@ class BaoMoiClient(CafeFClient):
 
                     try:
                         article = await self.fetch_article(article_url, category=cat_code, listing_item=raw_item)
+                        stats["article_pages_fetched"] += 1
                         if window.contains(article.published_at) and self.is_financial(article):
                             if article.source_article_id not in processed_uids:
                                 processed_uids.add(article.source_article_id)
-                                day_buffer.setdefault(article_date, []).append(article)
-                    except (UnusableArticleError, httpx.HTTPError):
+                                article_day = article.published_at.astimezone(
+                                    ZoneInfo(self.timezone_name)
+                                ).date()
+                                article.metadata["collection_method"] = stats["method"]
+                                article.metadata["content_scope"] = (
+                                    "aggregate_excerpt"
+                                    if any(block.metadata.get("fallback") == "summary_only" for block in article.blocks)
+                                    else "baomoi_aggregator_content"
+                                )
+                                day_buffer.setdefault(article_day, []).append(article)
+                                stats["financial_articles"] += 1
+                    except SourceAuthorizationError:
+                        raise
+                    except Exception:
+                        stats["article_pages_failed"] += 1
                         continue
 
                 # Flush days older than newest if page processed
@@ -192,12 +234,25 @@ class BaoMoiClient(CafeFClient):
             _flush_days(min_date_cutoff=None, category_code=cat_code)
 
             if not saw_any_articles or not category_complete:
-                if self.config.get("discovery", {}).get("fail_if_archive_boundary_not_proven", False):
+                stats["coverage_proven"] = False
+                if self.config.get("discovery", {}).get("fail_if_archive_boundary_not_proven", True):
                     raise IncompleteArchiveError(
                         f"Baomoi archive {cat_code} did not prove coverage before {window.start_date}"
                     )
 
         _flush_days(min_date_cutoff=None)
+        stats["article_failure_ratio"] = round(
+            stats["article_pages_failed"]
+            / max(1, stats["article_pages_failed"] + stats["article_pages_fetched"]),
+            4,
+        )
+        max_failure_ratio = float(self.config.get("discovery", {}).get("max_article_failure_ratio", 0.25))
+        if stats["article_failure_ratio"] > max_failure_ratio:
+            raise RuntimeError(
+                f"Baomoi archive article failure ratio {stats['article_failure_ratio']:.1%} "
+                f"exceeds configured limit {max_failure_ratio:.1%}"
+            )
+        self.collection_stats = stats
         return list(results.values())
 
     async def fetch_article(
@@ -300,8 +355,13 @@ class BaoMoiClient(CafeFClient):
             "source_id_regex": self.config.get("article_id_regex"),
             "publisher_name": self.config.get("name", "Báo Mới"),
             "homepage_url": self.base_url,
+            "attribution_name": self.config.get("attribution_name", "Báo Mới"),
+            "attribution_required": self.config.get("access", {}).get("attribution_required") is True,
             "discovered_from": category,
+            "collection_scope": self.config.get("use_scope"),
             "rights_status": self.config.get("rights", {}).get("status", "unknown"),
+            "internal_only": self.config.get("access", {}).get("internal_only") is True,
+            "redistribution_allowed": self.config.get("access", {}).get("redistribution_allowed") is True,
             "download_binary_assets_only_if_rights_status_in": self.config.get("rights", {}).get("binary_asset_statuses", []),
             "binary_asset_collection_enabled": bool(self.config.get("binary_asset_collection_enabled", True)),
             "original_source_url": original_source_url,

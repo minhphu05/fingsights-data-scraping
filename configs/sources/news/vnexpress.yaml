@@ -18,18 +18,30 @@ access:
   redistribution_allowed: false
   respect_robots_txt: true
 rights:
-  status: rss_excerpt_only
+  status: unknown
   binary_asset_statuses: []
 
 article_id_regex: '-(?P<article_id>\d+)\.html$'
 discovery:
   mode: rss_only
+  max_pages: 2000
+  fail_if_archive_boundary_not_proven: true
+  link_selectors: ["a[href]"]
+  archive_categories:
+    - code: stock_market
+      first_page: https://vnexpress.net/kinh-doanh/chung-khoan-p1
+      page_template: https://vnexpress.net/kinh-doanh/chung-khoan-p{page}
   rss_feeds:
     - url: https://vnexpress.net/rss/kinh-doanh.rss
       category: business_finance
 
 article:
-  full_text_required: false
+  title_selectors: ["h1.title-detail", "h1"]
+  summary_selectors: ["p.description", ".description"]
+  subtitle_selectors: [".short_intro"]
+  author_selectors: [".author_mail", ".author", "[rel='author']"]
+  content_selectors: ["article.fck_detail", ".fck_detail", ".article-content"]
+  full_text_required: true
 
 financial_relevance:
   terms:

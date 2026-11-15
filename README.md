@@ -1,6 +1,6 @@
 # Finsights data collection
 
-Python source adapters and Dagster jobs for financial news and market data. Each configured source has its own Dagster job, and `financial_news_job` runs the five Financial News RSS publishers in one date-window batch. With the K3s run launcher, each triggered job runs in an isolated pod.
+Python source adapters and Dagster jobs for financial news and market data. The four sheet publishers with RSS feeds are collected through RSS; Báo Mới is collected from its HTML category archive because the current site does not expose a first-party RSS feed. Five separate `*_news_backfill_job` jobs collect historical data. With the K3s run launcher, each triggered job runs in an isolated pod.
 
 ## Data ownership
 
@@ -10,7 +10,7 @@ Python source adapters and Dagster jobs for financial news and market data. Each
 | Source, run, item, fetch-attempt and checkpoint audit | MySQL Node 2 `finsights_scraping` | Scrape history and retry/reconciliation evidence only |
 | Articles, RSS summaries, publishers, authors and security matches | MySQL Node 2 `finsights_news` | Canonical news product data |
 | Securities, daily prices, index/quote snapshots and canonical aliases | MySQL Node 2 `finsights_market_data` | Canonical market facts and symbol/company matching |
-| Binary assets and object location metadata | OCI Object Storage; references in MySQL Node 2 | Financial News RSS collection stores links and feed excerpts only; it does not download publisher media |
+| Binary assets and object location metadata | OCI Object Storage; references in MySQL Node 2 | RSS and HTML backfill keep article metadata/body only; binary media downloads are disabled |
 
 `finsights_scraping` records stable source IDs and the destination UID so a run can be audited without becoming a content database. Node 1 is reserved for AI-service-owned databases and is not written by these backend collectors.
 
@@ -28,7 +28,8 @@ configs/
 src/finsights_scraping/
   domain/                 # Date-window and normalized data contracts
   sources/news/rss.py     # Shared RSS-only metadata collector
-  sources/news/configured_html.py # Legacy/config-driven archive adapter
+  sources/news/configured_html.py # Paginated full-HTML archive adapter
+  sources/news/sitemap_html.py # Sitemap URL discovery + full-HTML article parsing
   sources/market/vietstock.py # Licensed historical DataFeed adapter
   persistence/            # Node 2 canonical data writes and collection audit writes
   storage/                # UUID asset identity and object-key rules
@@ -40,11 +41,20 @@ legacy/previous-src/      # Archived pre-rewrite modules, retained for reference
 
 Manual news jobs accept inclusive `start_date` and `end_date` values in `YYYY-MM-DD` format, interpreted in `Asia/Ho_Chi_Minh`. Locally, use `scripts/run_local.py --source all --start-date ... --end-date ...`; output is grouped under a date-window directory.
 
-The Financial News group is CafeF, Tuổi Trẻ, Thanh Niên, VnExpress, and VnEconomy. It reads each publisher's RSS feeds only and stores title, feed summary, source link, publication time, author/category when present, and ticker matches. It does not fetch article pages or media. Publisher IDs (or a stable URL hash where the RSS feed has no ID) and canonical URLs make repeated runs idempotent. RSS entries are filtered to the requested inclusive date window and written in publication-day batches.
+The five sources from the sheet are CafeF, Tuổi Trẻ, Thanh Niên, VnExpress, and Báo Mới. The first four expose RSS feeds and use RSS for recent collection; Báo Mới's current site has no first-party RSS feed, so its recent and historical collection use its HTML finance archive. Backfill discovers URLs from publisher sitemaps or paginated archive pages, fetches selected article pages, checks publication time and financial relevance, then writes publication-day batches. Báo Mới records its originating publisher URL when available and marks summary-only content as an excerpt. Both paths use canonical URLs and publisher IDs (or a stable URL hash where an RSS feed has no ID) for idempotent writes. Binary media downloads remain disabled. VnEconomy remains an independently configured RSS source, outside the five-source sheet set.
 
-RSS endpoints generally expose a rolling set of recent items rather than a historical export. The run reports each feed's oldest/newest item and marks a requested window as `RSS_RETENTION_LIMITED` when its start predates the visible feed. A successful RSS request therefore does not claim that every article since `start_date` was available. For a deeper backfill, use a publisher-provided archive or a licensed historical feed after confirming its allowed use.
+RSS endpoints generally expose a rolling set of recent items rather than a historical export. The run reports each feed's oldest/newest item and marks a requested window as `RSS_RETENTION_LIMITED` when its start predates the visible feed. A successful RSS request therefore does not claim that every article since `start_date` was available. Use the HTML backfill jobs for historical ranges; they verify the archive/sitemap date boundary and fail when it cannot be proved.
 
-The five publisher configs require internal-only collection, attribution, no redistribution, and robots.txt checks. Set `collection_enabled: false` to pause a source. VnEconomy is the added finance-focused source; its RSS page lists finance, securities, latest, and business feeds and asks that publishers identify the source: https://vneconomy.vn/rss.html.
+Run a small publisher backfill locally before submitting a larger range to Dagster:
+
+```bash
+python scripts/run_local.py --source thanhnien --collection-method html_backfill \
+  --start-date 2026-01-01 --end-date 2026-11-08
+```
+
+Dagster exposes `cafef_news_backfill_job`, `thanhnien_news_backfill_job`, `tuoitre_news_backfill_job`, `vnexpress_news_backfill_job`, and `baomoi_news_backfill_job`. Submit all five through `scripts/submit_dagster_job.py --source all_backfill`, or submit an individual `*_backfill` source. End the backfill at the RSS cutover date for the four RSS publishers. Báo Mới has no first-party RSS cutover, so its HTML collector covers the requested range.
+
+All five sheet sources require internal-only collection, attribution, no redistribution, and robots.txt checks. Set `collection_enabled: false` to pause a source. VnEconomy also remains available as a separate RSS adapter; its RSS page lists finance, securities, latest, and business feeds and asks that publishers identify the source: https://vneconomy.vn/rss.html. Báo Mới's sitemap and category archive are listed in its public robots.txt; the collector does not call search pages.
 
 Source publication and quote timestamps are converted to UTC for `DATETIME` columns; `business_date` / `trade_date` remain Vietnam-local calendar dates for exact range filtering.
 
@@ -83,11 +93,12 @@ Every object has a UUID `asset_uid`; SHA-256 and size support content deduplicat
 | `baomoi_news_job` | Daily at 03:00 Vietnam time | Collect the previous calendar day |
 | `vnexpress_news_job` | Daily at 03:15 Vietnam time | Collect the previous calendar day |
 | `vneconomy_news_job` | Daily at 04:00 Vietnam time | Collect the previous calendar day |
-| `financial_news_job` | Manual batch | Run all five RSS publishers for the requested date range |
+| `financial_news_job` | Manual batch | Run the four sheet publishers that expose RSS for the requested date range |
+| Five `*_news_backfill_job` jobs | Manual backfill | Fetch historical publisher HTML and persist day batches to Node 2; Baomoi is an aggregator, so content may be an excerpt |
 
 For stock/index metrics, start with one EOD snapshot per trading day, then a second reconciliation around 16:30–17:00 if the provider revises closing data. If intraday analysis becomes necessary, add 15-minute snapshots during market sessions after confirming the licensed rate and storage limits; there is no need to collect every stock every five minutes at the start.
 
-The scraper pods request 100m CPU/256 MiB and have limits of 500m CPU/512–768 MiB. This keeps simultaneous source runs modest for the two 8 GB VPS nodes. Dagster's webserver/daemon and database consume separate capacity.
+The scraper pods request 100m CPU/256 MiB and have limits of 500m CPU/1 GiB for HTML backfills and 500m CPU/512–768 MiB for lighter jobs. This keeps simultaneous source runs modest for the two 8 GB VPS nodes. Dagster's webserver/daemon and database consume separate capacity.
 
 ## Configuration and secrets
 
@@ -114,15 +125,16 @@ ops:
       end_date: "2026-11-02"
 ```
 
-For one of the new sources, choose its job and pass `source_key` (`thanhnien`, `tuoitre`, `baomoi`, or `vnexpress`) with the same inclusive dates. The source job is enabled by its YAML. Archive pagination patterns and selectors still need a first collection to confirm against the publisher's current markup; any robots.txt denial or inability to prove the requested date boundary fails the run.
+For recent RSS collection, select `financial_news_job` and provide both dates. For historical HTML, select the matching `*_news_backfill_job` and use this op config:
 
 ```yaml
 ops:
-  collect_configured_news:
+  collect_news_backfill:
     config:
-      source_key: vnexpress
-      start_date: "2026-11-01"
-      end_date: "2026-11-02"
+      source_key: baomoi
+      start_date: "2026-01-01"
+      end_date: "2026-11-08"
+      storage_mode: link_only
 ```
 
-No database reconciliation, production deployment, or scraping run is performed by editing these source/config files.
+Source access stays internal-only with attribution and no redistribution. The backfill checks `robots.txt` and fails when archive/sitemap coverage cannot prove the requested boundary. The four publisher HTML parsers require article text; Báo Mới retains its aggregate body or marks summary-only fallback as an excerpt.

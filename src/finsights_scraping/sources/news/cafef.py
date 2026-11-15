@@ -9,6 +9,7 @@ from datetime import date, datetime, timezone
 from email.utils import parsedate_to_datetime
 from typing import Any, Iterable
 from urllib.parse import urljoin, urlparse, urlunparse
+from urllib.robotparser import RobotFileParser
 from zoneinfo import ZoneInfo
 
 import httpx
@@ -127,14 +128,20 @@ class CafeFClient:
         self.publisher_code = str(config["publisher_code"])
         self.timezone_name = str(config.get("timezone", "Asia/Ho_Chi_Minh"))
         self.rate = float(os.getenv("CAFEF_REQUEST_RATE_PER_SECOND", config.get("request_rate_per_second", 0.0)))
-        self.max_pages = int(os.getenv("CAFEF_MAX_PAGES_PER_CATEGORY", config.get("max_pages_per_category", 5000)))
+        backfill_config = config.get("discovery", {}).get("html_backfill", {})
+        self.max_pages = int(os.getenv(
+            "CAFEF_MAX_PAGES_PER_CATEGORY",
+            backfill_config.get("max_pages", config.get("max_pages_per_category", 5000)),
+        ))
         self._last_request = 0.0
         self.fetch_attempts: list[dict[str, Any]] = []
+        self._robots_parser: RobotFileParser | None = None
+        self._robots_loaded = False
         self._client = httpx.AsyncClient(
             timeout=timeout_seconds,
             follow_redirects=True,
             headers={
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "User-Agent": "FinsightsDataResearch/1.0 (+personal academic research; attribution retained)",
                 "Accept-Language": "vi-VN,vi;q=0.9,en;q=0.7",
             },
         )
@@ -147,6 +154,10 @@ class CafeFClient:
                 pass
 
     async def _get(self, url: str) -> httpx.Response:
+        if self.config.get("access", {}).get("respect_robots_txt", True):
+            await self._load_robots(url)
+            if self._robots_parser and not self._robots_parser.can_fetch("FinsightsDataResearch", url):
+                raise RuntimeError(f"robots.txt disallows this URL for {self.source_code}: {url}")
         interval = (1.0 / self.rate) if self.rate > 0 else 0.0
         max_retries = 2
         for attempt in range(max_retries + 1):
@@ -196,6 +207,36 @@ class CafeFClient:
                 })
                 raise
 
+    async def _load_robots(self, url: str) -> None:
+        if self._robots_loaded:
+            return
+        parsed = urlparse(url)
+        robots_url = urlunparse((parsed.scheme, parsed.netloc, "/robots.txt", "", "", ""))
+        requested_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        response = await self._client.get(robots_url)
+        self.fetch_attempts.append({
+            "url": robots_url,
+            "resource_kind": "robots_txt",
+            "requested_at": requested_at,
+            "completed_at": datetime.now(timezone.utc).replace(tzinfo=None),
+            "http_status": response.status_code,
+            "content_type": response.headers.get("content-type"),
+            "size_bytes": len(response.content),
+            "outcome": "SUCCESS" if response.status_code in {200, 404} else "FAILED",
+        })
+        if response.status_code == 404:
+            self._robots_loaded = True
+            return
+        if response.status_code != 200:
+            raise RuntimeError(f"Cannot read robots.txt for {self.source_code}; refusing archive collection.")
+        parser = RobotFileParser(robots_url)
+        parser.parse(response.text.splitlines())
+        self._robots_parser = parser
+        self._robots_loaded = True
+        crawl_delay = parser.crawl_delay("FinsightsDataResearch") or parser.crawl_delay("*")
+        if crawl_delay and crawl_delay > 0:
+            self.rate = min(self.rate, 1.0 / float(crawl_delay)) if self.rate > 0 else 1.0 / float(crawl_delay)
+
     async def _find_start_page(self, category: dict[str, Any], end_date: date) -> int:
         """Binary search page index when target date is significantly in the past."""
         template = category["page_template"]
@@ -225,6 +266,7 @@ class CafeFClient:
         self,
         window: DateWindow,
         on_batch: Any | None = None,
+        archive_only: bool = False,
     ) -> list[Article]:
         """Fetch archive pages and detail pages; flushes day-batches incrementally to prevent OOM."""
         discovered: dict[str, tuple[str, str]] = {}
@@ -232,6 +274,8 @@ class CafeFClient:
         results: dict[str, Article] = {}
         day_buffer: dict[date, list[Article]] = {}
         processed_uids: set[str] = set()
+        archive_pages = 0
+        coverage_proven = True
 
         def _flush_days(min_date_cutoff: date | None = None, category_code: str | None = None):
             for pub_date in sorted(list(day_buffer.keys()), reverse=True):
@@ -248,11 +292,17 @@ class CafeFClient:
                                 results[a.source_article_id] = a
 
         today = datetime.now(ZoneInfo(self.timezone_name)).date()
-        rss_urls = await self._rss_urls() if (today - window.end_date).days <= 2 else []
+        rss_urls = (
+            await self._rss_urls()
+            if not archive_only and (today - window.end_date).days <= 2
+            else []
+        )
         for url in rss_urls:
             discovered[url] = ("rss", "recent_feed")
 
-        categories = self.config["discovery"]["archive_categories"]
+        discovery = self.config.get("discovery", {})
+        backfill_config = discovery.get("html_backfill", {})
+        categories = backfill_config.get("archive_categories", discovery.get("archive_categories", []))
         for category in categories:
             cat_code = category.get("code", "archive")
             category_complete = False
@@ -267,6 +317,7 @@ class CafeFClient:
             for page_number in range(start_page, self.max_pages + 1):
                 page_url = category.get("first_page") if page_number == 1 else template.format(page=page_number)
                 response = await self._get(page_url)
+                archive_pages += 1
                 soup = BeautifulSoup(response.content, "lxml")
                 candidates = self._archive_urls(soup, page_url)
                 if not candidates:
@@ -287,9 +338,11 @@ class CafeFClient:
                             # Skip full detail download if outside requested date window!
                             continue
 
+                    if article_url in seen_article_urls:
+                        continue
+                    seen_article_urls.add(article_url)
                     try:
                         article = await self.fetch_article(article_url, category=category["code"])
-                        seen_article_urls.add(article_url)
                         article_date = article.published_at.astimezone(ZoneInfo(self.timezone_name)).date()
                         page_dates.append(article.published_at.astimezone(ZoneInfo(self.timezone_name)))
                         if window.contains(article.published_at) and self.is_financial(article):
@@ -311,7 +364,11 @@ class CafeFClient:
             _flush_days(min_date_cutoff=None, category_code=cat_code)
 
             if not saw_any_articles or not category_complete:
-                if self.config.get("discovery", {}).get("fail_if_archive_boundary_not_proven", False):
+                coverage_proven = False
+                if backfill_config.get(
+                    "fail_if_archive_boundary_not_proven",
+                    discovery.get("fail_if_archive_boundary_not_proven", False),
+                ):
                     raise IncompleteArchiveError(
                         f"CafeF archive {category['code']} did not prove coverage before {window.start_date}; "
                         "increase max_pages_per_category or verify the archive pagination format"
@@ -336,6 +393,15 @@ class CafeFClient:
                     day_buffer.setdefault(article_date, []).append(article)
 
         _flush_days(min_date_cutoff=None, category_code="rss")
+        self.collection_stats = {
+            "method": "html_archive_backfill" if archive_only else "html_archive_with_rss_overlap",
+            "archive_categories": len(categories),
+            "archive_pages": archive_pages,
+            "article_urls_discovered": len(discovered),
+            "article_pages_fetched": len(seen_article_urls),
+            "financial_articles": len(processed_uids),
+            "coverage_proven": coverage_proven,
+        }
         return list(results.values())
 
     async def _rss_urls(self) -> list[str]:
@@ -400,7 +466,8 @@ class CafeFClient:
             if root:
                 break
         blocks = self._content_blocks(root) if root else []
-        if not blocks and summary:
+        full_text_required = self.config.get("article", {}).get("full_text_required", False)
+        if not blocks and summary and not full_text_required:
             blocks = [ContentBlock(order=0, block_type="paragraph", text=summary, metadata={"fallback": "summary_only"})]
         if not blocks:
             raise UnusableArticleError(f"CafeF article body is missing: {clean_url}")
@@ -416,6 +483,7 @@ class CafeFClient:
         original_source_url = self._original_source_url(soup)
         rights = self.config.get("rights", {})
         metadata = {
+            "collection_method": "html_archive",
             "source_id_regex": self.config["article_id_regex"],
             "publisher_name": self.config.get("name", "CafeF"),
             "homepage_url": self.config.get("base_url", "https://cafef.vn"),

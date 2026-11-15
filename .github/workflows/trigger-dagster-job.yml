@@ -18,6 +18,12 @@ on:
           - baomoi
           - vnexpress
           - vneconomy
+          - all_backfill
+          - cafef_backfill
+          - thanhnien_backfill
+          - tuoitre_backfill
+          - vnexpress_backfill
+          - baomoi_backfill
       start_date:
         description: 'Inclusive Start Date (YYYY-MM-DD in Asia/Ho_Chi_Minh)'
         required: true
@@ -44,6 +50,7 @@ jobs:
   launch-job:
     name: Submit ${{ inputs.source }} Job
     runs-on: ubuntu-latest
+    timeout-minutes: 360
 
     steps:
       - name: Check out repository

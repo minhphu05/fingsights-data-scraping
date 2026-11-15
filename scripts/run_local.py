@@ -24,7 +24,7 @@ def main() -> int:
         "-s",
         default="all",
         choices=[*SOURCE_CHOICES, "all"],
-        help="Source to run; all runs the five Financial News RSS publishers",
+        help="Source to run; all runs the five sheet publishers with the selected collection method",
     )
     parser.add_argument(
         "--date",
@@ -38,6 +38,12 @@ def main() -> int:
     parser.add_argument(
         "--end-date",
         help="Inclusive end date (YYYY-MM-DD, Asia/Ho_Chi_Minh)",
+    )
+    parser.add_argument(
+        "--collection-method",
+        choices=["latest", "html_backfill"],
+        default="latest",
+        help="Use RSS for the latest window or full HTML archive pages for historical backfill",
     )
     parser.add_argument(
         "--data-dir",
@@ -63,7 +69,9 @@ def main() -> int:
     print("=" * 70)
 
     runner = LocalRunner(data_dir=args.data_dir)
-    results = asyncio.run(runner.run(args.source, start_date, end_date))
+    results = asyncio.run(
+        runner.run(args.source, start_date, end_date, args.collection_method)
+    )
 
     print("\n" + "=" * 70)
     print("RUN SUMMARY")

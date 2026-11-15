@@ -52,6 +52,31 @@ SOURCE_CONFIGS: Dict[str, Dict[str, Any]] = {
         "op_name": "collect_configured_news",
         "config_builder": lambda start, end, mode: {"source_key": "vneconomy", "start_date": start, "end_date": end, "storage_mode": mode},
     },
+    "cafef_backfill": {
+        "job_name": "cafef_news_backfill_job",
+        "op_name": "collect_news_backfill",
+        "config_builder": lambda start, end, mode: {"source_key": "cafef", "start_date": start, "end_date": end, "storage_mode": mode},
+    },
+    "thanhnien_backfill": {
+        "job_name": "thanhnien_news_backfill_job",
+        "op_name": "collect_news_backfill",
+        "config_builder": lambda start, end, mode: {"source_key": "thanhnien", "start_date": start, "end_date": end, "storage_mode": mode},
+    },
+    "tuoitre_backfill": {
+        "job_name": "tuoitre_news_backfill_job",
+        "op_name": "collect_news_backfill",
+        "config_builder": lambda start, end, mode: {"source_key": "tuoitre", "start_date": start, "end_date": end, "storage_mode": mode},
+    },
+    "vnexpress_backfill": {
+        "job_name": "vnexpress_news_backfill_job",
+        "op_name": "collect_news_backfill",
+        "config_builder": lambda start, end, mode: {"source_key": "vnexpress", "start_date": start, "end_date": end, "storage_mode": mode},
+    },
+    "baomoi_backfill": {
+        "job_name": "baomoi_news_backfill_job",
+        "op_name": "collect_news_backfill",
+        "config_builder": lambda start, end, mode: {"source_key": "baomoi", "start_date": start, "end_date": end, "storage_mode": mode},
+    },
     "financial_news": {
         "job_name": "financial_news_job",
         "op_name": "collect_financial_news_batch",
@@ -60,6 +85,13 @@ SOURCE_CONFIGS: Dict[str, Dict[str, Any]] = {
 }
 
 ALL_SOURCES = ["financial_news"]
+BACKFILL_SOURCES = [
+    "cafef_backfill",
+    "thanhnien_backfill",
+    "tuoitre_backfill",
+    "vnexpress_backfill",
+    "baomoi_backfill",
+]
 
 
 def execute_graphql(endpoint_url: str, query: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -264,9 +296,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--source",
-        choices=["all", *SOURCE_CONFIGS.keys()],
+        choices=["all", "all_backfill", *SOURCE_CONFIGS.keys()],
         default="financial_news",
-        help="Source to scrape, or 'all' to run the five Financial News publishers",
+        help="Source to scrape, or 'all' to run the configured recent RSS batch",
     )
     parser.add_argument(
         "--start-date",
@@ -298,13 +330,16 @@ def main() -> None:
     parser.add_argument(
         "--timeout",
         type=int,
-        default=900,
-        help="Timeout in seconds when --wait is enabled (default: 900s / 15m)",
+        default=21600,
+        help="Timeout in seconds when --wait is enabled (default: 21600s / 6h for archive backfills)",
     )
 
     args = parser.parse_args()
 
-    sources_to_run = ALL_SOURCES if args.source == "all" else [args.source]
+    if args.source == "all_backfill":
+        sources_to_run = BACKFILL_SOURCES
+    else:
+        sources_to_run = ALL_SOURCES if args.source == "all" else [args.source]
     failed_runs = []
 
     print("=" * 65)

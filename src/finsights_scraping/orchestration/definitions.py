@@ -17,8 +17,10 @@ from ..persistence import Node2MarketWriter, Node2NewsWriter, ScrapeAuditWriter
 from ..sources.market import VietstockHistoryClient, VietstockPublicBoardClient
 from ..sources.news import (
     BaoMoiClient,
+    CafeFClient,
     ConfiguredHtmlNewsClient,
     RssNewsClient,
+    SitemapHtmlNewsClient,
     SourceAuthorizationError,
     source_collection_enabled,
 )
@@ -33,7 +35,9 @@ CONFIGURED_NEWS_SOURCES = {
     "vnexpress": ("vnexpress_news", "15 3 * * *"),
     "vneconomy": ("vneconomy_news", "0 4 * * *"),
 }
-FINANCIAL_NEWS_SOURCES = ("cafef", "thanhnien", "tuoitre", "vnexpress", "vneconomy")
+FINANCIAL_NEWS_SOURCES = ("cafef", "thanhnien", "tuoitre", "vnexpress", "baomoi")
+RSS_FINANCIAL_NEWS_SOURCES = ("cafef", "thanhnien", "tuoitre", "vnexpress")
+HTML_BACKFILL_SOURCES = FINANCIAL_NEWS_SOURCES
 
 
 def _yaml(path: Path) -> dict:
@@ -216,9 +220,133 @@ def _collect_rss_source(
 
 
 def _news_source_config(source_key: str) -> dict:
-    if source_key not in CONFIGURED_NEWS_SOURCES:
+    if source_key not in {*FINANCIAL_NEWS_SOURCES, *CONFIGURED_NEWS_SOURCES, "cafef"}:
         raise ValueError(f"Unknown configured news source: {source_key!r}")
     return _yaml(CONFIG_DIR / f"sources/news/{source_key}.yaml")
+
+
+def _collect_html_backfill(
+    context,
+    source_key: str,
+    source_config: dict,
+    window: DateWindow,
+    storage_mode: str = "link_only",
+) -> dict:
+    if not source_collection_enabled(source_config):
+        raise SourceAuthorizationError(
+            f"{source_key} is disabled; check its internal-only HTML backfill access policy."
+        )
+
+    writer = Node2NewsWriter(storage_mode=storage_mode)
+    if source_key == "cafef":
+        client = CafeFClient(source_config, security_matcher=writer.matcher)
+    elif source_key == "baomoi":
+        client = BaoMoiClient(source_config, security_matcher=writer.matcher)
+    elif source_config.get("discovery", {}).get("html_backfill", {}).get("strategy") == "sitemap":
+        client = SitemapHtmlNewsClient(source_config, security_matcher=writer.matcher)
+    else:
+        client = ConfiguredHtmlNewsClient(source_config, security_matcher=writer.matcher)
+
+    audit = ScrapeAuditWriter()
+    source_code = source_config["source_code"]
+    job_name = str(context.job_name)
+    run_row_id = audit.start_run(
+        source_code=source_code,
+        source_kind="news",
+        display_name=source_config["name"],
+        base_url=source_config["base_url"],
+        dagster_run_id=f"{context.run_id}:{source_code}"[:64],
+        job_name=job_name,
+        start_date=window.start_date,
+        end_date=window.end_date,
+        config={
+            "collection_method": "html_archive_backfill",
+            "archive_strategy": source_config.get("discovery", {}).get("html_backfill", {}).get("strategy", "category_archive"),
+            "internal_only": source_config.get("access", {}).get("internal_only") is True,
+            "redistribution_allowed": source_config.get("access", {}).get("redistribution_allowed") is True,
+            "storage_mode": storage_mode,
+        },
+    )
+    total_discovered = 0
+    total_persisted = 0
+    days_completed = 0
+
+    def persist_day(batch_date: date, articles: list[Article], category_code: str | None = None) -> None:
+        nonlocal total_discovered, total_persisted, days_completed
+        if not articles:
+            return
+        total_discovered += len(articles)
+        uids = writer.persist_articles(articles)
+        total_persisted += len(uids)
+        days_completed += 1
+        audit.save_items(run_row_id, source_code, articles, uids)
+        audit.save_checkpoint(source_code, "last_completed_day", {
+            "completed_day": batch_date.isoformat(),
+            "category": category_code,
+            "articles_persisted": len(uids),
+            "total_persisted_so_far": total_persisted,
+        })
+        context.log.info(
+            f"{source_key} HTML backfill persisted {len(uids)} articles for {batch_date} "
+            f"(cumulative: {total_persisted})"
+        )
+
+    async def execute_collection():
+        try:
+            return await client.collect(window, on_batch=persist_day, archive_only=True)
+        finally:
+            await client.close()
+
+    try:
+        asyncio.run(execute_collection())
+        stats = getattr(client, "collection_stats", {})
+        if stats.get("coverage_proven") is False:
+            raise RuntimeError(f"{source_key} HTML archive did not prove requested date-window coverage")
+        audit.save_attempts(run_row_id, source_code, client.fetch_attempts)
+        audit.finish_run(
+            run_row_id,
+            "SUCCESS",
+            discovered=total_discovered,
+            persisted=total_persisted,
+        )
+        audit.save_checkpoint(source_code, "last_completed_window", {
+            "start_date": window.start_date.isoformat(),
+            "end_date": window.end_date.isoformat(),
+            "articles_persisted": total_persisted,
+            "days_completed": days_completed,
+            "collection_stats": stats,
+            "status": "SUCCESS",
+        })
+        context.log.info(
+            f"{source_key} HTML backfill finished: {total_persisted} articles persisted; "
+            f"coverage_proven={stats.get('coverage_proven', True)}"
+        )
+        return {
+            "source": source_key,
+            "run_status": "SUCCESS",
+            "articles_discovered": total_discovered,
+            "articles_persisted": total_persisted,
+            "days_completed": days_completed,
+            "collection_stats": stats,
+        }
+    except Exception as exc:
+        audit.save_attempts(run_row_id, source_code, client.fetch_attempts)
+        audit.finish_run(
+            run_row_id,
+            "FAILED",
+            discovered=total_discovered,
+            persisted=total_persisted,
+            failed=1,
+            error=str(exc)[:4000],
+        )
+        audit.save_checkpoint(source_code, "last_interrupted_run", {
+            "start_date": window.start_date.isoformat(),
+            "end_date": window.end_date.isoformat(),
+            "error": str(exc)[:500],
+            "fetch_attempts": len(client.fetch_attempts),
+            "persisted_before_failure": total_persisted,
+        })
+        raise
 
 
 def _pod_tags(source: str, memory_limit: str = "768Mi") -> dict:
@@ -444,14 +572,14 @@ def collect_configured_news(context):
 @op(config_schema={
     "start_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
     "end_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
-    "storage_mode": Field(String, is_required=False, default_value="link_only", description="RSS summaries and links only; full article media is not fetched"),
+    "storage_mode": Field(String, is_required=False, default_value="link_only", description="RSS sources store summaries/links; Baomoi is collected from HTML"),
 })
 def collect_financial_news_batch(context):
     window = _window(context.op_config)
     storage_mode = context.op_config.get("storage_mode", "link_only")
     results: dict[str, dict] = {}
     errors: dict[str, str] = {}
-    for source_key in FINANCIAL_NEWS_SOURCES:
+    for source_key in RSS_FINANCIAL_NEWS_SOURCES:
         source_config = _yaml(CONFIG_DIR / f"sources/news/{source_key}.yaml")
         try:
             results[source_key] = _collect_rss_source(
@@ -475,6 +603,27 @@ def collect_financial_news_batch(context):
     if errors:
         raise RuntimeError(f"Financial News batch had source failures: {errors}")
     return summary
+
+
+@op(config_schema={
+    "source_key": Field(String, is_required=True, description="One of the five Financial News publisher keys"),
+    "start_date": Field(String, is_required=True, description="Inclusive YYYY-MM-DD (Asia/Ho_Chi_Minh)"),
+    "end_date": Field(String, is_required=True, description="Inclusive YYYY-MM-DD (Asia/Ho_Chi_Minh)"),
+    "storage_mode": Field(String, is_required=False, default_value="link_only", description="No binary media download by default"),
+})
+def collect_news_backfill(context):
+    source_key = str(context.op_config["source_key"])
+    if source_key not in HTML_BACKFILL_SOURCES:
+        raise ValueError(f"Unsupported HTML backfill source: {source_key!r}")
+    source_config = _news_source_config(source_key)
+    window = _window(context.op_config, source_config.get("timezone", "Asia/Ho_Chi_Minh"))
+    return _collect_html_backfill(
+        context,
+        source_key,
+        source_config,
+        window,
+        context.op_config.get("storage_mode", "link_only"),
+    )
 
 
 @op(config_schema={
@@ -536,7 +685,7 @@ def vietstock_market_job():
     collect_vietstock_market()
 
 
-@job(name="financial_news_job", tags=_pod_tags("financial-news", "1Gi"), description="Batch collect the five configured RSS-only financial news publishers.")
+@job(name="financial_news_job", tags=_pod_tags("financial-news", "1Gi"), description="Batch collect RSS summaries from the four sheet publishers with RSS feeds.")
 def financial_news_job():
     collect_financial_news_batch()
 
@@ -551,6 +700,21 @@ def _build_configured_news_job(source_key: str):
         collect_configured_news()
 
     return configured_source_job
+
+
+def _build_news_backfill_job(source_key: str):
+    @job(
+        name=f"{source_key}_news_backfill_job",
+        tags=_pod_tags(f"{source_key}-backfill", "1Gi"),
+        description=(
+            f"Historical HTML financial-news backfill for {source_key}; "
+            "date-batched writes to Node 2 in an isolated K3s run pod."
+        ),
+    )
+    def source_backfill_job():
+        collect_news_backfill()
+
+    return source_backfill_job
 
 
 def _build_configured_news_schedule(source_key: str, job_definition, cron_schedule: str):
@@ -586,6 +750,10 @@ def _build_configured_news_schedule(source_key: str, job_definition, cron_schedu
 configured_news_jobs = {
     source_key: _build_configured_news_job(source_key)
     for source_key in CONFIGURED_NEWS_SOURCES
+}
+news_backfill_jobs = {
+    source_key: _build_news_backfill_job(source_key)
+    for source_key in HTML_BACKFILL_SOURCES
 }
 configured_news_schedules = {
     source_key: _build_configured_news_schedule(
@@ -641,7 +809,14 @@ def vietstock_eod_schedule(context):
 
 
 defs = Definitions(
-    jobs=[cafef_news_job, baomoi_news_job, vietstock_market_job, financial_news_job, *configured_news_jobs.values()],
+    jobs=[
+        cafef_news_job,
+        baomoi_news_job,
+        vietstock_market_job,
+        financial_news_job,
+        *configured_news_jobs.values(),
+        *news_backfill_jobs.values(),
+    ],
     schedules=[
         cafef_daily_news_schedule,
         baomoi_daily_news_schedule,

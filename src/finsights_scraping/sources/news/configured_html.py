@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import hashlib
 import re
 from datetime import date, datetime, timezone
 from typing import Any
@@ -25,7 +27,8 @@ class SourceAuthorizationError(RuntimeError):
     """Raised when collection is disallowed by source policy or robots.txt."""
 
 
-def _url_outside_window(url: str, window: DateWindow) -> bool:
+def _date_from_article_url(url: str) -> date | None:
+    """Return a publication date when the publisher embeds one in its URL."""
     match_ymd = re.search(r"/(?P<y>20\d{2})/(?P<m>\d{1,2})(?:/(?P<d>\d{1,2}))?", url)
     if match_ymd:
         y = int(match_ymd.group("y"))
@@ -33,28 +36,25 @@ def _url_outside_window(url: str, window: DateWindow) -> bool:
         d = int(match_ymd.group("d")) if match_ymd.group("d") else None
         if d is not None:
             try:
-                item_date = date(y, m, d)
-                if item_date < window.start_date or item_date > window.end_date:
-                    return True
+                return date(y, m, d)
             except ValueError:
                 pass
-        else:
-            if (y, m) < (window.start_date.year, window.start_date.month):
-                return True
-            if (y, m) > (window.end_date.year, window.end_date.month):
-                return True
     match_prefix = re.search(r"-(?:185|188|100)(?P<yy>\d{2})(?P<mm>\d{2})(?P<dd>\d{2})\d*\.(?:htm|chn)$", url)
     if match_prefix:
         try:
-            y = 2000 + int(match_prefix.group("yy"))
-            m = int(match_prefix.group("mm"))
-            d = int(match_prefix.group("dd"))
-            item_date = date(y, m, d)
-            if item_date < window.start_date or item_date > window.end_date:
-                return True
+            return date(
+                2000 + int(match_prefix.group("yy")),
+                int(match_prefix.group("mm")),
+                int(match_prefix.group("dd")),
+            )
         except ValueError:
-            return True
-    return False
+            return None
+    return None
+
+
+def _url_outside_window(url: str, window: DateWindow) -> bool:
+    item_date = _date_from_article_url(url)
+    return item_date is not None and not (window.start_date <= item_date <= window.end_date)
 
 
 def source_collection_enabled(config: dict[str, Any]) -> bool:
@@ -128,7 +128,12 @@ class ConfiguredHtmlNewsClient(CafeFClient):
     def collection_ready(self) -> bool:
         return source_collection_enabled(self.config)
 
-    async def collect(self, window: DateWindow) -> list[Article]:
+    async def collect(
+        self,
+        window: DateWindow,
+        on_batch: Any | None = None,
+        archive_only: bool = False,
+    ) -> list[Article]:
         if not self.collection_ready():
             raise SourceAuthorizationError(
                 f"{self.source_code} is disabled: set collection_enabled and the "
@@ -136,9 +141,37 @@ class ConfiguredHtmlNewsClient(CafeFClient):
             )
 
         articles_by_id: dict[str, Article] = {}
+        seen_article_ids: set[str] = set()
+        day_buffer: dict[date, list[Article]] = {}
+        stats = {
+            "method": "html_archive_backfill" if archive_only else "html_archive_with_rss_overlap",
+            "archive_categories": len(self.config.get("discovery", {}).get("archive_categories", [])),
+            "archive_pages": 0,
+            "article_urls_discovered": 0,
+            "article_pages_fetched": 0,
+            "article_pages_failed": 0,
+            "financial_articles": 0,
+            "coverage_proven": True,
+        }
+
+        def flush_days(category_code: str | None = None, newer_than: date | None = None) -> None:
+            ready_dates = [
+                pub_date for pub_date in day_buffer
+                if newer_than is None or pub_date > newer_than
+            ]
+            for pub_date in sorted(ready_dates):
+                batch = day_buffer.pop(pub_date)
+                if not batch:
+                    continue
+                if on_batch:
+                    on_batch(pub_date, batch, category_code)
+                else:
+                    for article in batch:
+                        articles_by_id[article.source_article_id] = article
+
         today_local = datetime.now(ZoneInfo(self.timezone_name)).date()
         recent_days = int(self.config.get("discovery", {}).get("rss_recent_days", 7))
-        if (today_local - window.end_date).days <= recent_days:
+        if not archive_only and (today_local - window.end_date).days <= recent_days:
             for url, category in await self._rss_urls():
                 if _url_outside_window(url, window):
                     continue
@@ -162,6 +195,7 @@ class ConfiguredHtmlNewsClient(CafeFClient):
                 try:
                     response = await self._get(page_url)
                 except Exception:
+                    stats["coverage_proven"] = False
                     break
                 soup = BeautifulSoup(response.content, "lxml")
                 urls = self._archive_urls(soup, page_url)
@@ -173,22 +207,48 @@ class ConfiguredHtmlNewsClient(CafeFClient):
                     break
 
                 saw_articles = True
+                stats["archive_pages"] += 1
+                stats["article_urls_discovered"] += len(urls)
                 page_articles: list[Article] = []
+                page_dates: list[date] = []
                 for url in urls:
+                    embedded_date = _date_from_article_url(url)
+                    if embedded_date is not None:
+                        page_dates.append(embedded_date)
                     if _url_outside_window(url, window):
+                        continue
+                    match = re.search(str(self.config["article_id_regex"]), urlparse(url).path, re.IGNORECASE)
+                    article_id = match.groupdict().get("article_id") if match else None
+                    if article_id and article_id in seen_article_ids:
                         continue
                     try:
                         article = await self.fetch_article(url, category=category["code"])
+                        stats["article_pages_fetched"] += 1
                         page_articles.append(article)
-                        articles_by_id[article.source_article_id] = article
+                        article_date = article.published_at.astimezone(ZoneInfo(self.timezone_name)).date()
+                        page_dates.append(article_date)
+                        if (
+                            window.contains(article.published_at)
+                            and self.is_financial(article)
+                            and article.source_article_id not in seen_article_ids
+                        ):
+                            seen_article_ids.add(article.source_article_id)
+                            stats["financial_articles"] += 1
+                            if on_batch:
+                                day_buffer.setdefault(article_date, []).append(article)
+                            else:
+                                articles_by_id[article.source_article_id] = article
+                    except SourceAuthorizationError:
+                        raise
                     except Exception:
+                        stats["article_pages_failed"] += 1
                         continue
 
-                local_dates = [
-                    article.published_at.astimezone(ZoneInfo(self.timezone_name)).date()
-                    for article in page_articles
-                ]
-                if local_dates and min(local_dates) < window.start_date:
+                if on_batch and page_dates:
+                    # Archives are newest-first; later pages cannot add items newer than this page's oldest item.
+                    flush_days(str(category.get("code", "archive")), newer_than=min(page_dates))
+
+                if page_dates and max(page_dates) < window.start_date:
                     category_complete = True
                     break
 
@@ -196,8 +256,14 @@ class ConfiguredHtmlNewsClient(CafeFClient):
                     next_page_url = str(template).format(page=page_number + 1)
                 else:
                     next_page_url = self._next_page_url(soup, page_url, category)
+                if next_page_url == page_url:
+                    break
+
+            if on_batch:
+                flush_days(str(category.get("code", "archive")))
 
             if not saw_articles or not category_complete:
+                stats["coverage_proven"] = False
                 if self.config.get("discovery", {}).get("fail_if_archive_boundary_not_proven", True):
                     raise IncompleteArchiveError(
                         f"{self.source_code} archive {category['code']} did not prove coverage before "
@@ -208,6 +274,7 @@ class ConfiguredHtmlNewsClient(CafeFClient):
             article for article in articles_by_id.values()
             if window.contains(article.published_at) and self.is_financial(article)
         ]
+        self.collection_stats = stats
         return sorted(results, key=lambda item: (item.published_at, item.source_article_id))
 
     def _archive_urls(self, soup: BeautifulSoup, page_url: str) -> list[str]:
@@ -266,7 +333,10 @@ class ConfiguredHtmlNewsClient(CafeFClient):
         match = re.search(str(self.config["article_id_regex"]), urlparse(clean_url).path, re.IGNORECASE)
         if not match:
             raise UnusableArticleError(f"No publisher article ID in {clean_url}")
-        source_article_id = match.group("article_id")
+        raw_source_article_id = match.group("article_id")
+        source_article_id = raw_source_article_id
+        if len(source_article_id) > 180:
+            source_article_id = hashlib.sha256(source_article_id.encode("utf-8")).hexdigest()
 
         article_config = self.config.get("article", {})
         title = self._first_text(soup, article_config.get("title_selectors", ["h1"]))
@@ -287,9 +357,10 @@ class ConfiguredHtmlNewsClient(CafeFClient):
             if root:
                 break
         blocks = self._content_blocks(root) if root else []
-        if not blocks and summary:
+        full_text_required = article_config.get("full_text_required", True)
+        if not blocks and summary and not full_text_required:
             blocks = [ContentBlock(0, "paragraph", text=summary, metadata={"fallback": "summary_only"})]
-        if article_config.get("full_text_required", True) and not blocks:
+        if full_text_required and not blocks:
             raise UnusableArticleError(f"Article body is missing: {clean_url}")
 
         author = self._first_text(soup, article_config.get("author_selectors", []))
@@ -308,6 +379,11 @@ class ConfiguredHtmlNewsClient(CafeFClient):
         matched_terms = [t for t in terms if t.casefold() in all_text.casefold()]
 
         meta = {
+            "collection_method": "html_archive",
+            "publisher_article_id_sha256": (
+                hashlib.sha256(raw_source_article_id.encode("utf-8")).hexdigest()
+                if raw_source_article_id != source_article_id else None
+            ),
             "publisher_name": self.config.get("name"),
             "publisher_domain": self.config.get("publisher_domain"),
             "homepage_url": self.config.get("base_url"),

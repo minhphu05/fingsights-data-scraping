@@ -18,6 +18,7 @@ from .sources.news.baomoi import BaoMoiClient
 from .sources.news.cafef import CafeFClient
 from .sources.news.configured_html import ConfiguredHtmlNewsClient
 from .sources.news.rss import RssNewsClient
+from .sources.news.sitemap_html import SitemapHtmlNewsClient
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,10 +30,11 @@ logger = logging.getLogger("finsights.local_runner")
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG_DIR = ROOT / "configs"
 
-FINANCIAL_NEWS_SOURCES = ["cafef", "tuoitre", "thanhnien", "vnexpress", "vneconomy"]
-LEGACY_SOURCES = ["baomoi", "vietstock"]
+FINANCIAL_NEWS_SOURCES = ["cafef", "tuoitre", "thanhnien", "vnexpress", "baomoi"]
+OPTIONAL_NEWS_SOURCES = ["vneconomy"]
+LEGACY_SOURCES = ["vietstock"]
 ALL_SOURCES = FINANCIAL_NEWS_SOURCES
-SOURCE_CHOICES = [*FINANCIAL_NEWS_SOURCES, *LEGACY_SOURCES]
+SOURCE_CHOICES = [*FINANCIAL_NEWS_SOURCES, *OPTIONAL_NEWS_SOURCES, *LEGACY_SOURCES]
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
@@ -53,7 +55,13 @@ class LocalRunner:
             alias_file=alias_file if alias_file.exists() else None,
         )
 
-    async def run_news_source(self, source_key: str, start_date: str, end_date: str) -> dict[str, Any]:
+    async def run_news_source(
+        self,
+        source_key: str,
+        start_date: str,
+        end_date: str,
+        collection_method: str = "latest",
+    ) -> dict[str, Any]:
         logger.info(f"==> Starting local collection for news source: {source_key} [{start_date}..{end_date}]")
         start_ts = time.time()
         cfg_path = CONFIG_DIR / f"sources/news/{source_key}.yaml"
@@ -63,7 +71,19 @@ class LocalRunner:
 
         window = DateWindow.parse(start_date, end_date, config.get("timezone", "Asia/Ho_Chi_Minh"))
 
-        if config.get("discovery", {}).get("mode") == "rss_only":
+        if collection_method == "html_backfill":
+            if source_key not in FINANCIAL_NEWS_SOURCES:
+                raise ValueError(f"HTML backfill is not configured for {source_key}")
+            strategy = config.get("discovery", {}).get("html_backfill", {}).get("strategy")
+            if source_key == "baomoi":
+                client = BaoMoiClient(config, security_matcher=self.matcher)
+            elif source_key == "cafef":
+                client = CafeFClient(config, security_matcher=self.matcher)
+            elif strategy == "sitemap":
+                client = SitemapHtmlNewsClient(config, security_matcher=self.matcher)
+            else:
+                client = ConfiguredHtmlNewsClient(config, security_matcher=self.matcher)
+        elif config.get("discovery", {}).get("mode") == "rss_only":
             client = RssNewsClient(config, security_matcher=self.matcher)
         elif source_key == "cafef":
             client = CafeFClient(config, security_matcher=self.matcher)
@@ -73,10 +93,15 @@ class LocalRunner:
             client = ConfiguredHtmlNewsClient(config, security_matcher=self.matcher)
 
         try:
-            articles = await client.collect(window)
+            if collection_method == "html_backfill":
+                articles = await client.collect(window, archive_only=True)
+            else:
+                articles = await client.collect(window)
             elapsed = time.time() - start_ts
             window_key = start_date if start_date == end_date else f"{start_date}_to_{end_date}"
             collection_stats = getattr(client, "collection_stats", {})
+            if collection_method == "html_backfill" and collection_stats.get("coverage_proven") is False:
+                raise RuntimeError(f"{source_key} archive did not prove the requested date coverage")
             out_file = self.writer.save_articles(
                 source_key,
                 window_key,
@@ -88,13 +113,14 @@ class LocalRunner:
             )
             partial = collection_stats.get("coverage_status") == "RSS_RETENTION_LIMITED"
             logger.info(
-                f"[{ 'PARTIAL' if partial else 'SUCCESS' }] {source_key}: collected {len(articles)} RSS items "
-                f"in {elapsed:.1f}s -> {out_file}"
+                f"[{ 'PARTIAL' if partial else 'SUCCESS' }] {source_key}: collected {len(articles)} "
+                f"{collection_method} items in {elapsed:.1f}s -> {out_file}"
             )
             return {
                 "source": source_key,
                 "status": "PARTIAL" if partial else "SUCCESS",
                 "kind": "news",
+                "collection_method": collection_method,
                 "start_date": start_date,
                 "end_date": end_date,
                 "articles_count": len(articles),
@@ -165,7 +191,13 @@ class LocalRunner:
         results["elapsed_seconds"] = round(elapsed, 2)
         return results
 
-    async def run(self, source: str, start_date: str, end_date: str) -> list[dict[str, Any]]:
+    async def run(
+        self,
+        source: str,
+        start_date: str,
+        end_date: str,
+        collection_method: str = "latest",
+    ) -> list[dict[str, Any]]:
         sources_to_run = ALL_SOURCES if source in {"all", "*"} else [source]
         summaries: list[dict[str, Any]] = []
 
@@ -180,7 +212,7 @@ class LocalRunner:
                     continue
                 res = await self.run_vietstock(end_date)
             else:
-                res = await self.run_news_source(src, start_date, end_date)
+                res = await self.run_news_source(src, start_date, end_date, collection_method)
             summaries.append(res)
 
         return summaries
