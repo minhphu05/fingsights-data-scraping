@@ -8,6 +8,7 @@ import random
 import re
 import time as time_module
 import uuid
+from contextlib import contextmanager
 from datetime import datetime, time, timedelta, timezone
 from functools import wraps
 from typing import Any
@@ -54,6 +55,42 @@ def _retry_mysql_deadlocks(method):
         raise AssertionError("unreachable")
 
     return wrapped
+
+
+@contextmanager
+def _serialized_news_transaction(engine):
+    """Serialize Node 2 news writes across workers to avoid cross-source InnoDB deadlocks."""
+    lock_name = "finsights_news_writer"
+    connection = engine.connect()
+    try:
+        acquired = connection.execute(
+            text("SELECT GET_LOCK(:lock_name, 30)"), {"lock_name": lock_name}
+        ).scalar_one_or_none()
+        connection.commit()
+        if acquired != 1:
+            raise SQLAlchemyOperationalError(
+                "SELECT GET_LOCK(:lock_name, 30)",
+                {"lock_name": lock_name},
+                Exception(1205, "Timed out waiting for the shared news-writer lock"),
+            )
+
+        try:
+            with connection.begin():
+                yield connection
+        finally:
+            try:
+                released = connection.execute(
+                    text("SELECT RELEASE_LOCK(:lock_name)"), {"lock_name": lock_name}
+                ).scalar_one_or_none()
+                connection.commit()
+                if released != 1:
+                    logger.warning("MySQL news-writer lock release returned %r", released)
+            except Exception as exc:
+                # Closing an invalidated connection releases any connection-scoped MySQL lock.
+                logger.warning("Could not release MySQL news-writer lock (%s)", type(exc).__name__)
+                connection.invalidate()
+    finally:
+        connection.close()
 
 
 def _sha256(value: str) -> str:
@@ -138,7 +175,7 @@ class Node2NewsWriter:
             modified_at = _utc_naive(modified_at)
         metadata_json = json.dumps(article.metadata, ensure_ascii=False, default=str)
 
-        with self.news_engine.begin() as connection:
+        with _serialized_news_transaction(self.news_engine) as connection:
             connection.execute(text("""
                 INSERT INTO news_publishers
                     (code, name, domain, homepage_url, language_code, attribution_name, content_rights, terms_url, is_active)
