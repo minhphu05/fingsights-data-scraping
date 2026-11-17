@@ -352,7 +352,9 @@ class BaoMoiClient(CafeFClient):
 
         selected = [
             (partition_date, partitions[partition_date])
-            for partition_date in sorted(expected_dates)
+            # Backfill newest partitions first so current news is available while
+            # the full historical window is still being processed.
+            for partition_date in sorted(expected_dates, reverse=True)
         ]
         for partition_date, sitemap_url in selected:
             response = await self._get(sitemap_url)
