@@ -161,16 +161,19 @@ class CafeFClient:
         interval = (1.0 / self.rate) if self.rate > 0 else 0.0
         max_retries = 2
         for attempt in range(max_retries + 1):
+            loop = asyncio.get_running_loop()
             if interval > 0:
-                elapsed = asyncio.get_running_loop().time() - self._last_request
+                elapsed = loop.time() - self._last_request
                 if elapsed < interval:
                     await asyncio.sleep(interval - elapsed)
             requested_at = datetime.now(timezone.utc).replace(tzinfo=None)
-            started = asyncio.get_running_loop().time()
+            started = loop.time()
+            # Throttle the interval between request starts. Recording this after
+            # the response added an unnecessary full second after slow requests.
+            if interval > 0:
+                self._last_request = started
             try:
                 response = await self._client.get(url)
-                if interval > 0:
-                    self._last_request = asyncio.get_running_loop().time()
                 response.raise_for_status()
                 self.fetch_attempts.append({
                     "url": url, "requested_at": requested_at,
@@ -179,12 +182,11 @@ class CafeFClient:
                     "content_type": response.headers.get("content-type"),
                     "size_bytes": len(response.content),
                     "response_sha256": hashlib.sha256(response.content).hexdigest(),
-                    "duration_ms": int((asyncio.get_running_loop().time() - started) * 1000),
+                    "duration_ms": int((loop.time() - started) * 1000),
                     "outcome": "SUCCESS",
                 })
                 return response
             except (httpx.RemoteProtocolError, httpx.TransportError) as exc:
-                self._last_request = asyncio.get_running_loop().time()
                 if attempt < max_retries:
                     await asyncio.sleep(1.0)
                     continue
@@ -192,17 +194,16 @@ class CafeFClient:
                     "url": url, "requested_at": requested_at,
                     "completed_at": datetime.now(timezone.utc).replace(tzinfo=None),
                     "http_status": getattr(getattr(exc, "response", None), "status_code", None),
-                    "duration_ms": int((asyncio.get_running_loop().time() - started) * 1000),
+                    "duration_ms": int((loop.time() - started) * 1000),
                     "outcome": "FAILED", "error_type": type(exc).__name__, "error_message": str(exc)[:2000],
                 })
                 raise
             except Exception as exc:
-                self._last_request = asyncio.get_running_loop().time()
                 self.fetch_attempts.append({
                     "url": url, "requested_at": requested_at,
                     "completed_at": datetime.now(timezone.utc).replace(tzinfo=None),
                     "http_status": getattr(getattr(exc, "response", None), "status_code", None),
-                    "duration_ms": int((asyncio.get_running_loop().time() - started) * 1000),
+                    "duration_ms": int((loop.time() - started) * 1000),
                     "outcome": "FAILED", "error_type": type(exc).__name__, "error_message": str(exc)[:2000],
                 })
                 raise
