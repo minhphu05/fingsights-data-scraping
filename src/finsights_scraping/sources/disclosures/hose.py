@@ -150,7 +150,11 @@ class HoseDisclosureClient(OfficialSourceClient):
                 if not listing_symbol:
                     match = SYMBOL_PREFIX.search(listing_title)
                     listing_symbol = match.group(1) if match else None
-                if target_symbols and listing_symbol and listing_symbol not in target_symbols:
+                # The public list API returns warrants and general exchange notices
+                # without an issuer code. The final record filter cannot keep those
+                # rows without a target equity symbol, so avoid a detail request for
+                # candidates that would be discarded anyway.
+                if target_symbols and (not listing_symbol or listing_symbol not in target_symbols):
                     continue
                 detail = listing
                 if self.config.get("fetch_details", True):
