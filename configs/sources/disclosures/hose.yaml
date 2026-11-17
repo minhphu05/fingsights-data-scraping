@@ -12,7 +12,7 @@ request_max_retries: 3
 request_retry_backoff_seconds: 2
 page_size: 1000
 max_pages: 5000
-fetch_details: true
+fetch_details: false
 fetch_attachments: true
 media_page_size: 100
 media_max_pages: 100
