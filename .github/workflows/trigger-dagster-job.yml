@@ -19,11 +19,20 @@ on:
           - vnexpress
           - vneconomy
           - all_backfill
+          - all_official
+          - all_ir
           - cafef_backfill
           - thanhnien_backfill
           - tuoitre_backfill
           - vnexpress_backfill
           - baomoi_backfill
+          - hose
+          - hnx
+          - ubcknn
+          - vsdc
+          - ir_banks
+          - ir_steel_materials
+          - ir_other_sectors
       start_date:
         description: 'Inclusive Start Date (YYYY-MM-DD in Asia/Ho_Chi_Minh)'
         required: true

@@ -65,7 +65,14 @@ class OciS3Uploader:
     def route_source_target(self, source_code: str) -> str:
         """Route sources between Tokyo (Account 1) and Singapore (Account 2) to balance storage."""
         code = source_code.casefold()
-        if code in NEWS_SOURCE_CODES or code.endswith("_news") or "news" in code:
+        # Public source documents and news binaries are written to the verified Tokyo
+        # account. Market provider data remains assigned to Singapore by default.
+        if (
+            code in NEWS_SOURCE_CODES
+            or code.endswith("_news")
+            or "news" in code
+            or code.startswith(("ir_", "hose_", "hnx_", "ubcknn_", "vsdc_"))
+        ):
             return "tokyo"
         return "singapore"
 

@@ -8,7 +8,7 @@ bucket_strategy:
       namespace: nryqf437jjy5
       bucket_name: finsights-data-assets-tokyo
       bucket_code: finsights-tokyo-raw
-      assigned_sources: [cafef_news, thanhnien_news, tuoitre_news, baomoi_news, vnexpress_news]
+      assigned_sources: [cafef_news, thanhnien_news, tuoitre_news, baomoi_news, vnexpress_news, hose_disclosures, hnx_disclosures, ubcknn_notices, vsdc_corporate_actions, ir_vcb, ir_tcb, ir_mbb, ir_acb, ir_ctg, ir_hpg, ir_hsg, ir_nkg, ir_fpt, ir_cmg, ir_mwg, ir_pnj, ir_vnm, ir_msn, ir_gas]
     singapore:
       account_alias: account2
       region: ap-singapore-1
@@ -17,6 +17,7 @@ bucket_strategy:
       bucket_code: finsights-singapore-raw
       assigned_sources: [vietstock_market, default]
 key_templates:
+  disclosure_document: raw/disclosures/{source_code}/{yyyy}/{mm}/{dd}/{document_root_uid}/documents/{asset_uid}.{extension}
   news_image: raw/news/{publisher_code}/{yyyy}/{mm}/{dd}/{article_uid}/images/{asset_uid}.{extension}
   news_audio: raw/news/{publisher_code}/{yyyy}/{mm}/{dd}/{article_uid}/audio/{asset_uid}.{extension}
   news_table: raw/news/{publisher_code}/{yyyy}/{mm}/{dd}/{article_uid}/tables/{asset_uid}.{extension}

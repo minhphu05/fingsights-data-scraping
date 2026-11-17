@@ -1,0 +1,63 @@
+source_group: ir_other_sectors
+name: Investor Relations - Other Sectors
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 1.0
+timeout_seconds: 35
+request_max_retries: 1
+request_retry_backoff_seconds: 1.0
+max_pages_per_company: 24
+max_documents_per_company: 300
+companies:
+  - symbol: FPT
+    company_name: FPT Corporation
+    source_code: ir_fpt
+    allowed_hosts: [fpt.com]
+    listing_urls: [https://fpt.com/en/ir, https://fpt.com/en/ir/information-disclosures]
+  - symbol: CMG
+    company_name: CMC Corporation
+    source_code: ir_cmg
+    render_with_browser: true
+    allowed_hosts: [cmc.com.vn, cdn.cmc.com.vn]
+    listing_urls:
+      - https://www.cmc.com.vn/shareholder-homepage
+      - https://www.cmc.com.vn/shareholder/cong-bo-thong-tin-nam-2026
+      - https://www.cmc.com.vn/shareholder/cong-bo-thong-tin-nam-2025
+      - https://www.cmc.com.vn/shareholder/contact
+  - symbol: MWG
+    company_name: Mobile World Investment Corporation
+    source_code: ir_mwg
+    render_with_browser: true
+    allowed_hosts: [mwg.vn]
+    listing_urls:
+      - https://mwg.vn/en/bao-cao
+      - https://mwg.vn/en/cong-bo-thong-tin
+  - symbol: PNJ
+    company_name: Phu Nhuan Jewelry Joint Stock Company
+    source_code: ir_pnj
+    allowed_hosts: [pnj.com.vn, cdn.pnj.io]
+    listing_urls:
+      - https://www.pnj.com.vn/quan-he-co-dong/
+      - https://www.pnj.com.vn/quan-he-co-dong/bao-cao-tai-chinh/
+      - https://www.pnj.com.vn/quan-he-co-dong/bao-cao-thang/
+      - https://www.pnj.com.vn/quan-he-co-dong/bao-cao-thuong-nien/
+  - symbol: VNM
+    company_name: Vietnam Dairy Products Joint Stock Company
+    source_code: ir_vnm
+    allowed_hosts: [vinamilk.com.vn, vinamilk.tech]
+    listing_urls:
+      - https://www.vinamilk.com.vn/investor/reports/financial
+      - https://www.vinamilk.com.vn/investor/reports/annual
+      - https://www.vinamilk.com.vn/investor/reports/shareholder
+      - https://www.vinamilk.com.vn/en/investor
+  - symbol: MSN
+    company_name: Masan Group Corporation
+    source_code: ir_msn
+    allowed_hosts: [masangroup.com]
+    listing_urls: [https://www.masangroup.com/investor-relations/]
+  - symbol: GAS
+    company_name: Vietnam Gas Corporation - PV GAS
+    source_code: ir_gas
+    allowed_hosts: [pvgas.com.vn]
+    listing_urls:
+      - https://www.pvgas.com.vn/quan-he-co-%C4%91ong/tai-lieu-co-dong
+      - https://www.pvgas.com.vn/quan-he-co-%C4%91ong?category=bao-cao-tai-chinh&page=1

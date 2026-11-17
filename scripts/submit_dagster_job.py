@@ -105,10 +105,35 @@ SOURCE_CONFIGS: Dict[str, Dict[str, Any]] = {
         "op_name": "collect_official_disclosures",
         "config_builder": lambda start, end, mode: {"source_key": "vsdc", "start_date": start, "end_date": end},
     },
+    "ir_banks": {
+        "job_name": "ir_banks_job",
+        "op_name": "collect_investor_relations",
+        "config_builder": lambda start, end, mode: {
+            "source_key": "banks", "start_date": start, "end_date": end,
+            "attachment_storage_mode": "oci",
+        },
+    },
+    "ir_steel_materials": {
+        "job_name": "ir_steel_materials_job",
+        "op_name": "collect_investor_relations",
+        "config_builder": lambda start, end, mode: {
+            "source_key": "steel_materials", "start_date": start, "end_date": end,
+            "attachment_storage_mode": "oci",
+        },
+    },
+    "ir_other_sectors": {
+        "job_name": "ir_other_sectors_job",
+        "op_name": "collect_investor_relations",
+        "config_builder": lambda start, end, mode: {
+            "source_key": "other_sectors", "start_date": start, "end_date": end,
+            "attachment_storage_mode": "oci",
+        },
+    },
 }
 
 ALL_SOURCES = ["financial_news"]
 ALL_OFFICIAL_SOURCES = ["hose", "hnx", "ubcknn", "vsdc"]
+ALL_IR_SOURCES = ["ir_banks", "ir_steel_materials", "ir_other_sectors"]
 BACKFILL_SOURCES = [
     "cafef_backfill",
     "thanhnien_backfill",
@@ -203,7 +228,7 @@ def launch_dagster_job(
 ) -> str:
     """Submit a single scraping job to Dagster."""
     if source not in SOURCE_CONFIGS:
-        raise ValueError(f"Unknown source '{source}'. Available: {ALL_SOURCES}")
+        raise ValueError(f"Unknown source '{source}'. Available: {list(SOURCE_CONFIGS)}")
 
     source_info = SOURCE_CONFIGS[source]
     job_name = source_info["job_name"]
@@ -332,7 +357,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--source",
-        choices=["all", "all_backfill", "all_official", *SOURCE_CONFIGS.keys()],
+        choices=["all", "all_backfill", "all_official", "all_ir", *SOURCE_CONFIGS.keys()],
         default="financial_news",
         help="Source to scrape, or 'all' to run the configured recent RSS batch",
     )
@@ -376,6 +401,8 @@ def main() -> None:
         sources_to_run = BACKFILL_SOURCES
     elif args.source == "all_official":
         sources_to_run, disabled_sources = enabled_official_sources()
+    elif args.source == "all_ir":
+        sources_to_run = ALL_IR_SOURCES
     else:
         sources_to_run = ALL_SOURCES if args.source == "all" else [args.source]
     failed_runs = []

@@ -10,6 +10,7 @@ import ssl
 import time
 import uuid
 from datetime import datetime, timezone
+from email.message import Message
 from pathlib import Path, PurePosixPath
 from typing import Any
 from unicodedata import normalize
@@ -182,7 +183,7 @@ class Node2DisclosureWriter:
             if record.published_at else datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).date()
         )
         item_root_uid = self._identity(record, "document-root")
-        allowed_extensions = {"pdf", "xls", "xlsx", "doc", "docx", "zip", "rar", "csv"}
+        allowed_extensions = {"pdf", "xls", "xlsx", "doc", "docx", "ppt", "pptx", "zip", "rar", "csv"}
         for attachment in record.attachments:
             url = str(attachment.get("url") or "").strip()
             if not url:
@@ -221,18 +222,28 @@ class Node2DisclosureWriter:
                         f"Attachment size {len(data)} exceeds configured limit {self.max_attachment_bytes}"
                     )
 
-                filename = str(attachment.get("label") or PurePosixPath(urlparse(url).path).name or "document")
+                disposition = Message()
+                content_disposition = response.headers.get("content-disposition")
+                if content_disposition:
+                    disposition["content-disposition"] = content_disposition
+                filename = str(
+                    disposition.get_filename()
+                    or attachment.get("label")
+                    or PurePosixPath(urlparse(str(response.url)).path).name
+                    or "document"
+                )
+                filename = PurePosixPath(filename.replace("\\", "/")).name
                 extension = PurePosixPath(urlparse(url).path).suffix.lower().lstrip(".")
                 if extension not in allowed_extensions:
                     extension = PurePosixPath(filename).suffix.lower().lstrip(".")
                 if extension not in allowed_extensions:
                     extension = "bin"
+                response_mime_type = response.headers.get("content-type", "").split(";", 1)[0].strip()
+                guessed_mime_type = mimetypes.guess_type(filename)[0]
                 mime_type = (
-                    response.headers.get("content-type", "").split(";", 1)[0].strip()
-                    or str(attachment.get("mime_type") or "")
-                    or mimetypes.guess_type(filename)[0]
-                    or "application/octet-stream"
-                )
+                    guessed_mime_type if response_mime_type in {"application/octet-stream", "binary/octet-stream"}
+                    else response_mime_type
+                ) or str(attachment.get("mime_type") or "") or guessed_mime_type or "application/octet-stream"
                 attachment_uid = str(uuid.uuid5(
                     uuid.NAMESPACE_URL,
                     f"finsights:disclosure-asset:{record.source_code}:{record.source_item_id}:{url}",
@@ -243,7 +254,10 @@ class Node2DisclosureWriter:
                     f"{item_root_uid}/documents/{attachment_uid}.{extension}"
                 )
                 upload = self.uploader.upload_bytes(
-                    data=data, object_key=object_key, mime_type=mime_type, target_name="tokyo",
+                    data=data,
+                    object_key=object_key,
+                    mime_type=mime_type,
+                    target_name=self.uploader.route_source_target(record.source_code),
                 )
                 attachment.update({
                     "asset_uid": attachment_uid,

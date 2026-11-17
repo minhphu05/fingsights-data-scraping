@@ -1,0 +1,52 @@
+source_group: ir_banks
+name: Investor Relations - Banks
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 1.0
+timeout_seconds: 35
+request_max_retries: 1
+request_retry_backoff_seconds: 1.0
+max_pages_per_company: 24
+max_documents_per_company: 300
+companies:
+  - symbol: VCB
+    company_name: Joint Stock Commercial Bank for Foreign Trade of Vietnam
+    source_code: ir_vcb
+    render_with_browser: true
+    allowed_hosts: [vietcombank.com.vn]
+    listing_urls:
+      - https://www.vietcombank.com.vn/vi-VN/Nha-dau-tu
+      - https://www.vietcombank.com.vn/vi-VN/Nha-dau-tu/Chi-tiet-nha-dau-tu
+      - https://www.vietcombank.com.vn/vi-VN/Nha-dau-tu/Thong-tin-co-phieu
+      - https://www.vietcombank.com.vn/vi-VN/Nha-dau-tu/Lich-su-kien
+  - symbol: TCB
+    company_name: Vietnam Technological and Commercial Joint Stock Bank
+    source_code: ir_tcb
+    allowed_hosts: [techcombank.com]
+    listing_urls:
+      - https://techcombank.com/en/investors
+      - https://techcombank.com/en/investors/financial-information/financial-statements-vas
+      - https://techcombank.com/en/investors/financial-information/investor-presentations
+  - symbol: MBB
+    company_name: Military Commercial Joint Stock Bank
+    source_code: ir_mbb
+    render_with_browser: true
+    allowed_hosts: [mbbank.com.vn]
+    listing_urls:
+      - https://www.mbbank.com.vn/nha-dau-tu
+      - https://www.mbbank.com.vn/investor-relations
+  - symbol: ACB
+    company_name: Asia Commercial Joint Stock Bank
+    source_code: ir_acb
+    allowed_hosts: [acb.com.vn]
+    listing_urls:
+      - https://acb.com.vn/nha-dau-tu
+      - https://acb.com.vn/nha-dau-tu/bao-cao-tai-chinh
+  - symbol: CTG
+    company_name: Vietnam Joint Stock Commercial Bank for Industry and Trade
+    source_code: ir_ctg
+    allowed_hosts: [vietinbank.vn]
+    listing_urls:
+      - https://investor.vietinbank.vn/
+      - https://investor.vietinbank.vn/en/shareholdermeetingfilings.aspx
+      - https://investor.vietinbank.vn/en/tim-kiem?category=100640&category=114328&category=116445&category=116457&category=36063&category=36066&category=36171&category=471001&category=53049&category=95352&delta=60&start=10
+      - https://investor.vietinbank.vn/en/tim-kiem?category=100640&category=114328&category=116445&category=116457&category=36063&category=36066&category=36171&category=471001&category=53049&category=95352&delta=60&start=34

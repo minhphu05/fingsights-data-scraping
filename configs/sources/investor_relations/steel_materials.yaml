@@ -1,0 +1,34 @@
+source_group: ir_steel_materials
+name: Investor Relations - Steel and Materials
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 1.0
+timeout_seconds: 35
+request_max_retries: 1
+request_retry_backoff_seconds: 1.0
+max_pages_per_company: 24
+max_documents_per_company: 300
+companies:
+  - symbol: HPG
+    company_name: Hoa Phat Group Joint Stock Company
+    source_code: ir_hpg
+    allowed_hosts: [hoaphat.com.vn, file.hoaphat.com.vn]
+    listing_urls:
+      - https://www.hoaphat.com.vn/investor-relations/financial-report?page=1
+      - https://www.hoaphat.com.vn/investor-relations/annual-report
+      - https://www.hoaphat.com.vn/investor-relations/information-disclosure
+  - symbol: HSG
+    company_name: Hoa Sen Group Joint Stock Company
+    source_code: ir_hsg
+    allowed_hosts: [hoasengroup.vn]
+    listing_urls:
+      - https://hoasengroup.vn/vi/quan-he-co-dong/bao-cao-tai-chinh/29/
+      - https://hoasengroup.vn/vi/quan-he-co-dong/cong-bo-thong-tin/25/
+      - https://hoasengroup.vn/vi/quan-he-co-dong/bao-cao-thuong-nien/28/
+  - symbol: NKG
+    company_name: Nam Kim Steel Joint Stock Company
+    source_code: ir_nkg
+    allowed_hosts: [tonnamkim.com]
+    listing_urls:
+      - https://tonnamkim.com/quan-he-co-dong/financial-report/?lang=en
+      - https://tonnamkim.com/quan-he-co-dong/ir-news/?lang=en
+      - https://tonnamkim.com/quan-he-co-dong/annual-report/?lang=en

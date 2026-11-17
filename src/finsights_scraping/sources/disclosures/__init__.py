@@ -1,5 +1,6 @@
 from .hose import HoseDisclosureClient
 from .hnx import HnxDisclosureClient
+from .ir_portal import InvestorRelationsClient
 from .ubcknn import UbcknnNoticeClient
 from .vsdc import VsdcCorporateActionClient
 
@@ -20,6 +21,7 @@ def build_client(source_key: str, source_config: dict):
 __all__ = [
     "HoseDisclosureClient",
     "HnxDisclosureClient",
+    "InvestorRelationsClient",
     "UbcknnNoticeClient",
     "VsdcCorporateActionClient",
     "build_client",

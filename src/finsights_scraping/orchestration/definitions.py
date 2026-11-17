@@ -15,6 +15,7 @@ from ..domain.models import Article
 from ..domain.windows import DateWindow
 from ..persistence import Node2DisclosureWriter, Node2MarketWriter, Node2NewsWriter, ScrapeAuditWriter
 from ..sources.disclosures import (
+    InvestorRelationsClient,
     build_client as build_disclosure_client,
 )
 from ..sources.market import VietstockHistoryClient, VietstockPublicBoardClient
@@ -47,12 +48,27 @@ OFFICIAL_DISCLOSURE_SOURCES = {
     "ubcknn": ("ubcknn_notices", "0 3 * * 1-5", "ubcknn_notices_job", "1Gi"),
     "vsdc": ("vsdc_corporate_actions", "30 3 * * 1-5", "vsdc_corporate_actions_job", "1Gi"),
 }
+INVESTOR_RELATIONS_SOURCES = {
+    "banks": ("ir_banks", "ir_banks_job", "0 5 * * *", "1Gi"),
+    "steel_materials": ("ir_steel_materials", "ir_steel_materials_job", "30 5 * * *", "1Gi"),
+    "other_sectors": ("ir_other_sectors", "ir_other_sectors_job", "0 6 * * *", "1Gi"),
+}
 
 
 def _disclosure_config(source_key: str) -> dict:
     if source_key not in OFFICIAL_DISCLOSURE_SOURCES:
         raise ValueError(f"Unknown official disclosure source: {source_key!r}")
     return _yaml(CONFIG_DIR / f"sources/disclosures/{source_key}.yaml")
+
+
+def _investor_relations_config(source_key: str) -> dict:
+    if source_key not in INVESTOR_RELATIONS_SOURCES:
+        raise ValueError(f"Unknown investor relations source group: {source_key!r}")
+    key = INVESTOR_RELATIONS_SOURCES[source_key][0]
+    config = _yaml(CONFIG_DIR / f"sources/investor_relations/{key.removeprefix('ir_')}.yaml")
+    if not config.get("companies"):
+        raise ValueError(f"No companies configured for investor relations source group {source_key!r}")
+    return config
 
 
 def _disclosure_client(source_key: str, source_config: dict):
@@ -793,6 +809,129 @@ def collect_official_disclosures(context):
             writer.close()
 
 
+@op(config_schema={
+    "source_key": Field(String, is_required=True, description="banks, steel_materials, or other_sectors"),
+    "start_date": Field(String, is_required=False, default_value="2026-01-01", description="Inclusive YYYY-MM-DD (defaults to 2026-01-01 for the initial IR backfill)"),
+    "end_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
+    "attachment_storage_mode": Field(String, is_required=False, default_value="oci", description="oci uploads official IR documents to private OCI Object Storage; link_only stores links and metadata"),
+})
+def collect_investor_relations(context):
+    source_key = str(context.op_config["source_key"])
+    group_config = _investor_relations_config(source_key)
+    window = _window(context.op_config, group_config.get("timezone", "Asia/Ho_Chi_Minh"))
+    attachment_storage_mode = context.op_config.get("attachment_storage_mode", "oci")
+    audit = ScrapeAuditWriter()
+    writer = Node2DisclosureWriter(attachment_storage_mode=attachment_storage_mode)
+    source_results: dict[str, dict] = {}
+    source_errors: dict[str, str] = {}
+
+    try:
+        for company in group_config["companies"]:
+            symbol = str(company["symbol"]).upper()
+            source_code = str(company.get("source_code") or f"ir_{symbol.casefold()}")
+            listing_urls = [str(url) for url in company["listing_urls"]]
+            run_row_id = audit.start_run(
+                source_code=source_code,
+                source_kind="disclosure",
+                display_name=f"{company['company_name']} Investor Relations",
+                base_url=listing_urls[0],
+                dagster_run_id=f"{context.run_id}:{source_code}"[:64],
+                job_name=context.job_name,
+                start_date=window.start_date,
+                end_date=window.end_date,
+                config={
+                    "source_group": group_config["source_group"],
+                    "collection_method": "official_ir_html",
+                    "attachment_storage_mode": attachment_storage_mode,
+                    "rights_status": "link_only",
+                },
+            )
+            client = InvestorRelationsClient(group_config, company)
+            uploaded_before = writer.attachments_uploaded
+            pending_before = writer.attachments_pending
+            failed_before = writer.attachments_failed
+            try:
+                records = client.collect(window)
+                destination_uids = writer.persist_records(records)
+                audit.save_items(run_row_id, source_code, records, destination_uids)
+                audit.save_attempts(run_row_id, source_code, client.fetch_attempts)
+                stats = dict(client.collection_stats)
+                attachments_uploaded = writer.attachments_uploaded - uploaded_before
+                attachments_pending = writer.attachments_pending - pending_before
+                attachments_failed = writer.attachments_failed - failed_before
+                status = "PARTIAL" if (
+                    stats.get("page_errors") or attachments_pending or attachments_failed
+                ) else "SUCCESS"
+                audit.finish_run(
+                    run_row_id,
+                    status,
+                    discovered=len(records),
+                    persisted=len(destination_uids),
+                    failed=int(stats.get("page_errors", 0)) + attachments_pending + attachments_failed,
+                )
+                audit.save_checkpoint(source_code, "last_completed_window", {
+                    "start_date": window.start_date.isoformat(),
+                    "end_date": window.end_date.isoformat(),
+                    "items_discovered": len(records),
+                    "items_persisted": len(destination_uids),
+                    "pages_visited": stats.get("pages_visited", 0),
+                    "undated_items": stats.get("undated_items", 0),
+                    "attachments_uploaded": attachments_uploaded,
+                    "attachments_pending": attachments_pending,
+                    "attachments_failed": attachments_failed,
+                    "status": status,
+                })
+                source_results[source_code] = {
+                    "symbol": symbol,
+                    "items_discovered": len(records),
+                    "items_persisted": len(destination_uids),
+                    "pages_visited": stats.get("pages_visited", 0),
+                    "page_errors": stats.get("page_errors", 0),
+                    "undated_items": stats.get("undated_items", 0),
+                    "attachments_uploaded": attachments_uploaded,
+                    "attachments_pending": attachments_pending,
+                    "attachments_failed": attachments_failed,
+                    "status": status,
+                }
+                context.log.info(
+                    f"{source_code}: {len(destination_uids)} disclosure records; "
+                    f"pages={stats.get('pages_visited', 0)}, OCI uploaded={attachments_uploaded}, "
+                    f"pending={attachments_pending}, failed={attachments_failed}, status={status}"
+                )
+            except Exception as exc:
+                source_errors[source_code] = f"{type(exc).__name__}: {exc}"[:1000]
+                try:
+                    audit.save_attempts(run_row_id, source_code, client.fetch_attempts)
+                    audit.finish_run(
+                        run_row_id,
+                        "FAILED",
+                        discovered=0,
+                        persisted=0,
+                        failed=1,
+                        error=source_errors[source_code],
+                    )
+                except Exception as audit_exc:
+                    context.log.error(f"Could not finalize {source_code} audit: {type(audit_exc).__name__}")
+                context.log.error(f"{source_code} failed: {source_errors[source_code]}")
+            finally:
+                client.close()
+    finally:
+        writer.close()
+
+    summary = {
+        "source_group": group_config["source_group"],
+        "start_date": window.start_date.isoformat(),
+        "end_date": window.end_date.isoformat(),
+        "attachment_storage_mode": attachment_storage_mode,
+        "sources": source_results,
+        "errors": source_errors,
+    }
+    context.log.info(f"Investor relations batch summary: {json.dumps(summary, ensure_ascii=False)}")
+    if source_errors:
+        raise RuntimeError(f"Investor relations source failures: {source_errors}")
+    return summary
+
+
 @job(name="cafef_news_job", tags=_pod_tags("cafef"), description="CafeF financial-news collection; one isolated K3s run pod.")
 def cafef_news_job():
     collect_cafef_news()
@@ -884,6 +1023,44 @@ def _build_official_disclosure_schedule(source_key: str, job_definition):
     return official_disclosure_schedule
 
 
+def _build_investor_relations_job(source_key: str):
+    source_group, job_name, _cron, memory_limit = INVESTOR_RELATIONS_SOURCES[source_key]
+
+    @job(
+        name=job_name,
+        tags=_pod_tags(source_group, memory_limit),
+        description=f"Collect public investor-relations disclosures and archive linked documents for {source_key} issuers.",
+    )
+    def investor_relations_job():
+        collect_investor_relations()
+
+    return investor_relations_job
+
+
+def _build_investor_relations_schedule(source_key: str, job_definition):
+    source_group, _job_name, cron_schedule, _memory_limit = INVESTOR_RELATIONS_SOURCES[source_key]
+
+    @schedule(
+        job=job_definition,
+        cron_schedule=cron_schedule,
+        execution_timezone="Asia/Ho_Chi_Minh",
+        name=f"{source_key}_investor_relations_schedule",
+    )
+    def investor_relations_schedule(context):
+        publication_day = context.scheduled_execution_time.astimezone(LOCAL_TZ).date() - timedelta(days=1)
+        return RunRequest(
+            run_key=f"{source_group}-{publication_day.isoformat()}",
+            run_config={"ops": {"collect_investor_relations": {"config": {
+                "source_key": source_key,
+                "start_date": publication_day.isoformat(),
+                "end_date": publication_day.isoformat(),
+                "attachment_storage_mode": "oci",
+            }}}},
+        )
+
+    return investor_relations_schedule
+
+
 def _build_configured_news_schedule(source_key: str, job_definition, cron_schedule: str):
     source_code = CONFIGURED_NEWS_SOURCES[source_key][0]
 
@@ -937,6 +1114,16 @@ official_disclosure_schedules = {
         source_key, official_disclosure_jobs[source_key]
     )
     for source_key in OFFICIAL_DISCLOSURE_SOURCES
+}
+investor_relations_jobs = {
+    source_key: _build_investor_relations_job(source_key)
+    for source_key in INVESTOR_RELATIONS_SOURCES
+}
+investor_relations_schedules = {
+    source_key: _build_investor_relations_schedule(
+        source_key, investor_relations_jobs[source_key]
+    )
+    for source_key in INVESTOR_RELATIONS_SOURCES
 }
 
 
@@ -994,6 +1181,7 @@ defs = Definitions(
         *configured_news_jobs.values(),
         *news_backfill_jobs.values(),
         *official_disclosure_jobs.values(),
+        *investor_relations_jobs.values(),
     ],
     schedules=[
         cafef_daily_news_schedule,
@@ -1001,6 +1189,7 @@ defs = Definitions(
         vietstock_eod_schedule,
         *configured_news_schedules.values(),
         *official_disclosure_schedules.values(),
+        *investor_relations_schedules.values(),
     ],
 )
 
