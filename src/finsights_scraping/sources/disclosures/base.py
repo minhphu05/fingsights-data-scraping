@@ -163,43 +163,77 @@ class OfficialSourceClient:
 
     def request(self, method: str, url: str, *, params=None, json_body=None, form_data=None, headers=None) -> httpx.Response:
         self._throttle()
-        started = datetime.now().astimezone()
-        before = time.monotonic()
-        attempt: dict[str, Any] = {
-            "resource_kind": "page",
-            "url": str(httpx.URL(url, params=params) if params else url),
-            "requested_at": started,
-            "attempt_number": 1,
-        }
-        try:
-            response = self.client.request(
-                method, url, params=params, json=json_body, data=form_data, headers=headers
-            )
-            self._last_request = time.monotonic()
-            attempt.update({
-                "completed_at": datetime.now().astimezone(),
-                "http_status": response.status_code,
-                "content_type": response.headers.get("content-type"),
-                "size_bytes": len(response.content),
-                "response_sha256": hashlib.sha256(response.content).hexdigest(),
-                "duration_ms": round((time.monotonic() - before) * 1000),
-                "outcome": "SUCCESS" if response.is_success else "HTTP_ERROR",
-            })
-            self.fetch_attempts.append(attempt)
-            response.raise_for_status()
-            return response
-        except Exception as exc:
-            self._last_request = time.monotonic()
-            attempt.update({
-                "completed_at": datetime.now().astimezone(),
-                "duration_ms": round((time.monotonic() - before) * 1000),
-                "outcome": "FAILED",
-                "error_type": type(exc).__name__,
-                "error_message": str(exc)[:1000],
-            })
-            if not self.fetch_attempts or self.fetch_attempts[-1] is not attempt:
+        max_retries = max(0, int(self.config.get("request_max_retries", 0)))
+        backoff_seconds = max(0.0, float(self.config.get("request_retry_backoff_seconds", 1.0)))
+        request_url = str(httpx.URL(url, params=params) if params else url)
+        retryable_statuses = {408, 425, 429, 500, 502, 503, 504}
+
+        for attempt_number in range(1, max_retries + 2):
+            started = datetime.now().astimezone()
+            before = time.monotonic()
+            attempt: dict[str, Any] = {
+                "resource_kind": "page",
+                "url": request_url,
+                "requested_at": started,
+                "attempt_number": attempt_number,
+            }
+            try:
+                response = self.client.request(
+                    method, url, params=params, json=json_body, data=form_data, headers=headers
+                )
+                self._last_request = time.monotonic()
+                is_retryable = response.status_code in retryable_statuses
+                attempt.update({
+                    "completed_at": datetime.now().astimezone(),
+                    "http_status": response.status_code,
+                    "content_type": response.headers.get("content-type"),
+                    "size_bytes": len(response.content),
+                    "response_sha256": hashlib.sha256(response.content).hexdigest(),
+                    "duration_ms": round((time.monotonic() - before) * 1000),
+                    "outcome": "SUCCESS" if response.is_success else (
+                        "RETRYABLE_HTTP_ERROR" if is_retryable and attempt_number <= max_retries else "HTTP_ERROR"
+                    ),
+                })
                 self.fetch_attempts.append(attempt)
-            raise
+                if is_retryable and attempt_number <= max_retries:
+                    retry_after = response.headers.get("retry-after", "")
+                    try:
+                        delay = max(backoff_seconds * (2 ** (attempt_number - 1)), float(retry_after))
+                    except ValueError:
+                        delay = backoff_seconds * (2 ** (attempt_number - 1))
+                    time.sleep(delay)
+                    continue
+                response.raise_for_status()
+                return response
+            except (httpx.TimeoutException, httpx.TransportError) as exc:
+                self._last_request = time.monotonic()
+                attempt.update({
+                    "completed_at": datetime.now().astimezone(),
+                    "duration_ms": round((time.monotonic() - before) * 1000),
+                    "outcome": "RETRYABLE_FAILURE" if attempt_number <= max_retries else "FAILED",
+                    "error_type": type(exc).__name__,
+                    "error_message": str(exc)[:1000],
+                })
+                self.fetch_attempts.append(attempt)
+                if attempt_number > max_retries:
+                    raise
+                time.sleep(backoff_seconds * (2 ** (attempt_number - 1)))
+            except Exception as exc:
+                self._last_request = time.monotonic()
+                # The response attempt was already recorded before raise_for_status().
+                # Add an error row only for unexpected failures before an HTTP response.
+                if not self.fetch_attempts or self.fetch_attempts[-1] is not attempt:
+                    attempt.update({
+                        "completed_at": datetime.now().astimezone(),
+                        "duration_ms": round((time.monotonic() - before) * 1000),
+                        "outcome": "FAILED",
+                        "error_type": type(exc).__name__,
+                        "error_message": str(exc)[:1000],
+                    })
+                    self.fetch_attempts.append(attempt)
+                raise
+
+        raise RuntimeError("HTTP request retry loop exited unexpectedly")
 
     def get_json(self, url: str, *, params=None) -> dict[str, Any]:
         response = self.request("GET", url, params=params)

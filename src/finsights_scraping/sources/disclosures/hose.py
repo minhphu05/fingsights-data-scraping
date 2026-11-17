@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 from datetime import datetime
 from typing import Any
@@ -12,6 +13,7 @@ from ...domain.windows import DateWindow
 from .base import OfficialSourceClient, clean_text, infer_disclosure_kind, in_window, parse_local_datetime
 
 SYMBOL_PREFIX = re.compile(r"^\s*([A-Z][A-Z0-9]{1,11})\s*[:：-]")
+logger = logging.getLogger("finsights.sources.hose")
 
 
 class HoseDisclosureClient(OfficialSourceClient):
@@ -211,6 +213,14 @@ class HoseDisclosureClient(OfficialSourceClient):
                 ))
             paging = envelope.get("paging", {}) if isinstance(envelope, dict) else {}
             total_pages = int(paging.get("totalPages") or 0)
+            if page == 1 or page % 20 == 0 or len(items) < page_size:
+                logger.info(
+                    "HOSE listing progress: page=%d/%s rows=%d target_records=%d",
+                    page,
+                    total_pages or "unknown",
+                    len(items),
+                    len(output),
+                )
             if len(items) < page_size or (total_pages and page >= total_pages):
                 break
             page += 1

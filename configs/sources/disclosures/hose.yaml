@@ -6,8 +6,10 @@ api_url: https://api.hsx.vn/n/api/v1/1/news
 media_api_url: https://api.hsx.vn/m/api/v1/1/mediafiles
 static_files_base_url: https://staticfile.hsx.vn
 timezone: Asia/Ho_Chi_Minh
-request_rate_per_second: 5
-timeout_seconds: 30
+request_rate_per_second: 3
+timeout_seconds: 90
+request_max_retries: 3
+request_retry_backoff_seconds: 2
 page_size: 100
 max_pages: 5000
 fetch_details: true
