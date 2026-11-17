@@ -80,15 +80,17 @@ class HnxDisclosureClient(OfficialSourceClient):
                         },
                         headers={"X-Requested-With": "XMLHttpRequest", "Referer": listing_url},
                     )
-                    page_records = html_tables_as_records(
+                    raw_rows = BeautifulSoup(html, "lxml").select("table tbody tr")
+                    all_page_records = html_tables_as_records(
                         html,
                         source_code=str(self.config["source_code"]),
                         authority_name="Sở Giao dịch Chứng khoán Hà Nội (HNX)",
                         base_url=final_url,
                         window=window,
                         page_number=page,
+                        include_outside_window=True,
                     )
-                    if not page_records:
+                    if not all_page_records:
                         page_text = " ".join(BeautifulSoup(html, "lxml").get_text(" ", strip=True).split())
                         empty_response = any(
                             phrase in page_text.casefold()
@@ -102,8 +104,7 @@ class HnxDisclosureClient(OfficialSourceClient):
                             )
                         break
 
-                    raw_rows = BeautifulSoup(html, "lxml").select("table tbody tr")
-                    for record, row in zip(page_records, raw_rows):
+                    for record, row in zip(all_page_records, raw_rows):
                         title_link = row.select_one("a.hrefViewDetail[onclick]")
                         onclick = title_link.get("onclick", "") if title_link else ""
                         match = re.search(r"funcViewDetailArticlesByID\((\d+)\s*,\s*(\d+)\)", onclick)
@@ -117,6 +118,10 @@ class HnxDisclosureClient(OfficialSourceClient):
                         # official board; details and file URLs are extracted through its AJAX API.
                         record.original_url = listing_url
 
+                    page_records = [
+                        record for record in all_page_records
+                        if record.published_at and window.contains(record.published_at)
+                    ]
                     if search_symbol:
                         for record in page_records:
                             # HNX often displays a bond code (for example MBB125008) while
@@ -127,7 +132,7 @@ class HnxDisclosureClient(OfficialSourceClient):
                             record.symbol = search_symbol
                             record.item_type = "issuer_disclosure"
                     output.extend(page_records)
-                    if len(page_records) < page_size:
+                    if len(raw_rows) < page_size:
                         break
                     page += 1
                 else:
