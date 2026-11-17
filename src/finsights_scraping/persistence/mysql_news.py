@@ -26,8 +26,8 @@ from .security_matching import SecurityAliasMatcher
 logger = logging.getLogger("finsights.persistence.news")
 
 
-def _retry_mysql_deadlocks(method):
-    """Retry an idempotent article transaction after transient InnoDB lock errors."""
+def _retry_transient_mysql_errors(method):
+    """Retry an idempotent article transaction after transient MySQL errors."""
     @wraps(method)
     def wrapped(self, article):
         max_attempts = 5
@@ -37,12 +37,12 @@ def _retry_mysql_deadlocks(method):
             except SQLAlchemyOperationalError as exc:
                 original = getattr(exc, "orig", None)
                 error_code = original.args[0] if getattr(original, "args", None) else None
-                if error_code not in {1205, 1213} or attempt + 1 >= max_attempts:
+                if error_code not in {1205, 1213, 2002, 2003, 2006, 2013, 2055} or attempt + 1 >= max_attempts:
                     raise
 
                 delay = min(2.0, 0.25 * (2 ** attempt)) + random.uniform(0.0, 0.2)
                 logger.warning(
-                    "Retrying Node 2 news transaction after MySQL lock error %s for %s/%s "
+                    "Retrying Node 2 news transaction after transient MySQL error %s for %s/%s "
                     "(attempt %d/%d, sleep %.2fs)",
                     error_code,
                     article.publisher_code,
@@ -159,7 +159,7 @@ class Node2NewsWriter:
             article_uids[article.source_article_id] = self._persist_article(article)
         return article_uids
 
-    @_retry_mysql_deadlocks
+    @_retry_transient_mysql_errors
     def _persist_article(self, article: Article) -> str:
         canonical_hash = _sha256(article.canonical_url)
         plaintext = _plain_text(article.blocks)

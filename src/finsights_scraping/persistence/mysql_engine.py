@@ -16,6 +16,9 @@ def create_tls_mysql_engine(database_url: str, ca_file: str, *, pool_size: int =
         pool_size=pool_size,
         max_overflow=0,
         connect_args={
+            "connect_timeout": 10,
+            "read_timeout": 30,
+            "write_timeout": 30,
             "ssl_ca": ca_file,
             "ssl_verify_cert": True,
             # Current Oracle endpoint certificates use a shared CN without IP SANs;
