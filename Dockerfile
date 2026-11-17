@@ -23,6 +23,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
+    libatomic1 \
     libxml2 \
     libxslt1.1 \
     && rm -rf /var/lib/apt/lists/*
