@@ -114,9 +114,11 @@ class HnxDisclosureClient(OfficialSourceClient):
                             record.metadata["hnx_file_attach"] = file_attach
                             record.metadata["hnx_listing_url"] = listing_url
                             record.source_item_id = f"{board_code}:{article_id}"
-                        # The title's href is JavaScript-only. Point the stored record at the
-                        # official board; details and file URLs are extracted through its AJAX API.
-                        record.original_url = listing_url
+                        # The title's href is JavaScript-only, and Node 2 requires a unique
+                        # canonical URL per disclosure. Keep the official board URL with the
+                        # source's stable record id as a fragment; details/files come from AJAX.
+                        article_key = record.metadata.get("hnx_article_id") or record.source_item_id
+                        record.original_url = f"{listing_url}#article-{board_code}-{article_key}"
 
                     page_records = [
                         record for record in all_page_records
