@@ -49,7 +49,7 @@ class LocalRunner:
     def __init__(self, data_dir: Path | str = ROOT / "data"):
         self.data_dir = Path(data_dir)
         self.writer = LocalDataWriter(self.data_dir)
-        alias_file = CONFIG_DIR / "reference/security-aliases.yaml"
+        alias_file = CONFIG_DIR / "reference/financial-news-universe.yaml"
         self.matcher = SecurityAliasMatcher(
             market_engine=None,
             alias_file=alias_file if alias_file.exists() else None,

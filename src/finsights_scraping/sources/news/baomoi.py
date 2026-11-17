@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import json
 import logging
 import os
 import re
+import unicodedata
+import xml.etree.ElementTree as ET
 from typing import Any
 from urllib.parse import urljoin, urlparse
 from zoneinfo import ZoneInfo
@@ -123,6 +125,10 @@ class BaoMoiClient(CafeFClient):
             raise SourceAuthorizationError(
                 "Baomoi collection requires enabled, attributed, internal-only access and robots.txt checks"
             )
+
+        backfill = self.config.get("discovery", {}).get("html_backfill", {})
+        if archive_only and backfill.get("strategy") == "daily_sitemap":
+            return await self._collect_daily_sitemap_backfill(window, on_batch, backfill)
 
         discovered: dict[str, tuple[str, str]] = {}
         seen_article_urls: set[str] = set()
@@ -254,6 +260,192 @@ class BaoMoiClient(CafeFClient):
             )
         self.collection_stats = stats
         return list(results.values())
+
+    async def _collect_daily_sitemap_backfill(
+        self,
+        window: DateWindow,
+        on_batch: Any | None,
+        backfill: dict[str, Any],
+    ) -> list[Article]:
+        """Backfill Baomoi's dated article sitemaps rather than its short rolling archive."""
+        sitemap_index_url = str(backfill.get("sitemap_index_url", "")).strip()
+        if not sitemap_index_url:
+            raise IncompleteArchiveError("Baomoi daily sitemap index URL is not configured")
+
+        index_response = await self._get(sitemap_index_url)
+        try:
+            index_root = ET.fromstring(index_response.content)
+        except ET.ParseError as exc:
+            raise IncompleteArchiveError("Baomoi sitemap index is not valid XML") from exc
+
+        partition_pattern = re.compile(str(backfill.get(
+            "partition_pattern", r"/article-(?P<date>\d{8})\.xml$"
+        )))
+        partitions: dict[date, str] = {}
+        for element in index_root.iter():
+            if element.tag.rsplit("}", 1)[-1] != "loc" or not element.text:
+                continue
+            match = partition_pattern.search(element.text.strip())
+            if not match:
+                continue
+            raw_date = match.groupdict().get("date")
+            if not raw_date:
+                continue
+            try:
+                partition_date = date.fromisoformat(
+                    f"{raw_date[:4]}-{raw_date[4:6]}-{raw_date[6:8]}"
+                )
+            except ValueError:
+                continue
+            partitions[partition_date] = element.text.strip()
+
+        expected_dates = {
+            window.start_date + timedelta(days=offset)
+            for offset in range((window.end_date - window.start_date).days + 1)
+        }
+        missing_dates = sorted(expected_dates - set(partitions))
+        if missing_dates:
+            raise IncompleteArchiveError(
+                "Baomoi sitemap index is missing dated partitions for "
+                f"{len(missing_dates)} requested day(s), starting {missing_dates[0]}"
+            )
+
+        raw_terms = [
+            *backfill.get("financial_title_terms", []),
+            *backfill.get("ticker_title_terms", []),
+        ]
+        terms = sorted({self._slug_term(str(term)) for term in raw_terms if str(term).strip()})
+        terms = [term for term in terms if term]
+        if not terms:
+            raise IncompleteArchiveError("Baomoi sitemap title candidate terms are not configured")
+
+        day_buffer: dict[date, list[Article]] = {}
+        result_articles: dict[str, Article] = {}
+        seen_urls: set[str] = set()
+        seen_ids: set[str] = set()
+        stats = {
+            "method": "html_daily_sitemap_backfill",
+            "requested_start_date": window.start_date.isoformat(),
+            "requested_end_date": window.end_date.isoformat(),
+            "sitemap_partitions_expected": len(expected_dates),
+            "sitemap_partitions_fetched": 0,
+            "candidate_article_urls": 0,
+            "article_pages_fetched": 0,
+            "article_pages_failed": 0,
+            "financial_articles": 0,
+            "coverage_proven": True,
+        }
+
+        def flush_days() -> None:
+            for publication_day in sorted(day_buffer):
+                batch = day_buffer.pop(publication_day, [])
+                if not batch:
+                    continue
+                if on_batch:
+                    try:
+                        on_batch(publication_day, batch, "sitemap")
+                    except TypeError:
+                        on_batch(publication_day, batch)
+                else:
+                    for article in batch:
+                        result_articles[article.source_article_id] = article
+
+        selected = [
+            (partition_date, partitions[partition_date])
+            for partition_date in sorted(expected_dates)
+        ]
+        for partition_date, sitemap_url in selected:
+            response = await self._get(sitemap_url)
+            try:
+                sitemap_root = ET.fromstring(response.content)
+            except ET.ParseError as exc:
+                stats["coverage_proven"] = False
+                self.collection_stats = stats
+                raise IncompleteArchiveError(
+                    f"Baomoi daily sitemap for {partition_date} is not valid XML"
+                ) from exc
+
+            stats["sitemap_partitions_fetched"] += 1
+            candidates: list[tuple[str, str | None]] = []
+            for entry in sitemap_root.iter():
+                if entry.tag.rsplit("}", 1)[-1] != "url":
+                    continue
+                article_url = None
+                last_modified = None
+                for child in entry:
+                    local_name = child.tag.rsplit("}", 1)[-1]
+                    if local_name == "loc" and child.text:
+                        article_url = child.text.strip()
+                    elif local_name == "lastmod" and child.text:
+                        last_modified = child.text.strip()
+                if not article_url or not article_url.casefold().endswith(".epi"):
+                    continue
+                if article_url in seen_urls:
+                    continue
+                seen_urls.add(article_url)
+                if self._url_has_candidate_term(article_url, terms):
+                    candidates.append((article_url, last_modified))
+
+            stats["candidate_article_urls"] += len(candidates)
+            for article_url, last_modified in candidates:
+                try:
+                    article = await self.fetch_article(
+                        article_url,
+                        category="sitemap",
+                        listing_item={"sitemap_lastmod": last_modified},
+                    )
+                    stats["article_pages_fetched"] += 1
+                    if window.contains(article.published_at) and self.is_financial(article):
+                        if article.source_article_id not in seen_ids:
+                            seen_ids.add(article.source_article_id)
+                            article_day = article.published_at.astimezone(
+                                ZoneInfo(self.timezone_name)
+                            ).date()
+                            article.metadata["collection_method"] = stats["method"]
+                            article.metadata["content_scope"] = (
+                                "aggregate_excerpt"
+                                if any(block.metadata.get("fallback") == "summary_only" for block in article.blocks)
+                                else "baomoi_aggregator_content"
+                            )
+                            day_buffer.setdefault(article_day, []).append(article)
+                            stats["financial_articles"] += 1
+                except SourceAuthorizationError:
+                    raise
+                except Exception:
+                    stats["article_pages_failed"] += 1
+
+            flush_days()
+
+        flush_days()
+        stats["article_failure_ratio"] = round(
+            stats["article_pages_failed"]
+            / max(1, stats["article_pages_failed"] + stats["article_pages_fetched"]),
+            4,
+        )
+        max_failure_ratio = float(backfill.get(
+            "max_article_failure_ratio",
+            self.config.get("discovery", {}).get("max_article_failure_ratio", 0.25),
+        ))
+        self.collection_stats = stats
+        if stats["article_failure_ratio"] > max_failure_ratio:
+            raise RuntimeError(
+                f"Baomoi sitemap article failure ratio {stats['article_failure_ratio']:.1%} "
+                f"exceeds configured limit {max_failure_ratio:.1%}"
+            )
+        return list(result_articles.values())
+
+    @staticmethod
+    def _slug_term(value: str) -> str:
+        value = unicodedata.normalize("NFKD", value.casefold().replace("đ", "d"))
+        value = "".join(character for character in value if not unicodedata.combining(character))
+        return re.sub(r"[^a-z0-9]+", "-", value).strip("-")
+
+    @staticmethod
+    def _url_has_candidate_term(url: str, terms: list[str]) -> bool:
+        path = urlparse(url).path.casefold().strip("/")
+        slug = path.rsplit("/", 1)[-1]
+        bounded_slug = f"-{slug}-"
+        return any(f"-{term}-" in bounded_slug for term in terms)
 
     async def fetch_article(
         self,

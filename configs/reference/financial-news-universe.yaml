@@ -1,0 +1,68 @@
+version: 1
+source_of_truth: "Google Sheet: Finsights - Data Collections, rows 14-30"
+timezone: Asia/Ho_Chi_Minh
+exchange:
+  code: HOSE
+  name: Ho Chi Minh Stock Exchange
+  website_url: https://www.hsx.vn/
+securities:
+  - symbol: VCB
+    company_name: Ngân hàng TMCP Ngoại thương Việt Nam
+    short_name: Vietcombank
+    aliases: [VCB, Vietcombank, Ngân hàng TMCP Ngoại thương Việt Nam]
+  - symbol: TCB
+    company_name: Ngân hàng TMCP Kỹ thương Việt Nam
+    short_name: Techcombank
+    aliases: [TCB, Techcombank, Ngân hàng TMCP Kỹ thương Việt Nam]
+  - symbol: MBB
+    company_name: Ngân hàng TMCP Quân đội
+    short_name: MB Bank
+    aliases: [MBB, MBBank, MB Bank, Ngân hàng TMCP Quân đội]
+  - symbol: ACB
+    company_name: Ngân hàng TMCP Á Châu
+    short_name: ACB
+    aliases: [ACB, Ngân hàng TMCP Á Châu, Ngân hàng Á Châu]
+  - symbol: CTG
+    company_name: Ngân hàng TMCP Công thương Việt Nam
+    short_name: VietinBank
+    aliases: [CTG, VietinBank, Ngân hàng TMCP Công thương Việt Nam]
+  - symbol: HPG
+    company_name: Công ty Cổ phần Tập đoàn Hòa Phát
+    short_name: Hòa Phát
+    aliases: [HPG, Hòa Phát, Tập đoàn Hòa Phát]
+  - symbol: HSG
+    company_name: Công ty Cổ phần Tập đoàn Hoa Sen
+    short_name: Hoa Sen
+    aliases: [HSG, Hoa Sen, Tập đoàn Hoa Sen]
+  - symbol: NKG
+    company_name: Công ty Cổ phần Thép Nam Kim
+    short_name: Nam Kim
+    aliases: [NKG, Nam Kim, Thép Nam Kim]
+  - symbol: FPT
+    company_name: Công ty Cổ phần FPT
+    short_name: FPT
+    aliases: [FPT, Tập đoàn FPT, FPT Corporation]
+  - symbol: CMG
+    company_name: Công ty Cổ phần Tập đoàn Công nghệ CMC
+    short_name: CMC
+    aliases: [CMG, CMC, Tập đoàn Công nghệ CMC, CMC Corporation]
+  - symbol: MWG
+    company_name: Công ty Cổ phần Đầu tư Thế Giới Di Động
+    short_name: Thế Giới Di Động
+    aliases: [MWG, Thế Giới Di Động, Mobile World]
+  - symbol: PNJ
+    company_name: Công ty Cổ phần Vàng bạc Đá quý Phú Nhuận
+    short_name: PNJ
+    aliases: [PNJ, Vàng bạc Đá quý Phú Nhuận, Phú Nhuận Jewelry]
+  - symbol: VNM
+    company_name: Công ty Cổ phần Sữa Việt Nam
+    short_name: Vinamilk
+    aliases: [VNM, Vinamilk, Sữa Việt Nam]
+  - symbol: MSN
+    company_name: Công ty Cổ phần Tập đoàn Masan
+    short_name: Masan
+    aliases: [MSN, Masan, Tập đoàn Masan, Masan Group]
+  - symbol: GAS
+    company_name: Tổng Công ty Khí Việt Nam - CTCP
+    short_name: PV GAS
+    aliases: [GAS, PV GAS, Tổng Công ty Khí Việt Nam, Khí Việt Nam]

@@ -27,14 +27,84 @@ discovery:
   mode: paginated-category-archive
   max_pages: 5000
   max_article_failure_ratio: 0.25
-  fail_if_archive_boundary_not_proven: true
   archive_categories:
     - code: finance
       first_page: https://baomoi.com/tai-chinh.epi
       page_template: https://baomoi.com/tai-chinh/trang{page}.epi
   pagination_order: newest_to_oldest
   stop_only_after_article_before_start_date: true
-  fail_if_archive_boundary_not_proven: false
+  fail_if_archive_boundary_not_proven: true
+  html_backfill:
+    strategy: daily_sitemap
+    sitemap_index_url: https://baomoi.com/sitemaps/sitemap.xml
+    partition_pattern: '/article-(?P<date>\d{8})\.xml$'
+    max_article_failure_ratio: 0.25
+    financial_title_terms:
+      - chứng khoán
+      - cổ phiếu
+      - tài chính
+      - thị trường chứng khoán
+      - VN-Index
+      - VN30
+      - cổ tức
+      - báo cáo tài chính
+      - trái phiếu
+      - lãi suất
+      - tỷ giá
+      - khối ngoại
+      - thanh khoản
+      - đầu tư chứng khoán
+      - niêm yết
+      - giao dịch chứng khoán
+      - thị trường tài chính
+      - ngân hàng
+      - lợi nhuận
+      - doanh thu
+      - tăng vốn
+      - cổ đông
+      - sàn chứng khoán
+      - HOSE
+      - HNX
+      - UPCoM
+      - chứng quyền
+    ticker_title_terms:
+      - VCB
+      - Vietcombank
+      - Ngoại thương
+      - TCB
+      - Techcombank
+      - Kỹ thương
+      - MBB
+      - MBBank
+      - MB Bank
+      - Quân đội
+      - ACB
+      - Á Châu
+      - CTG
+      - VietinBank
+      - Công thương
+      - HPG
+      - Hòa Phát
+      - HSG
+      - Hoa Sen
+      - NKG
+      - Nam Kim
+      - FPT
+      - CMC
+      - CMG
+      - MWG
+      - Thế Giới Di Động
+      - Mobile World
+      - PNJ
+      - Phú Nhuận
+      - VNM
+      - Vinamilk
+      - Sữa Việt Nam
+      - MSN
+      - Masan
+      - GAS
+      - PV GAS
+      - Khí Việt Nam
   link_selectors: ["a[href]"]
 
 article:

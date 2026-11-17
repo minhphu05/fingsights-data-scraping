@@ -80,7 +80,19 @@ class SecurityAliasMatcher:
                 return
             for sec in content.get("securities", []):
                 symbol = str(sec.get("symbol", "")).strip()
-                for alias in sec.get("aliases", []):
+                for raw_alias in sec.get("aliases", []):
+                    if isinstance(raw_alias, str):
+                        alias = {
+                            "text": raw_alias,
+                            "alias_type": "ticker" if raw_alias.strip().upper() == symbol.upper() else "brand_name",
+                            "match_mode": "exact_token" if raw_alias.strip().upper() == symbol.upper() else "phrase",
+                            "requires_financial_context": raw_alias.strip().upper() == symbol.upper(),
+                            "confidence": 0.98 if raw_alias.strip().upper() == symbol.upper() else 0.97,
+                        }
+                    elif isinstance(raw_alias, dict):
+                        alias = raw_alias
+                    else:
+                        continue
                     alias_text = str(alias.get("text", "")).strip()
                     alias_type = str(alias.get("alias_type", "ticker"))
                     self.aliases.append({

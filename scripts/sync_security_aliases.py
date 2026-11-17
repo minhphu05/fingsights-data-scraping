@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Idempotently load configured stock/company aliases into Node 1 market catalog")
+    parser = argparse.ArgumentParser(description="Idempotently load configured stock/company aliases into the Node 2 market catalog")
     parser.add_argument("--config", default=str(ROOT / "configs/reference/security-aliases.yaml"))
     args = parser.parse_args()
     config = yaml.safe_load(Path(args.config).read_text(encoding="utf-8"))
@@ -23,7 +23,7 @@ def main() -> int:
 
     import os
     database_url = os.getenv("MARKET_DATABASE_URL", "").strip()
-    ca_file = os.getenv("MYSQL_NODE_1_TLS_CA_FILE", "").strip()
+    ca_file = os.getenv("MYSQL_NODE_2_TLS_CA_FILE", "").strip()
     engine = create_tls_mysql_engine(database_url, ca_file)
     rows_written = 0
     with engine.begin() as connection:
