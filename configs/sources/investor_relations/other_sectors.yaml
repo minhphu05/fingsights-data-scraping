@@ -53,7 +53,7 @@ companies:
     company_name: Masan Group Corporation
     source_code: ir_msn
     allowed_hosts: [masangroup.com]
-    listing_urls: [https://www.masangroup.com/investor-relations/]
+    listing_urls: [https://www.masangroup.com/vi/investor-relations/]
   - symbol: GAS
     company_name: Vietnam Gas Corporation - PV GAS
     source_code: ir_gas
