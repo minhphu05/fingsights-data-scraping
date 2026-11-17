@@ -125,7 +125,7 @@ class HoseDisclosureClient(OfficialSourceClient):
         return out
 
     def collect(self, window: DateWindow) -> list[DisclosureRecord]:
-        page_size = min(100, int(self.config.get("page_size", 100)))
+        page_size = min(1000, int(self.config.get("page_size", 1000)))
         max_pages = int(self.config.get("max_pages", 5000))
         output: list[DisclosureRecord] = []
         target_symbols = {str(value).strip().upper() for value in self.config.get("target_symbols", [])}

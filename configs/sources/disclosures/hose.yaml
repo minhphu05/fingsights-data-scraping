@@ -10,7 +10,7 @@ request_rate_per_second: 3
 timeout_seconds: 90
 request_max_retries: 3
 request_retry_backoff_seconds: 2
-page_size: 100
+page_size: 1000
 max_pages: 5000
 fetch_details: true
 fetch_attachments: true
