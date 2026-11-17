@@ -6,10 +6,11 @@ import logging
 import mimetypes
 import os
 import re
+import ssl
 import time
 import uuid
 from datetime import datetime, timezone
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Any
 from unicodedata import normalize
 from urllib.parse import urlparse
@@ -48,7 +49,7 @@ class Node2DisclosureWriter:
 
     def __init__(
         self, *, disclosures_engine: Engine | None = None, market_engine: Engine | None = None,
-        attachment_storage_mode: str = "link_only",
+        attachment_storage_mode: str = "link_only", tls_extra_ca_file: str | None = None,
     ):
         self.attachment_storage_mode = attachment_storage_mode.strip().casefold()
         self.max_attachment_bytes = int(os.getenv("DISCLOSURE_MAX_ATTACHMENT_BYTES", str(50 * 1024 * 1024)))
@@ -57,15 +58,29 @@ class Node2DisclosureWriter:
         self.attachments_failed = 0
         self.attachment_attempts: list[dict[str, Any]] = []
         self.uploader = OciS3Uploader()
+        verify: bool | ssl.SSLContext = True
+        if tls_extra_ca_file:
+            ca_path = Path(tls_extra_ca_file)
+            if not ca_path.is_absolute():
+                project_root = Path(__file__).resolve().parents[3]
+                ca_path = (project_root / ca_path).resolve()
+            if not ca_path.is_file():
+                raise FileNotFoundError(f"Configured TLS CA certificate does not exist: {ca_path}")
+            verify = ssl.create_default_context()
+            verify.load_verify_locations(cafile=str(ca_path))
         self.document_client = httpx.Client(
-            timeout=httpx.Timeout(60), follow_redirects=True, verify=True,
+            timeout=httpx.Timeout(60), follow_redirects=True, verify=verify,
             headers={"User-Agent": "FinsightsDataCollector/1.0 (+https://finsights.vn; public market information)"},
         )
         ca_file = os.getenv("MYSQL_NODE_2_TLS_CA_FILE", "")
         if disclosures_engine is None:
             explicit_url = os.getenv("DISCLOSURES_DATABASE_URL", "").strip()
             if explicit_url:
-                disclosures_engine = create_tls_mysql_engine(explicit_url, ca_file)
+                disclosures_engine = create_tls_mysql_engine(
+                    explicit_url,
+                    ca_file,
+                    password_env="MYSQL_SCRAPING_APP_PASSWORD",
+                )
             else:
                 market_url = os.getenv("MARKET_DATABASE_URL", "").strip()
                 shared_password = os.getenv("MYSQL_SCRAPING_APP_PASSWORD", "")
@@ -80,12 +95,20 @@ class Node2DisclosureWriter:
                     username="finsights_disclosures_app",
                     password=shared_password,
                 )
-                disclosures_engine = create_tls_mysql_engine(str(disclosure_url), ca_file)
+                disclosures_engine = create_tls_mysql_engine(
+                    str(disclosure_url),
+                    ca_file,
+                    password_env="MYSQL_SCRAPING_APP_PASSWORD",
+                )
         if market_engine is None:
             market_url = os.getenv("MARKET_DATABASE_URL", "").strip()
             if not market_url:
                 raise RuntimeError("MARKET_DATABASE_URL is required to match disclosure symbols to Node 2 securities")
-            market_engine = create_tls_mysql_engine(market_url, ca_file)
+            market_engine = create_tls_mysql_engine(
+                market_url,
+                ca_file,
+                password_env="MYSQL_SCRAPING_APP_PASSWORD",
+            )
         self.disclosures_engine = disclosures_engine
         self.market_engine = market_engine
         self.security_by_symbol: dict[str, dict[str, str]] = {}

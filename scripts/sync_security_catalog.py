@@ -36,7 +36,11 @@ def main() -> int:
         raise ValueError("Universe file must be a version: 1 YAML mapping")
     database_url = os.getenv("MARKET_DATABASE_URL", "").strip()
     ca_file = os.getenv("MYSQL_NODE_2_TLS_CA_FILE", "").strip()
-    engine = create_tls_mysql_engine(database_url, ca_file)
+    engine = create_tls_mysql_engine(
+        database_url,
+        ca_file,
+        password_env="MYSQL_SCRAPING_APP_PASSWORD",
+    )
     exchange = config["exchange"]
     exchange_code = str(exchange["code"]).strip().upper()
     securities = config.get("securities", [])

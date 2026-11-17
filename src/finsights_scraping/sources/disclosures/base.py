@@ -3,9 +3,11 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import ssl
 import time
 from datetime import date, datetime
 from email.utils import parsedate_to_datetime
+from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin
 from zoneinfo import ZoneInfo
@@ -31,7 +33,8 @@ def parse_local_datetime(value: Any) -> datetime | None:
         return None
     if isinstance(value, datetime):
         return value.replace(tzinfo=LOCAL_TZ) if value.tzinfo is None else value
-    if isinstance(value, (int, float)) or str(value).isdigit():
+    raw_numeric = str(value).strip()
+    if isinstance(value, (int, float)) or (raw_numeric.isdigit() and len(raw_numeric) >= 10):
         stamp = float(value)
         if stamp > 10_000_000_000:
             stamp /= 1000
@@ -119,10 +122,24 @@ class OfficialSourceClient:
         self.rate = float(config.get("request_rate_per_second", 2.0))
         self._last_request = 0.0
         self.fetch_attempts: list[dict[str, Any]] = []
+        extra_ca_file = config.get("tls_extra_ca_file")
+        verify: bool | ssl.SSLContext = True
+        if extra_ca_file:
+            ca_path = Path(str(extra_ca_file))
+            if not ca_path.is_absolute():
+                project_root = Path(__file__).resolve().parents[4]
+                ca_path = (project_root / ca_path).resolve()
+            if not ca_path.is_file():
+                raise FileNotFoundError(f"Configured TLS CA certificate does not exist: {ca_path}")
+            # Some official portals omit an intermediate CA from their TLS handshake.
+            # Add the verified issuer to the normal platform trust store; hostname and
+            # certificate verification remain enabled.
+            verify = ssl.create_default_context()
+            verify.load_verify_locations(cafile=str(ca_path))
         self.client = httpx.Client(
             timeout=httpx.Timeout(float(config.get("timeout_seconds", 30))),
             follow_redirects=True,
-            verify=True,
+            verify=verify,
             headers={
                 "User-Agent": config.get(
                     "user_agent",
@@ -144,7 +161,7 @@ class OfficialSourceClient:
         if wait > 0:
             time.sleep(wait)
 
-    def request(self, method: str, url: str, *, params=None, json_body=None, headers=None) -> httpx.Response:
+    def request(self, method: str, url: str, *, params=None, json_body=None, form_data=None, headers=None) -> httpx.Response:
         self._throttle()
         started = datetime.now().astimezone()
         before = time.monotonic()
@@ -155,7 +172,9 @@ class OfficialSourceClient:
             "attempt_number": 1,
         }
         try:
-            response = self.client.request(method, url, params=params, json=json_body, headers=headers)
+            response = self.client.request(
+                method, url, params=params, json=json_body, data=form_data, headers=headers
+            )
             self._last_request = time.monotonic()
             attempt.update({
                 "completed_at": datetime.now().astimezone(),
@@ -193,8 +212,8 @@ class OfficialSourceClient:
         response = self.request("GET", url, params=params)
         return response.text, str(response.url)
 
-    def post_html(self, url: str, *, json_body=None, headers=None) -> tuple[str, str]:
-        response = self.request("POST", url, json_body=json_body, headers=headers)
+    def post_html(self, url: str, *, json_body=None, form_data=None, headers=None) -> tuple[str, str]:
+        response = self.request("POST", url, json_body=json_body, form_data=form_data, headers=headers)
         return response.text, str(response.url)
 
     def collect(self, window: DateWindow) -> list[DisclosureRecord]:
@@ -253,7 +272,15 @@ def html_tables_as_records(
             if len(cells) < 2:
                 continue
             texts = [clean_text(cell.get_text(" ", strip=True)) or "" for cell in cells]
-            title_cell = next((cell for cell in cells if cell.select_one("a[href]")), cells[-1])
+            title_index = next((
+                index for index, header in enumerate(header_cells)
+                if any(term in header.casefold() for term in ("tiêu đề", "nội dung", "thông tin"))
+            ), None)
+            title_cell = (
+                cells[title_index]
+                if title_index is not None and title_index < len(cells)
+                else next((cell for cell in cells if cell.select_one("a[href]")), cells[-1])
+            )
             title = clean_text(title_cell.get_text(" ", strip=True))
             if not title:
                 continue

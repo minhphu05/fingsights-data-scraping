@@ -23,7 +23,11 @@ class ScrapeAuditWriter:
         if engine is None:
             if not url:
                 raise RuntimeError("SCRAPING_DATABASE_URL is required; crawl history belongs in Node 2")
-            engine = create_tls_mysql_engine(url, os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""))
+            engine = create_tls_mysql_engine(
+                url,
+                os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""),
+                password_env="MYSQL_SCRAPING_APP_PASSWORD",
+            )
         self.engine = engine
 
     def start_run(self, *, source_code: str, source_kind: str, display_name: str, base_url: str,

@@ -24,7 +24,11 @@ def main() -> int:
     import os
     database_url = os.getenv("MARKET_DATABASE_URL", "").strip()
     ca_file = os.getenv("MYSQL_NODE_2_TLS_CA_FILE", "").strip()
-    engine = create_tls_mysql_engine(database_url, ca_file)
+    engine = create_tls_mysql_engine(
+        database_url,
+        ca_file,
+        password_env="MYSQL_SCRAPING_APP_PASSWORD",
+    )
     rows_written = 0
     with engine.begin() as connection:
         for security in config.get("securities", []):

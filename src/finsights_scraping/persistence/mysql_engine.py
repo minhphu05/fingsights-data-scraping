@@ -1,14 +1,26 @@
 from __future__ import annotations
 
+import os
+
 from sqlalchemy import create_engine, event
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Engine, make_url
 
 
-def create_tls_mysql_engine(database_url: str, ca_file: str, *, pool_size: int = 1) -> Engine:
+def create_tls_mysql_engine(
+    database_url: str,
+    ca_file: str,
+    *,
+    pool_size: int = 1,
+    password_env: str | None = None,
+) -> Engine:
     if not database_url:
         raise RuntimeError("A MySQL database URL is required")
     if not ca_file:
         raise RuntimeError("The Node-specific MySQL CA file path is required; refusing a plaintext connection")
+    if password_env:
+        password = os.getenv(password_env)
+        if password:
+            database_url = make_url(database_url).set(password=password).render_as_string(hide_password=False)
     engine = create_engine(
         database_url,
         pool_pre_ping=True,

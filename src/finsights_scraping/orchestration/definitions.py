@@ -735,7 +735,8 @@ def collect_official_disclosures(context):
         records = client.collect(window)
         discovered = len(records)
         writer = Node2DisclosureWriter(
-            attachment_storage_mode=str(source_config.get("attachment_storage_mode", "link_only"))
+            attachment_storage_mode=str(source_config.get("attachment_storage_mode", "link_only")),
+            tls_extra_ca_file=source_config.get("tls_extra_ca_file"),
         )
         destination_uids = writer.persist_records(records)
         persisted = len(destination_uids)

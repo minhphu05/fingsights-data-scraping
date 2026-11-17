@@ -54,7 +54,11 @@ class Node2MarketWriter:
         if engine is None:
             if not url:
                 raise RuntimeError("MARKET_DATABASE_URL is required for Node 2 canonical market persistence")
-            engine = create_tls_mysql_engine(url, os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""))
+            engine = create_tls_mysql_engine(
+                url,
+                os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""),
+                password_env="MYSQL_SCRAPING_APP_PASSWORD",
+            )
         self.engine = engine
 
     def persist_records(self, records: list[MarketRecord]) -> int:

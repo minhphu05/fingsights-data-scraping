@@ -50,8 +50,16 @@ def main() -> int:
     config = yaml.safe_load((ROOT / "configs/reference/financial-news-universe.yaml").read_text(encoding="utf-8"))
     allowed_symbols = {str(row["symbol"]).upper() for row in config["securities"]}
     ca_file = os.getenv("MYSQL_NODE_2_TLS_CA_FILE", "").strip()
-    news_engine = create_tls_mysql_engine(os.getenv("NEWS_DATABASE_URL", "").strip(), ca_file)
-    market_engine = create_tls_mysql_engine(os.getenv("MARKET_DATABASE_URL", "").strip(), ca_file)
+    news_engine = create_tls_mysql_engine(
+        os.getenv("NEWS_DATABASE_URL", "").strip(),
+        ca_file,
+        password_env="MYSQL_NEWS_APP_PASSWORD",
+    )
+    market_engine = create_tls_mysql_engine(
+        os.getenv("MARKET_DATABASE_URL", "").strip(),
+        ca_file,
+        password_env="MYSQL_SCRAPING_APP_PASSWORD",
+    )
     matcher = SecurityAliasMatcher(market_engine=market_engine, fallback_to_file=False)
     if not matcher.aliases:
         raise RuntimeError("Node 2 market catalog has no security aliases; run sync_security_catalog.py first")

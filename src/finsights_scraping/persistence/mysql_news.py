@@ -137,11 +137,19 @@ class Node2NewsWriter:
         if news_engine is None:
             if not news_url:
                 raise RuntimeError("NEWS_DATABASE_URL is required for Node 2 canonical news persistence")
-            news_engine = create_tls_mysql_engine(news_url, os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""))
+            news_engine = create_tls_mysql_engine(
+                news_url,
+                os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""),
+                password_env="MYSQL_NEWS_APP_PASSWORD",
+            )
         if market_engine is None:
             if not market_url:
                 raise RuntimeError("MARKET_DATABASE_URL is required for Node 2 canonical ticker/company matching")
-            market_engine = create_tls_mysql_engine(market_url, os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""))
+            market_engine = create_tls_mysql_engine(
+                market_url,
+                os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""),
+                password_env="MYSQL_SCRAPING_APP_PASSWORD",
+            )
         if assets_engine is None and assets_url:
             assets_engine = create_tls_mysql_engine(assets_url, os.getenv("MYSQL_NODE_2_TLS_CA_FILE", ""))
         self.news_engine = news_engine
