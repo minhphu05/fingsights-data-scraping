@@ -14,7 +14,10 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+import yaml
 
 SOURCE_CONFIGS: Dict[str, Dict[str, Any]] = {
     "cafef": {
@@ -82,9 +85,30 @@ SOURCE_CONFIGS: Dict[str, Dict[str, Any]] = {
         "op_name": "collect_financial_news_batch",
         "config_builder": lambda start, end, mode: {"start_date": start, "end_date": end, "storage_mode": mode},
     },
+    "hose": {
+        "job_name": "hose_disclosures_job",
+        "op_name": "collect_official_disclosures",
+        "config_builder": lambda start, end, mode: {"source_key": "hose", "start_date": start, "end_date": end},
+    },
+    "hnx": {
+        "job_name": "hnx_disclosures_job",
+        "op_name": "collect_official_disclosures",
+        "config_builder": lambda start, end, mode: {"source_key": "hnx", "start_date": start, "end_date": end},
+    },
+    "ubcknn": {
+        "job_name": "ubcknn_notices_job",
+        "op_name": "collect_official_disclosures",
+        "config_builder": lambda start, end, mode: {"source_key": "ubcknn", "start_date": start, "end_date": end},
+    },
+    "vsdc": {
+        "job_name": "vsdc_corporate_actions_job",
+        "op_name": "collect_official_disclosures",
+        "config_builder": lambda start, end, mode: {"source_key": "vsdc", "start_date": start, "end_date": end},
+    },
 }
 
 ALL_SOURCES = ["financial_news"]
+ALL_OFFICIAL_SOURCES = ["hose", "hnx", "ubcknn", "vsdc"]
 BACKFILL_SOURCES = [
     "cafef_backfill",
     "thanhnien_backfill",
@@ -92,6 +116,18 @@ BACKFILL_SOURCES = [
     "vnexpress_backfill",
     "baomoi_backfill",
 ]
+
+
+def enabled_official_sources() -> tuple[list[str], list[str]]:
+    config_dir = Path(__file__).resolve().parents[1] / "configs" / "sources" / "disclosures"
+    enabled: list[str] = []
+    disabled: list[str] = []
+    for source in ALL_OFFICIAL_SOURCES:
+        config_path = config_dir / f"{source}.yaml"
+        with config_path.open("r", encoding="utf-8") as stream:
+            config = yaml.safe_load(stream) or {}
+        (disabled if config.get("collection_enabled", True) is False else enabled).append(source)
+    return enabled, disabled
 
 
 def execute_graphql(endpoint_url: str, query: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -296,7 +332,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--source",
-        choices=["all", "all_backfill", *SOURCE_CONFIGS.keys()],
+        choices=["all", "all_backfill", "all_official", *SOURCE_CONFIGS.keys()],
         default="financial_news",
         help="Source to scrape, or 'all' to run the configured recent RSS batch",
     )
@@ -338,6 +374,8 @@ def main() -> None:
 
     if args.source == "all_backfill":
         sources_to_run = BACKFILL_SOURCES
+    elif args.source == "all_official":
+        sources_to_run, disabled_sources = enabled_official_sources()
     else:
         sources_to_run = ALL_SOURCES if args.source == "all" else [args.source]
     failed_runs = []
@@ -348,6 +386,8 @@ def main() -> None:
     print(f"Sources:    {', '.join(sources_to_run)}")
     print(f"Window:     {args.start_date} -> {args.end_date}")
     print(f"Wait mode:  {'Enabled' if args.wait else 'Disabled'}")
+    if args.source == "all_official" and disabled_sources:
+        print(f"Skipped disabled sources: {', '.join(disabled_sources)}")
     print("=" * 65)
 
     for src in sources_to_run:

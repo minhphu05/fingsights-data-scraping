@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
+RUN python -m playwright install chromium
 
 # Final runtime image
 FROM python:3.11-slim
@@ -28,9 +29,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy installed python dependencies from builder
 COPY --from=builder /root/.local /root/.local
+COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
 ENV PATH=/root/.local/bin:$PATH
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
+
+# ADF and AJAX-only official portals need a real headless browser to render public pages.
+RUN apt-get update \
+    && python -m playwright install-deps chromium \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy application source code
 COPY . .

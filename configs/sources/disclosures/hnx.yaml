@@ -1,0 +1,21 @@
+source_code: hnx_disclosures
+name: HNX and UPCoM issuer disclosures
+base_url: https://portal.hnx.vn
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 0.8
+timeout_seconds: 30
+page_size: 15
+page_param: page
+send_date_filters: false
+max_pages: 1000
+fetch_details: true
+attachment_storage_mode: oci
+collection_enabled: false
+rights_status: link_only
+listing_pages:
+  - code: hnx_listed
+    url: /vi-vn/thong-tin-cong-bo-ny-hnx.html
+  - code: upcom
+    url: /vi-vn/thong-tin-cong-bo-up-hnx.html
+target_symbols: [ACB, CMG, CTG, FPT, GAS, HPG, HSG, MBB, MSN, MWG, NKG, PNJ, TCB, VCB, VNM]
+robots_txt: https://portal.hnx.vn/robots.txt

@@ -1,6 +1,6 @@
 # Finsights data collection
 
-Python source adapters and Dagster jobs for financial news and market data. The four sheet publishers with RSS feeds are collected through RSS; Báo Mới is collected from its HTML category archive because the current site does not expose a first-party RSS feed. Five separate `*_news_backfill_job` jobs collect historical data. With the K3s run launcher, each triggered job runs in an isolated pod.
+Python source adapters and Dagster jobs for financial news, market data, and official issuer disclosures. The four sheet publishers with RSS feeds are collected through RSS; Báo Mới is collected from its HTML category archive because the current site does not expose a first-party RSS feed. Five separate `*_news_backfill_job` jobs collect historical data. With the K3s run launcher, each triggered job runs in an isolated pod.
 
 ## Data ownership
 
@@ -10,6 +10,7 @@ Python source adapters and Dagster jobs for financial news and market data. The 
 | Source, run, item, fetch-attempt and checkpoint audit | MySQL Node 2 `finsights_scraping` | Scrape history and retry/reconciliation evidence only |
 | Articles, RSS summaries, publishers, authors and security matches | MySQL Node 2 `finsights_news` | Canonical news product data |
 | Securities, daily prices, index/quote snapshots and canonical aliases | MySQL Node 2 `finsights_market_data` | Canonical market facts and symbol/company matching |
+| Exchange issuer filings, corporate actions, and regulator notices | MySQL Node 2 `finsights_disclosures` | HOSE/HNX issuer disclosures, VSDC rights events, and UBCKNN notices; source URLs and attachments are retained as metadata |
 | Binary assets and object location metadata | OCI Object Storage; references in MySQL Node 2 | RSS and HTML backfill keep article metadata/body only; binary media downloads are disabled |
 
 `finsights_scraping` records stable source IDs and the destination UID so a run can be audited without becoming a content database. Node 1 is reserved for AI-service-owned databases and is not written by these backend collectors.
@@ -36,6 +37,27 @@ src/finsights_scraping/
   orchestration/          # One Dagster job/schedule per source
 legacy/previous-src/      # Archived pre-rewrite modules, retained for reference
 ```
+
+## Official exchange, regulator, and depository sources
+
+Section 2 sources in the planning sheet have independent Dagster jobs and date windows. They all write canonical data and scrape audit history to Node 2. The database writer maps symbols to `market_securities`/`market_companies`; records without a verified company/security link are retained as `regulatory_notices` rather than assigned a fabricated UID.
+
+| Source key | Official collection method | Destination |
+| --- | --- | --- |
+| `hose` | Public HOSE news API; page and detail records, with linked file URLs retained | `issuer_disclosures` or `regulatory_notices` |
+| `hnx` | HNX listed-stock and UPCoM disclosure boards; HTML table pagination (schedule disabled until the portal TLS certificate is repaired) | `issuer_disclosures` or `regulatory_notices` |
+| `ubcknn` | Official SSC public notices/legal pages rendered through headless Chromium | `regulatory_notices` |
+| `vsdc` | VSDC issuer rights-event board and detail pages; parses symbol, record/payment dates, cash, and share ratios | `issuer_disclosures` + `corporate_actions` |
+
+HOSE, HNX, and UBCKNN download linked PDF/Excel/Word attachments and archive them in the OCI Tokyo bucket. The disclosure rows keep the stable asset UID, source URL, object key, MIME type, byte size, and checksum in MySQL `metadata_json`. Set `attachment_storage_mode: link_only` in a source config to retain links without mirroring files. VSDC stays metadata-only, as its planned data is corporate-action fields rather than documents.
+
+Each job accepts inclusive Vietnam-local `start_date` and `end_date`. For a local fetch that writes JSON under `data/disclosures/` without touching MySQL:
+
+```bash
+python scripts/run_official_disclosures_local.py --source hose --start-date 2026-11-16 --end-date 2026-11-17
+```
+
+Use `--source all` for a serial local smoke run. The Dagster jobs are `hose_disclosures_job`, `hnx_disclosures_job`, `ubcknn_notices_job`, and `vsdc_corporate_actions_job`. They can be submitted together with `scripts/submit_dagster_job.py --source all_official --start-date YYYY-MM-DD --end-date YYYY-MM-DD`; this command skips any source whose config sets `collection_enabled: false`. The HNX schedule is disabled until its portal certificate is repaired. The VSDC and UBCKNN clients use headless Chromium for JavaScript/AJAX pagination; the Docker image installs its browser runtime. TLS verification stays enabled for every HTTP and browser request.
 
 ## Exact date windows
 

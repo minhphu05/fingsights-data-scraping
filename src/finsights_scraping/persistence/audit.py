@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
+from ..domain.disclosures import DisclosureRecord
 from ..domain.models import Article, MarketRecord
 from .mysql_engine import create_tls_mysql_engine
 
@@ -45,7 +46,7 @@ class ScrapeAuditWriter:
                   "start_date": start_date, "end_date": end_date})
             return int(result.lastrowid)
 
-    def save_items(self, run_id: int, source_code: str, items: list[Article | MarketRecord],
+    def save_items(self, run_id: int, source_code: str, items: list[Article | MarketRecord | DisclosureRecord],
                    destination_uids: dict[str, str] | None = None) -> None:
         destination_uids = destination_uids or {}
         with self.engine.begin() as connection:
@@ -63,7 +64,7 @@ class ScrapeAuditWriter:
                     content_fingerprint = item.metadata.get("content_fingerprint_sha256")
                     destination_uid = destination_uids.get(source_item_id)
                     destination_domain, destination_db = "news", "finsights_news"
-                else:
+                elif isinstance(item, MarketRecord):
                     source_item_id = f"{item.kind}:{item.symbol_or_index}:{item.observed_at.isoformat()}"
                     canonical_url = f"vietstock://{item.kind}/{item.symbol_or_index}/{item.observed_at.isoformat()}"
                     kind = item.kind
@@ -75,6 +76,27 @@ class ScrapeAuditWriter:
                     ).hexdigest()
                     destination_uid = None
                     destination_domain, destination_db = "market", "finsights_market_data"
+                else:
+                    source_item_id = item.source_item_id
+                    canonical_url = item.original_url
+                    kind = "corporate_action" if item.item_type == "corporate_action" else "disclosure"
+                    published_at = (
+                        item.published_at.astimezone(timezone.utc).replace(tzinfo=None)
+                        if item.published_at and item.published_at.tzinfo else item.published_at
+                    )
+                    business_date = item.published_at.astimezone(ZoneInfo("Asia/Ho_Chi_Minh")).date() if item.published_at else None
+                    metadata = {
+                        "title": item.title,
+                        "symbol": item.symbol,
+                        "company_name": item.company_name,
+                        "item_type": item.item_type,
+                        "attachments": item.attachments,
+                    }
+                    content_fingerprint = hashlib.sha256(
+                        json.dumps(metadata, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")
+                    ).hexdigest()
+                    destination_uid = destination_uids.get(source_item_id)
+                    destination_domain, destination_db = "disclosures", "finsights_disclosures"
                 identity = hashlib.sha256(f"{source_code}:{source_item_id}".encode()).hexdigest()
                 url_hash = hashlib.sha256(canonical_url.encode()).hexdigest()
                 connection.execute(text("""

@@ -1,0 +1,12 @@
+source_code: vsdc_corporate_actions
+name: VSDC corporate actions and record-date notices
+base_url: https://vsdc.vn
+listing_url: https://vsdc.vn/vi/alc/94
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 2
+timeout_seconds: 30
+page_size: 15
+max_pages: 1000
+target_symbols: [ACB, CMG, CTG, FPT, GAS, HPG, HSG, MBB, MSN, MWG, NKG, PNJ, TCB, VCB, VNM]
+rights_status: link_only
+robots_txt: https://vsdc.vn/robots.txt

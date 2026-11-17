@@ -6,6 +6,7 @@ psycopg2-binary>=2.9.9
 
 # HTTP, source parsing, and YAML configuration
 httpx[http2]==0.28.1
+playwright>=1.48,<2
 beautifulsoup4==4.13.3
 lxml==5.3.1
 PyYAML==6.0.2

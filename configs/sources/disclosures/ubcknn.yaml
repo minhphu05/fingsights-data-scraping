@@ -1,0 +1,13 @@
+source_code: ubcknn_notices
+name: UBCKNN management notices and legal disclosures
+base_url: https://ssc.gov.vn
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 0.7
+timeout_seconds: 35
+page_param: selectedPage
+max_pages: 100
+rights_status: link_only
+attachment_storage_mode: oci
+list_urls:
+  - https://ssc.gov.vn/webcenter/portal/ubck/pages_r/m/tintc-skin/thngtincngb?docType=TinBai&mucHienThi=102&selectedPage=1
+robots_txt: https://ssc.gov.vn/robots.txt

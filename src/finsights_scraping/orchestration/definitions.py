@@ -13,7 +13,10 @@ from dagster import Definitions, Field, RunRequest, SkipReason, String, job, op,
 
 from ..domain.models import Article
 from ..domain.windows import DateWindow
-from ..persistence import Node2MarketWriter, Node2NewsWriter, ScrapeAuditWriter
+from ..persistence import Node2DisclosureWriter, Node2MarketWriter, Node2NewsWriter, ScrapeAuditWriter
+from ..sources.disclosures import (
+    build_client as build_disclosure_client,
+)
 from ..sources.market import VietstockHistoryClient, VietstockPublicBoardClient
 from ..sources.news import (
     BaoMoiClient,
@@ -38,6 +41,22 @@ CONFIGURED_NEWS_SOURCES = {
 FINANCIAL_NEWS_SOURCES = ("cafef", "thanhnien", "tuoitre", "vnexpress", "baomoi")
 RSS_FINANCIAL_NEWS_SOURCES = ("cafef", "thanhnien", "tuoitre", "vnexpress")
 HTML_BACKFILL_SOURCES = FINANCIAL_NEWS_SOURCES
+OFFICIAL_DISCLOSURE_SOURCES = {
+    "hose": ("hose_disclosures", "0 7,15 * * 1-5", "hose_disclosures_job", "512Mi"),
+    "hnx": ("hnx_disclosures", "30 2 * * 1-5", "hnx_disclosures_job", "768Mi"),
+    "ubcknn": ("ubcknn_notices", "0 3 * * 1-5", "ubcknn_notices_job", "1Gi"),
+    "vsdc": ("vsdc_corporate_actions", "30 3 * * 1-5", "vsdc_corporate_actions_job", "1Gi"),
+}
+
+
+def _disclosure_config(source_key: str) -> dict:
+    if source_key not in OFFICIAL_DISCLOSURE_SOURCES:
+        raise ValueError(f"Unknown official disclosure source: {source_key!r}")
+    return _yaml(CONFIG_DIR / f"sources/disclosures/{source_key}.yaml")
+
+
+def _disclosure_client(source_key: str, source_config: dict):
+    return build_disclosure_client(source_key, source_config)
 
 
 def _yaml(path: Path) -> dict:
@@ -677,6 +696,102 @@ def collect_vietstock_market(context):
         raise
 
 
+@op(config_schema={
+    "source_key": Field(String, is_required=True, description="hose, hnx, ubcknn, or vsdc"),
+    "start_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
+    "end_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
+})
+def collect_official_disclosures(context):
+    source_key = str(context.op_config["source_key"])
+    source_config = _disclosure_config(source_key)
+    window = _window(context.op_config, source_config.get("timezone", "Asia/Ho_Chi_Minh"))
+    source_code = str(source_config["source_code"])
+    job_name = f"{source_key}_disclosures_job" if source_key in {"hose", "hnx"} else (
+        "ubcknn_notices_job" if source_key == "ubcknn" else "vsdc_corporate_actions_job"
+    )
+    audit = ScrapeAuditWriter()
+    run_id = audit.start_run(
+        source_code=source_code,
+        source_kind="disclosure",
+        display_name=str(source_config["name"]),
+        base_url=str(source_config["base_url"]),
+        dagster_run_id=f"{context.run_id}:{source_code}"[:64],
+        job_name=job_name,
+        start_date=window.start_date,
+        end_date=window.end_date,
+        config={
+            "source_key": source_key,
+            "window_timezone": window.timezone_name,
+            "rights_status": source_config.get("rights_status", "link_only"),
+            "attachment_policy": "record official URLs; do not mirror binaries until storage/rights are configured",
+        },
+    )
+    client = None
+    writer = None
+    discovered = 0
+    persisted = 0
+    try:
+        client = _disclosure_client(source_key, source_config)
+        records = client.collect(window)
+        discovered = len(records)
+        writer = Node2DisclosureWriter(
+            attachment_storage_mode=str(source_config.get("attachment_storage_mode", "link_only"))
+        )
+        destination_uids = writer.persist_records(records)
+        persisted = len(destination_uids)
+        audit.save_items(run_id, source_code, records, destination_uids)
+        client.fetch_attempts.extend(writer.attachment_attempts)
+        audit.save_attempts(run_id, source_code, client.fetch_attempts)
+        audit.finish_run(run_id, "SUCCESS", discovered=discovered, persisted=persisted)
+        audit.save_checkpoint(source_code, "last_completed_window", {
+            "start_date": window.start_date.isoformat(),
+            "end_date": window.end_date.isoformat(),
+            "items_discovered": discovered,
+            "items_persisted": persisted,
+            "status": "SUCCESS",
+        })
+        context.log.info(
+            f"{source_key} disclosures: {persisted} rows persisted to Node 2 finsights_disclosures "
+            f"for {window.start_date}..{window.end_date}; attachments uploaded="
+            f"{writer.attachments_uploaded}, pending={writer.attachments_pending}, "
+            f"failed={writer.attachments_failed}"
+        )
+        return {
+            "source": source_key,
+            "start_date": window.start_date.isoformat(),
+            "end_date": window.end_date.isoformat(),
+            "items_discovered": discovered,
+            "items_persisted": persisted,
+            "attachments_uploaded": writer.attachments_uploaded,
+            "attachments_pending": writer.attachments_pending,
+            "attachments_failed": writer.attachments_failed,
+        }
+    except Exception as exc:
+        if client is not None:
+            try:
+                audit.save_attempts(run_id, source_code, client.fetch_attempts)
+            except Exception:
+                pass
+        try:
+            audit.finish_run(
+                run_id, "FAILED", discovered=discovered, persisted=persisted,
+                failed=max(1, discovered - persisted), error=str(exc)[:4000],
+            )
+            audit.save_checkpoint(source_code, "last_interrupted_run", {
+                "start_date": window.start_date.isoformat(),
+                "end_date": window.end_date.isoformat(),
+                "error": str(exc)[:500],
+            })
+        except Exception as audit_exc:
+            context.log.error(f"Could not finish Node 2 scrape audit after source failure: {audit_exc}")
+        raise
+    finally:
+        if client is not None:
+            client.close()
+        if writer is not None:
+            writer.close()
+
+
 @job(name="cafef_news_job", tags=_pod_tags("cafef"), description="CafeF financial-news collection; one isolated K3s run pod.")
 def cafef_news_job():
     collect_cafef_news()
@@ -724,6 +839,50 @@ def _build_news_backfill_job(source_key: str):
     return source_backfill_job
 
 
+def _build_official_disclosure_job(source_key: str):
+    _source_code, _cron, job_name, memory_limit = OFFICIAL_DISCLOSURE_SOURCES[source_key]
+
+    @job(
+        name=job_name,
+        tags=_pod_tags(f"{source_key}-disclosures", memory_limit),
+        description=f"Collect official {source_key.upper()} disclosures into Node 2 finsights_disclosures.",
+    )
+    def official_disclosure_job():
+        collect_official_disclosures()
+
+    return official_disclosure_job
+
+
+def _build_official_disclosure_schedule(source_key: str, job_definition):
+    source_code, cron_schedule, _job_name, _memory_limit = OFFICIAL_DISCLOSURE_SOURCES[source_key]
+
+    @schedule(
+        job=job_definition,
+        cron_schedule=cron_schedule,
+        execution_timezone="Asia/Ho_Chi_Minh",
+        name=f"{source_key}_official_disclosures_schedule",
+    )
+    def official_disclosure_schedule(context):
+        source_config = _disclosure_config(source_key)
+        if source_config.get("collection_enabled", True) is False:
+            return SkipReason(f"{source_key} disclosure collection is disabled in source config")
+        publication_day = (
+            context.scheduled_execution_time.astimezone(LOCAL_TZ).date() - timedelta(days=1)
+        ).isoformat()
+        execution_slot = context.scheduled_execution_time.astimezone(LOCAL_TZ).strftime("%H%M")
+        op_name = "collect_official_disclosures"
+        return RunRequest(
+            run_key=f"{source_code}-{publication_day}-{execution_slot}",
+            run_config={"ops": {op_name: {"config": {
+                "source_key": source_key,
+                "start_date": publication_day,
+                "end_date": publication_day,
+            }}}},
+        )
+
+    return official_disclosure_schedule
+
+
 def _build_configured_news_schedule(source_key: str, job_definition, cron_schedule: str):
     source_code = CONFIGURED_NEWS_SOURCES[source_key][0]
 
@@ -767,6 +926,16 @@ configured_news_schedules = {
         source_key, configured_news_jobs[source_key], cron_schedule
     )
     for source_key, (_source_code, cron_schedule) in CONFIGURED_NEWS_SOURCES.items()
+}
+official_disclosure_jobs = {
+    source_key: _build_official_disclosure_job(source_key)
+    for source_key in OFFICIAL_DISCLOSURE_SOURCES
+}
+official_disclosure_schedules = {
+    source_key: _build_official_disclosure_schedule(
+        source_key, official_disclosure_jobs[source_key]
+    )
+    for source_key in OFFICIAL_DISCLOSURE_SOURCES
 }
 
 
@@ -823,12 +992,14 @@ defs = Definitions(
         financial_news_job,
         *configured_news_jobs.values(),
         *news_backfill_jobs.values(),
+        *official_disclosure_jobs.values(),
     ],
     schedules=[
         cafef_daily_news_schedule,
         baomoi_daily_news_schedule,
         vietstock_eod_schedule,
         *configured_news_schedules.values(),
+        *official_disclosure_schedules.values(),
     ],
 )
 

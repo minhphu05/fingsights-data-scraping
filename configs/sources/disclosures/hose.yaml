@@ -1,0 +1,20 @@
+source_code: hose_disclosures
+name: HOSE issuer disclosures
+base_url: https://api.hsx.vn/n/api/v1/1/news
+website_url: https://www.hsx.vn/
+api_url: https://api.hsx.vn/n/api/v1/1/news
+media_api_url: https://api.hsx.vn/m/api/v1/1/mediafiles
+static_files_base_url: https://staticfile.hsx.vn
+timezone: Asia/Ho_Chi_Minh
+request_rate_per_second: 5
+timeout_seconds: 30
+page_size: 100
+max_pages: 5000
+fetch_details: true
+fetch_attachments: true
+media_page_size: 100
+media_max_pages: 100
+attachment_storage_mode: oci
+target_symbols: [ACB, CMG, CTG, FPT, GAS, HPG, HSG, MBB, MSN, MWG, NKG, PNJ, TCB, VCB, VNM]
+rights_status: link_only
+robots_txt: https://www.hsx.vn/robots.txt
