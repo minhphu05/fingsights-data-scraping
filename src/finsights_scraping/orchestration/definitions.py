@@ -49,9 +49,9 @@ OFFICIAL_DISCLOSURE_SOURCES = {
     "vsdc": ("vsdc_corporate_actions", "30 3 * * 1-5", "vsdc_corporate_actions_job", "1Gi"),
 }
 INVESTOR_RELATIONS_SOURCES = {
-    "banks": ("ir_banks", "ir_banks_job", "0 5 * * *", "1Gi"),
-    "steel_materials": ("ir_steel_materials", "ir_steel_materials_job", "30 5 * * *", "1Gi"),
-    "other_sectors": ("ir_other_sectors", "ir_other_sectors_job", "0 6 * * *", "1Gi"),
+    "banks": ("ir_banks", "ir_banks_job", "0 5 * * *", "2Gi"),
+    "steel_materials": ("ir_steel_materials", "ir_steel_materials_job", "30 5 * * *", "2Gi"),
+    "other_sectors": ("ir_other_sectors", "ir_other_sectors_job", "0 6 * * *", "2Gi"),
 }
 
 
