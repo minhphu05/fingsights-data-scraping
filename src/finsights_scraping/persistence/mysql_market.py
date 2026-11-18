@@ -82,12 +82,25 @@ class Node2MarketWriter:
                 self._persist_daily_index(connection, record, index_id, provider_id)
         return len(records)
 
+    def list_active_securities(self) -> list[dict[str, str]]:
+        """Return the canonical active ticker roster from the Node 2 market catalog."""
+        with self.engine.connect() as connection:
+            rows = connection.execute(text("""
+                SELECT s.symbol, s.name, e.code AS exchange_code
+                FROM market_securities s
+                JOIN market_exchanges e ON e.id=s.exchange_id
+                WHERE s.trading_status <> 'delisted'
+                ORDER BY s.symbol
+            """)).mappings().all()
+        return [dict(row) for row in rows]
+
     @staticmethod
     def _provider_id(connection, provider_code: str) -> int:
         known_providers = {
             "vietstock_datafeed": ("Vietstock DataFeed", "https://api.vietstock.vn/", "licensed", "Vietstock DataFeed"),
             "vietstock": ("Vietstock Public Board", "https://banggia.vietstock.vn/", "public_board", "Vietstock"),
             "vietstock_market": ("Vietstock", "https://banggia.vietstock.vn/", "public_board", "Vietstock"),
+            "cophieu68": ("CoPhieu68", "https://cophieu68.vn/", "public_site", "CoPhieu68"),
         }
         if provider_code in known_providers:
             name, url, license_type, attr = known_providers[provider_code]

@@ -13,12 +13,12 @@ from dagster import Definitions, Field, RunRequest, SkipReason, String, job, op,
 
 from ..domain.models import Article
 from ..domain.windows import DateWindow
-from ..persistence import Node2DisclosureWriter, Node2MarketWriter, Node2NewsWriter, ScrapeAuditWriter
+from ..persistence import Node2DisclosureWriter, Node2FundamentalsWriter, Node2MarketWriter, Node2NewsWriter, ScrapeAuditWriter
 from ..sources.disclosures import (
     InvestorRelationsClient,
     build_client as build_disclosure_client,
 )
-from ..sources.market import VietstockHistoryClient, VietstockPublicBoardClient
+from ..sources.market import CoPhieu68Client, VietstockHistoryClient, VietstockPublicBoardClient
 from ..sources.news import (
     BaoMoiClient,
     CafeFClient,
@@ -713,6 +713,82 @@ def collect_vietstock_market(context):
 
 
 @op(config_schema={
+    "start_date": Field(String, is_required=False, description="Inclusive price history start date YYYY-MM-DD (defaults to today)"),
+    "end_date": Field(String, is_required=False, description="Inclusive price history end date YYYY-MM-DD (defaults to today)"),
+})
+def collect_cophieu68_market(context):
+    source_config = _yaml(CONFIG_DIR / "sources/market/cophieu68.yaml")
+    window = _window(context.op_config, source_config.get("timezone", "Asia/Ho_Chi_Minh"))
+    market_writer = Node2MarketWriter()
+    securities = market_writer.list_active_securities()
+    audit = ScrapeAuditWriter()
+    source_code = str(source_config["source_code"])
+    run_row_id = audit.start_run(
+        source_code=source_code,
+        source_kind="market",
+        display_name=source_config["name"],
+        base_url=source_config["base_url"],
+        dagster_run_id=context.run_id,
+        job_name="cophieu68_market_job",
+        start_date=window.start_date,
+        end_date=window.end_date,
+        config={"price_date_window": [window.start_date.isoformat(), window.end_date.isoformat()],
+                "financial_history": "all periods published by source",
+                "symbols": [item["symbol"] for item in securities]},
+    )
+    client = CoPhieu68Client(source_config)
+    market_records = []
+    period_records = []
+    persisted_market = 0
+    persisted_periods = 0
+    persisted_values = 0
+    finished = False
+    try:
+        market_records, period_records = client.collect(window, securities)
+        persisted_market = market_writer.persist_records(market_records)
+        persisted_periods, persisted_values = Node2FundamentalsWriter(
+            market_engine=market_writer.engine,
+        ).persist(period_records)
+        audit.save_items(run_row_id, source_code, [*market_records, *period_records])
+        audit.save_attempts(run_row_id, source_code, client.fetch_attempts)
+        discovered = len(market_records) + len(period_records)
+        persisted = persisted_market + persisted_periods
+        status = "PARTIAL" if client.symbol_errors else "SUCCESS"
+        errors = "; ".join(f"{symbol}: {error}" for symbol, error in sorted(client.symbol_errors.items()))
+        audit.finish_run(
+            run_row_id, status, discovered=discovered, persisted=persisted,
+            failed=len(client.symbol_errors), error=errors or None,
+        )
+        finished = True
+        summary = {
+            "symbols_configured": len(securities),
+            "symbols_failed": client.symbol_errors,
+            "price_rows": persisted_market,
+            "financial_periods": persisted_periods,
+            "financial_values": persisted_values,
+            "requested_price_window": [window.start_date.isoformat(), window.end_date.isoformat()],
+        }
+        context.log.info(f"CoPhieu68 collection summary: {json.dumps(summary, ensure_ascii=False)}")
+        if client.symbol_errors:
+            raise RuntimeError(f"CoPhieu68 completed with symbol failures: {errors[:3000]}")
+        return summary
+    except Exception as exc:
+        if not finished:
+            try:
+                audit.save_attempts(run_row_id, source_code, client.fetch_attempts)
+                discovered = len(market_records) + len(period_records)
+                persisted = persisted_market + persisted_periods
+                status = "PARTIAL" if persisted else "FAILED"
+                audit.finish_run(
+                    run_row_id, status, discovered=discovered, persisted=persisted,
+                    failed=max(len(client.symbol_errors), 1), error=str(exc)[:4000],
+                )
+            except Exception as audit_exc:
+                context.log.error(f"Could not finalize CoPhieu68 audit run: {audit_exc}")
+        raise
+
+
+@op(config_schema={
     "source_key": Field(String, is_required=True, description="hose, hnx, ubcknn, or vsdc"),
     "start_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
     "end_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
@@ -947,6 +1023,11 @@ def vietstock_market_job():
     collect_vietstock_market()
 
 
+@job(name="cophieu68_market_job", tags=_pod_tags("cophieu68-market", "1Gi"), description="CoPhieu68 daily prices, foreign volumes, statements and ratios into Node 2.")
+def cophieu68_market_job():
+    collect_cophieu68_market()
+
+
 @job(name="financial_news_job", tags=_pod_tags("financial-news", "1Gi"), description="Batch collect RSS summaries from the four sheet publishers with RSS feeds.")
 def financial_news_job():
     collect_financial_news_batch()
@@ -1172,11 +1253,25 @@ def vietstock_eod_schedule(context):
     })
 
 
+@schedule(
+    job=cophieu68_market_job,
+    cron_schedule="30 17 * * 1-5",
+    execution_timezone="Asia/Ho_Chi_Minh",
+    name="cophieu68_daily_schedule",
+)
+def cophieu68_daily_schedule(context):
+    run_day = context.scheduled_execution_time.astimezone(LOCAL_TZ).date().isoformat()
+    return RunRequest(run_key=f"cophieu68-eod-{run_day}", run_config={
+        "ops": {"collect_cophieu68_market": {"config": {"start_date": run_day, "end_date": run_day}}}
+    })
+
+
 defs = Definitions(
     jobs=[
         cafef_news_job,
         baomoi_news_job,
         vietstock_market_job,
+        cophieu68_market_job,
         financial_news_job,
         *configured_news_jobs.values(),
         *news_backfill_jobs.values(),
@@ -1187,6 +1282,7 @@ defs = Definitions(
         cafef_daily_news_schedule,
         baomoi_daily_news_schedule,
         vietstock_eod_schedule,
+        cophieu68_daily_schedule,
         *configured_news_schedules.values(),
         *official_disclosure_schedules.values(),
         *investor_relations_schedules.values(),

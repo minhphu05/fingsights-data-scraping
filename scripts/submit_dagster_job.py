@@ -30,6 +30,11 @@ SOURCE_CONFIGS: Dict[str, Dict[str, Any]] = {
         "op_name": "collect_vietstock_market",
         "config_builder": lambda start, end, mode: {"start_date": start, "end_date": end},
     },
+    "cophieu68": {
+        "job_name": "cophieu68_market_job",
+        "op_name": "collect_cophieu68_market",
+        "config_builder": lambda start, end, mode: {"start_date": start, "end_date": end},
+    },
     "thanhnien": {
         "job_name": "thanhnien_news_job",
         "op_name": "collect_configured_news",

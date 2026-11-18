@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from ..domain.models import Article, ContentBlock, MarketRecord
+from ..domain.financials import FinancialPeriodRecord
 
 
 class LocalDataWriter:
@@ -140,3 +141,46 @@ class LocalDataWriter:
             encoding="utf-8",
         )
         return indices_file
+
+    def save_cophieu68_records(
+        self,
+        window_key: str,
+        market_records: list[MarketRecord],
+        financial_periods: list[FinancialPeriodRecord],
+        fetch_attempts: list[dict[str, Any]],
+        *,
+        start_date: str,
+        end_date: str,
+    ) -> Path:
+        out_dir = self.base_dir / "cophieu68" / window_key
+        out_dir.mkdir(parents=True, exist_ok=True)
+        prices_path = out_dir / "market_prices.json"
+        periods_path = out_dir / "financial_periods.json"
+        attempts_path = out_dir / "fetch_attempts.json"
+        serialized_prices = self._json_serialize(market_records)
+        serialized_periods = self._json_serialize(financial_periods)
+        serialized_attempts = self._json_serialize(fetch_attempts)
+        prices_path.write_text(json.dumps(serialized_prices, ensure_ascii=False, indent=2), encoding="utf-8")
+        periods_path.write_text(json.dumps(serialized_periods, ensure_ascii=False, indent=2), encoding="utf-8")
+        attempts_path.write_text(json.dumps(serialized_attempts, ensure_ascii=False, indent=2), encoding="utf-8")
+        summary = {
+            "source": "cophieu68",
+            "start_date": start_date,
+            "end_date": end_date,
+            "collected_at": datetime.now().isoformat(),
+            "market_price_rows": len(market_records),
+            "financial_periods": len(financial_periods),
+            "financial_values": sum(len(period.values) for period in financial_periods),
+            "symbols": sorted({record.symbol_or_index for record in market_records}
+                               | {period.symbol for period in financial_periods}),
+            "fetch_attempts": len(fetch_attempts),
+            "files": {
+                "market_prices": prices_path.name,
+                "financial_periods": periods_path.name,
+                "fetch_attempts": attempts_path.name,
+            },
+        }
+        (out_dir / "summary.json").write_text(
+            json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8",
+        )
+        return prices_path

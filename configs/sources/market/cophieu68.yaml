@@ -1,0 +1,30 @@
+source_code: cophieu68_market
+name: CoPhieu68 historical prices and financial statements
+base_url: https://cophieu68.vn/quote/history.php
+website: https://cophieu68.vn/
+timezone: Asia/Ho_Chi_Minh
+collection_policy:
+  daily_eod_recommended_time: '17:30'
+  schedule: '30 17 * * 1-5'
+  request_interval_seconds: 0.5
+  retry_attempts: 3
+coverage:
+  securities: active_symbols_from_node2_market_catalog
+  price_history: paginated_until_requested_start_date
+  financial_statements: all_periods_published_by_source
+  statement_tables: [income_statement, balance_sheet]
+  financial_ratio_table: financial_indexes
+  cash_flow_statement: not_available_on_source_page
+storage:
+  prices_database: finsights_market_data
+  fundamentals_database: finsights_fundamentals
+  scrape_history_database: finsights_scraping
+  price_unit_conversion: displayed_thousand_vnd_to_vnd
+  statement_unit_policy: preserve_raw_source_value_when_unit_not_explicit
+validation:
+  require_history_table: true
+  require_income_and_balance_tables: true
+  require_financial_indexes_table: true
+  reject_unparseable_trade_dates: true
+  reject_rows_outside_requested_date_window: true
+  stop_history_pagination_only_after_start_date_is_crossed: true

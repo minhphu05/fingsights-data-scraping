@@ -50,6 +50,10 @@ def main() -> int:
         default=str(ROOT / "data"),
         help="Output directory path (default: data/ in repository root)",
     )
+    parser.add_argument(
+        "--symbols",
+        help="Comma-separated ticker subset for the cophieu68 source (default: the configured 15 symbols)",
+    )
     args = parser.parse_args()
 
     today = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).date().isoformat()
@@ -70,7 +74,11 @@ def main() -> int:
 
     runner = LocalRunner(data_dir=args.data_dir)
     results = asyncio.run(
-        runner.run(args.source, start_date, end_date, args.collection_method)
+        runner.run(
+            args.source, start_date, end_date, args.collection_method,
+            [symbol.strip().upper() for symbol in args.symbols.split(",") if symbol.strip()]
+            if args.symbols else None,
+        )
     )
 
     print("\n" + "=" * 70)

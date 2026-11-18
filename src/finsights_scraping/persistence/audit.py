@@ -11,6 +11,7 @@ from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
 from ..domain.disclosures import DisclosureRecord
+from ..domain.financials import FinancialPeriodRecord
 from ..domain.models import Article, MarketRecord
 from .mysql_engine import create_tls_mysql_engine
 
@@ -50,7 +51,8 @@ class ScrapeAuditWriter:
                   "start_date": start_date, "end_date": end_date})
             return int(result.lastrowid)
 
-    def save_items(self, run_id: int, source_code: str, items: list[Article | MarketRecord | DisclosureRecord],
+    def save_items(self, run_id: int, source_code: str,
+                   items: list[Article | MarketRecord | DisclosureRecord | FinancialPeriodRecord],
                    destination_uids: dict[str, str] | None = None) -> None:
         destination_uids = destination_uids or {}
         with self.engine.begin() as connection:
@@ -69,8 +71,10 @@ class ScrapeAuditWriter:
                     destination_uid = destination_uids.get(source_item_id)
                     destination_domain, destination_db = "news", "finsights_news"
                 elif isinstance(item, MarketRecord):
-                    source_item_id = f"{item.kind}:{item.symbol_or_index}:{item.observed_at.isoformat()}"
-                    canonical_url = f"vietstock://{item.kind}/{item.symbol_or_index}/{item.observed_at.isoformat()}"
+                    source_item_id = f"{item.kind}:{item.symbol_or_index}:{item.trade_date.isoformat()}"
+                    canonical_url = item.raw_payload.get("source_url") or (
+                        f"{item.provider_code}://{item.kind}/{item.symbol_or_index}/{item.trade_date.isoformat()}"
+                    )
                     kind = item.kind
                     published_at = item.observed_at.astimezone(timezone.utc).replace(tzinfo=None)
                     business_date = item.trade_date
@@ -80,6 +84,29 @@ class ScrapeAuditWriter:
                     ).hexdigest()
                     destination_uid = None
                     destination_domain, destination_db = "market", "finsights_market_data"
+                elif isinstance(item, FinancialPeriodRecord):
+                    source_item_id = f"financial_period:{item.symbol}:{item.period_code}"
+                    canonical_url = item.source_url
+                    kind = "financial_period"
+                    published_at = None
+                    business_date = item.period_end
+                    metadata = {
+                        "symbol": item.symbol,
+                        "period_code": item.period_code,
+                        "period_type": item.period_type,
+                        "revision_no": item.revision_no,
+                        "metric_count": len(item.values),
+                        "families": sorted({value.statement_family for value in item.values}),
+                    }
+                    fingerprint_payload = [
+                        (value.statement_family, value.source_label, str(value.value_decimal), value.reported_unit)
+                        for value in sorted(item.values, key=lambda value: value.line_key)
+                    ]
+                    content_fingerprint = hashlib.sha256(
+                        json.dumps(fingerprint_payload, ensure_ascii=False).encode("utf-8")
+                    ).hexdigest()
+                    destination_uid = item.period_uid
+                    destination_domain, destination_db = "fundamentals", "finsights_fundamentals"
                 else:
                     source_item_id = item.source_item_id
                     canonical_url = item.original_url

@@ -13,6 +13,7 @@ import yaml
 from .domain.windows import DateWindow
 from .persistence.local_writer import LocalDataWriter
 from .persistence.security_matching import SecurityAliasMatcher
+from .sources.market.cophieu68 import CoPhieu68Client
 from .sources.market.vietstock import VietstockPublicBoardClient
 from .sources.news.baomoi import BaoMoiClient
 from .sources.news.cafef import CafeFClient
@@ -32,7 +33,7 @@ CONFIG_DIR = ROOT / "configs"
 
 FINANCIAL_NEWS_SOURCES = ["cafef", "tuoitre", "thanhnien", "vnexpress", "baomoi"]
 OPTIONAL_NEWS_SOURCES = ["vneconomy"]
-LEGACY_SOURCES = ["vietstock"]
+LEGACY_SOURCES = ["vietstock", "cophieu68"]
 ALL_SOURCES = FINANCIAL_NEWS_SOURCES
 SOURCE_CHOICES = [*FINANCIAL_NEWS_SOURCES, *OPTIONAL_NEWS_SOURCES, *LEGACY_SOURCES]
 
@@ -191,12 +192,60 @@ class LocalRunner:
         results["elapsed_seconds"] = round(elapsed, 2)
         return results
 
+    async def run_cophieu68_market(
+        self, start_date: str, end_date: str, symbols: list[str] | None = None,
+    ) -> dict[str, Any]:
+        logger.info(f"==> Starting local CoPhieu68 market collection [{start_date}..{end_date}]")
+        started = time.time()
+        config = load_yaml(CONFIG_DIR / "sources/market/cophieu68.yaml")
+        universe = load_yaml(CONFIG_DIR / "reference/financial-news-universe.yaml")
+        exchange_code = str(universe.get("exchange", {}).get("code") or "HOSE")
+        known_symbols = {str(item.get("symbol", "")).upper() for item in universe.get("securities", [])}
+        requested_symbols = [symbol.upper() for symbol in symbols or []]
+        if len(requested_symbols) != len(set(requested_symbols)) or set(requested_symbols) - known_symbols:
+            raise ValueError(f"Unknown or duplicate CoPhieu68 symbols: {symbols}")
+        securities = [
+            {"symbol": str(item["symbol"]).upper(), "name": item.get("company_name"), "exchange_code": exchange_code}
+            for item in universe.get("securities", [])
+            if not requested_symbols or str(item.get("symbol", "")).upper() in set(requested_symbols)
+        ]
+        window = DateWindow.parse(start_date, end_date, config.get("timezone", "Asia/Ho_Chi_Minh"))
+        client = CoPhieu68Client(config)
+        try:
+            market_records, periods = await asyncio.to_thread(client.collect, window, securities)
+            window_key = start_date if start_date == end_date else f"{start_date}_to_{end_date}"
+            output = self.writer.save_cophieu68_records(
+                window_key, market_records, periods, client.fetch_attempts,
+                start_date=start_date, end_date=end_date,
+            )
+            summary = {
+                "source": "cophieu68",
+                "status": "PARTIAL" if client.symbol_errors else "SUCCESS",
+                "price_rows": len(market_records),
+                "financial_periods": len(periods),
+                "financial_values": sum(len(period.values) for period in periods),
+                "symbol_errors": client.symbol_errors,
+                "fetch_attempts": len(client.fetch_attempts),
+                "date_window": [start_date, end_date],
+                "output_path": str(output),
+                "elapsed_seconds": round(time.time() - started, 2),
+            }
+            logger.info(f"CoPhieu68 local collection summary: {summary}")
+            return summary
+        except Exception as exc:
+            logger.exception("CoPhieu68 local collection failed")
+            return {
+                "source": "cophieu68", "status": "FAILED", "date_window": [start_date, end_date],
+                "error": str(exc), "elapsed_seconds": round(time.time() - started, 2),
+            }
+
     async def run(
         self,
         source: str,
         start_date: str,
         end_date: str,
         collection_method: str = "latest",
+        symbols: list[str] | None = None,
     ) -> list[dict[str, Any]]:
         sources_to_run = ALL_SOURCES if source in {"all", "*"} else [source]
         summaries: list[dict[str, Any]] = []
@@ -211,6 +260,8 @@ class LocalRunner:
                     })
                     continue
                 res = await self.run_vietstock(end_date)
+            elif src == "cophieu68":
+                res = await self.run_cophieu68_market(start_date, end_date, symbols)
             else:
                 res = await self.run_news_source(src, start_date, end_date, collection_method)
             summaries.append(res)
