@@ -745,7 +745,14 @@ def collect_cophieu68_market(context):
     finished = False
     try:
         market_records, period_records = client.collect(window, securities)
-        persisted_market = market_writer.persist_records(market_records)
+        persisted_market = market_writer.persist_daily_history(market_records)
+        latest_by_symbol = {}
+        for record in market_records:
+            current = latest_by_symbol.get(record.symbol_or_index)
+            if current is None or record.trade_date > current.trade_date:
+                latest_by_symbol[record.symbol_or_index] = record
+        if latest_by_symbol:
+            market_writer.persist_records(list(latest_by_symbol.values()))
         persisted_periods, persisted_values = Node2FundamentalsWriter(
             market_engine=market_writer.engine,
         ).persist(period_records)

@@ -54,11 +54,14 @@ class ScrapeAuditWriter:
     def save_items(self, run_id: int, source_code: str,
                    items: list[Article | MarketRecord | DisclosureRecord | FinancialPeriodRecord],
                    destination_uids: dict[str, str] | None = None) -> None:
+        if not items:
+            return
         destination_uids = destination_uids or {}
         with self.engine.begin() as connection:
             source_id = int(connection.execute(text("""
                 SELECT source_id FROM scrape_runs WHERE id=:id
             """), {"id": run_id}).scalar_one())
+            item_rows = []
             for item in items:
                 if isinstance(item, Article):
                     source_item_id = item.source_article_id
@@ -130,7 +133,16 @@ class ScrapeAuditWriter:
                     destination_domain, destination_db = "disclosures", "finsights_disclosures"
                 identity = hashlib.sha256(f"{source_code}:{source_item_id}".encode()).hexdigest()
                 url_hash = hashlib.sha256(canonical_url.encode()).hexdigest()
-                connection.execute(text("""
+                item_rows.append({
+                    "source_id": source_id, "kind": kind, "identity": identity,
+                    "source_item_id": source_item_id, "url": canonical_url, "url_hash": url_hash,
+                    "published_at": published_at, "business_date": business_date,
+                    "content_fingerprint": content_fingerprint, "domain": destination_domain,
+                    "database": destination_db, "destination_uid": destination_uid, "run_id": run_id,
+                    "metadata": json.dumps(metadata, ensure_ascii=False, default=str),
+                })
+
+            item_insert = text("""
                     INSERT INTO scrape_items
                         (source_id, item_kind, identity_sha256, source_item_id, canonical_url,
                          canonical_url_sha256, published_at, business_date, content_fingerprint_sha256, destination_domain,
@@ -145,20 +157,27 @@ class ScrapeAuditWriter:
                         destination_database=VALUES(destination_database), destination_uid=VALUES(destination_uid),
                         last_seen_at=CURRENT_TIMESTAMP(3), last_run_id=VALUES(last_run_id),
                         last_outcome='PERSISTED', metadata_json=VALUES(metadata_json)
-                """), {"source_id": source_id, "kind": kind, "identity": identity,
-                      "source_item_id": source_item_id, "url": canonical_url, "url_hash": url_hash,
-                      "published_at": published_at, "business_date": business_date,
-                      "content_fingerprint": content_fingerprint, "domain": destination_domain,
-                      "database": destination_db, "destination_uid": destination_uid, "run_id": run_id,
-                      "metadata": json.dumps(metadata, ensure_ascii=False, default=str)})
-                item_id = int(connection.execute(text("""
-                    SELECT id FROM scrape_items WHERE source_id=:source_id AND identity_sha256=:identity
-                """), {"source_id": source_id, "identity": identity}).scalar_one())
-                connection.execute(text("""
-                    INSERT INTO scrape_run_items (run_id, item_id, outcome, processed_at)
-                    VALUES (:run_id, :item_id, 'PERSISTED', CURRENT_TIMESTAMP(3))
-                    ON DUPLICATE KEY UPDATE outcome='PERSISTED', processed_at=CURRENT_TIMESTAMP(3)
-                """), {"run_id": run_id, "item_id": item_id})
+                """)
+            run_item_insert = text("""
+                INSERT INTO scrape_run_items (run_id, item_id, outcome, processed_at)
+                VALUES (:run_id, :item_id, 'PERSISTED', CURRENT_TIMESTAMP(3))
+                ON DUPLICATE KEY UPDATE outcome='PERSISTED', processed_at=CURRENT_TIMESTAMP(3)
+            """)
+            for offset in range(0, len(item_rows), 500):
+                batch = item_rows[offset:offset + 500]
+                connection.execute(item_insert, batch)
+                identity_params = {f"identity_{index}": row["identity"] for index, row in enumerate(batch)}
+                identity_placeholders = ", ".join(f":{key}" for key in identity_params)
+                item_ids = connection.execute(text(f"""
+                    SELECT identity_sha256, id FROM scrape_items
+                    WHERE source_id=:source_id AND identity_sha256 IN ({identity_placeholders})
+                """), {"source_id": source_id, **identity_params}).all()
+                ids_by_identity = {identity: int(item_id) for identity, item_id in item_ids}
+                run_item_rows = [
+                    {"run_id": run_id, "item_id": ids_by_identity[row["identity"]]}
+                    for row in batch
+                ]
+                connection.execute(run_item_insert, run_item_rows)
 
     def save_attempts(self, run_id: int, source_code: str, attempts: list[dict[str, Any]]) -> None:
         if not attempts:

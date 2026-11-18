@@ -94,6 +94,92 @@ class Node2MarketWriter:
             """)).mappings().all()
         return [dict(row) for row in rows]
 
+    def persist_daily_history(self, records: list[MarketRecord]) -> int:
+        """Bulk-persist historical daily rows and source snapshots with two executemany calls."""
+        if not records:
+            return 0
+        if any(record.kind != "quote" for record in records):
+            raise ValueError("CoPhieu68 daily history accepts quote records only")
+        symbols = sorted({record.symbol_or_index for record in records})
+        symbol_params = {f"symbol_{index}": symbol for index, symbol in enumerate(symbols)}
+        placeholders = ", ".join(f":{key}" for key in symbol_params)
+        with self.engine.begin() as connection:
+            provider_id = self._provider_id(connection, records[0].provider_code)
+            securities = connection.execute(text(f"""
+                SELECT s.id, s.symbol, e.code AS exchange_code
+                FROM market_securities s
+                JOIN market_exchanges e ON e.id=s.exchange_id
+                WHERE s.symbol IN ({placeholders}) AND s.trading_status <> 'delisted'
+            """), symbol_params).mappings().all()
+            security_ids = {
+                (str(row["symbol"]).upper(), str(row["exchange_code"]).upper()): int(row["id"])
+                for row in securities
+            }
+            daily_rows = []
+            snapshot_rows = []
+            for record in records:
+                exchange = str(record.fields.get("exchange_code") or "").upper()
+                security_id = security_ids.get((record.symbol_or_index.upper(), exchange))
+                if security_id is None:
+                    raise RuntimeError(
+                        f"Node 2 market catalog has no active {record.symbol_or_index}/{exchange} security"
+                    )
+                fields = record.fields
+                close = _decimal_or_raw(fields.get("last_price_vnd"))
+                if close is None:
+                    raise ValueError(f"{record.symbol_or_index} on {record.trade_date} has no closing price")
+                daily_rows.append({
+                    "security_id": security_id, "trading_date": record.trade_date,
+                    "open_vnd": _decimal_or_raw(fields.get("open_price_vnd")),
+                    "high_vnd": _decimal_or_raw(fields.get("high_price_vnd")),
+                    "low_vnd": _decimal_or_raw(fields.get("low_price_vnd")),
+                    "close_vnd": close, "matched_volume": fields.get("matched_volume"),
+                    "foreign_buy_volume": fields.get("foreign_buy_volume"),
+                    "foreign_sell_volume": fields.get("foreign_sell_volume"),
+                    "is_final": 1, "provider_id": provider_id,
+                })
+                snapshot_rows.append({
+                    "security_id": security_id, "provider_id": provider_id,
+                    "quoted_at": record.observed_at.astimezone(timezone.utc).replace(tzinfo=None),
+                    "last_price_vnd": close, "matched_volume": fields.get("matched_volume"),
+                    "high_price_vnd": _decimal_or_raw(fields.get("high_price_vnd")),
+                    "low_price_vnd": _decimal_or_raw(fields.get("low_price_vnd")),
+                    "foreign_buy_volume": fields.get("foreign_buy_volume"),
+                    "foreign_sell_volume": fields.get("foreign_sell_volume"),
+                    "raw_fields_json": json.dumps(record.raw_payload, ensure_ascii=False, default=str),
+                })
+            connection.execute(text("""
+                INSERT INTO market_prices_daily
+                    (security_id, trading_date, open_vnd, high_vnd, low_vnd, close_vnd,
+                     matched_volume, foreign_buy_volume, foreign_sell_volume, is_final, provider_id)
+                VALUES
+                    (:security_id, :trading_date, :open_vnd, :high_vnd, :low_vnd, :close_vnd,
+                     :matched_volume, :foreign_buy_volume, :foreign_sell_volume, :is_final, :provider_id)
+                ON DUPLICATE KEY UPDATE
+                    open_vnd=IF(market_prices_daily.provider_id=VALUES(provider_id), VALUES(open_vnd), market_prices_daily.open_vnd),
+                    high_vnd=IF(market_prices_daily.provider_id=VALUES(provider_id), VALUES(high_vnd), market_prices_daily.high_vnd),
+                    low_vnd=IF(market_prices_daily.provider_id=VALUES(provider_id), VALUES(low_vnd), market_prices_daily.low_vnd),
+                    close_vnd=IF(market_prices_daily.provider_id=VALUES(provider_id), VALUES(close_vnd), market_prices_daily.close_vnd),
+                    matched_volume=IF(market_prices_daily.provider_id=VALUES(provider_id), VALUES(matched_volume), market_prices_daily.matched_volume),
+                    foreign_buy_volume=IF(market_prices_daily.provider_id=VALUES(provider_id), VALUES(foreign_buy_volume), market_prices_daily.foreign_buy_volume),
+                    foreign_sell_volume=IF(market_prices_daily.provider_id=VALUES(provider_id), VALUES(foreign_sell_volume), market_prices_daily.foreign_sell_volume),
+                    is_final=IF(market_prices_daily.provider_id=VALUES(provider_id), 1, market_prices_daily.is_final),
+                    updated_at=CURRENT_TIMESTAMP
+            """), daily_rows)
+            connection.execute(text("""
+                INSERT INTO market_quote_snapshots
+                    (security_id, provider_id, quoted_at, last_price_vnd, matched_volume,
+                     high_price_vnd, low_price_vnd, foreign_buy_volume, foreign_sell_volume, raw_fields_json)
+                VALUES
+                    (:security_id, :provider_id, :quoted_at, :last_price_vnd, :matched_volume,
+                     :high_price_vnd, :low_price_vnd, :foreign_buy_volume, :foreign_sell_volume, :raw_fields_json)
+                ON DUPLICATE KEY UPDATE last_price_vnd=VALUES(last_price_vnd),
+                    matched_volume=VALUES(matched_volume), high_price_vnd=VALUES(high_price_vnd),
+                    low_price_vnd=VALUES(low_price_vnd), foreign_buy_volume=VALUES(foreign_buy_volume),
+                    foreign_sell_volume=VALUES(foreign_sell_volume), raw_fields_json=VALUES(raw_fields_json)
+            """), snapshot_rows)
+        return len(records)
+
     @staticmethod
     def _provider_id(connection, provider_code: str) -> int:
         known_providers = {
