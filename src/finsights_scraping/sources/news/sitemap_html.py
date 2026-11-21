@@ -47,7 +47,7 @@ class SitemapHtmlNewsClient(ConfiguredHtmlNewsClient):
         if not self.collection_ready():
             raise SourceAuthorizationError(
                 f"{self.source_code} is disabled: set collection_enabled and the "
-                "personal_academic_research internal-only scope in its source YAML."
+                "licensed_personal_project redistribution policy in its source YAML."
             )
 
         discovery = self.config.get("discovery", {})

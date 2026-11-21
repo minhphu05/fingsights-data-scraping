@@ -18,7 +18,6 @@ from .sources.market.vietstock import VietstockPublicBoardClient
 from .sources.news.baomoi import BaoMoiClient
 from .sources.news.cafef import CafeFClient
 from .sources.news.configured_html import ConfiguredHtmlNewsClient
-from .sources.news.rss import RssNewsClient
 from .sources.news.sitemap_html import SitemapHtmlNewsClient
 
 logging.basicConfig(
@@ -31,8 +30,8 @@ logger = logging.getLogger("finsights.local_runner")
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG_DIR = ROOT / "configs"
 
-FINANCIAL_NEWS_SOURCES = ["cafef", "tuoitre", "thanhnien", "vnexpress", "baomoi"]
-OPTIONAL_NEWS_SOURCES = ["vneconomy"]
+FINANCIAL_NEWS_SOURCES = ["cafef", "tuoitre", "thanhnien", "vnexpress", "vneconomy"]
+OPTIONAL_NEWS_SOURCES: list[str] = []
 LEGACY_SOURCES = ["vietstock", "cophieu68"]
 ALL_SOURCES = FINANCIAL_NEWS_SOURCES
 SOURCE_CHOICES = [*FINANCIAL_NEWS_SOURCES, *OPTIONAL_NEWS_SOURCES, *LEGACY_SOURCES]
@@ -84,8 +83,6 @@ class LocalRunner:
                 client = SitemapHtmlNewsClient(config, security_matcher=self.matcher)
             else:
                 client = ConfiguredHtmlNewsClient(config, security_matcher=self.matcher)
-        elif config.get("discovery", {}).get("mode") == "rss_only":
-            client = RssNewsClient(config, security_matcher=self.matcher)
         elif source_key == "cafef":
             client = CafeFClient(config, security_matcher=self.matcher)
         elif source_key == "baomoi":

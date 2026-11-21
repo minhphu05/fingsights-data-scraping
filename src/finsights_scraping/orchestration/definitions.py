@@ -23,7 +23,6 @@ from ..sources.news import (
     BaoMoiClient,
     CafeFClient,
     ConfiguredHtmlNewsClient,
-    RssNewsClient,
     SitemapHtmlNewsClient,
     SourceAuthorizationError,
     source_collection_enabled,
@@ -39,8 +38,7 @@ CONFIGURED_NEWS_SOURCES = {
     "vnexpress": ("vnexpress_news", "15 3 * * *"),
     "vneconomy": ("vneconomy_news", "0 4 * * *"),
 }
-FINANCIAL_NEWS_SOURCES = ("cafef", "thanhnien", "tuoitre", "vnexpress", "baomoi")
-RSS_FINANCIAL_NEWS_SOURCES = ("cafef", "thanhnien", "tuoitre", "vnexpress")
+FINANCIAL_NEWS_SOURCES = ("cafef", "thanhnien", "tuoitre", "vnexpress", "vneconomy")
 HTML_BACKFILL_SOURCES = FINANCIAL_NEWS_SOURCES
 OFFICIAL_DISCLOSURE_SOURCES = {
     "hose": ("hose_disclosures", "0 7,15 * * 1-5", "hose_disclosures_job", "512Mi"),
@@ -135,124 +133,6 @@ def _window(config: dict | None = None, timezone_name: str = "Asia/Ho_Chi_Minh")
     return DateWindow.parse(start, end, timezone_name)
 
 
-def _collect_rss_source(
-    context,
-    source_key: str,
-    source_config: dict,
-    window: DateWindow,
-    storage_mode: str = "link_only",
-    job_name: str | None = None,
-) -> dict:
-    if not source_collection_enabled(source_config):
-        raise SourceAuthorizationError(
-            f"{source_key} is disabled; check its internal-only RSS access policy."
-        )
-
-    writer = Node2NewsWriter(storage_mode=storage_mode)
-    client = RssNewsClient(source_config, security_matcher=writer.matcher)
-    audit = ScrapeAuditWriter()
-    source_code = source_config["source_code"]
-    audit_run_id = f"{context.run_id}:{source_code}"[:64]
-    db_run_id = audit.start_run(
-        source_code=source_code,
-        source_kind="news",
-        display_name=source_config["name"],
-        base_url=source_config["base_url"],
-        dagster_run_id=audit_run_id,
-        job_name=job_name or context.job_name,
-        start_date=window.start_date,
-        end_date=window.end_date,
-        config={
-            "collection_method": "rss_only",
-            "storage_mode": storage_mode,
-            "terms_url": source_config.get("terms_url"),
-            "redistribution_allowed": source_config.get("access", {}).get("redistribution_allowed", False),
-        },
-    )
-    total_discovered = 0
-    total_persisted = 0
-    days_completed = 0
-
-    def persist_day(batch_date: date, articles: list[Article], category_code: str | None = None) -> None:
-        nonlocal total_discovered, total_persisted, days_completed
-        total_discovered += len(articles)
-        article_uids = writer.persist_articles(articles)
-        total_persisted += len(article_uids)
-        days_completed += 1
-        audit.save_items(db_run_id, source_code, articles, article_uids)
-        audit.save_checkpoint(source_code, "last_completed_day", {
-            "completed_day": batch_date.isoformat(),
-            "articles_persisted": len(article_uids),
-            "total_persisted_so_far": total_persisted,
-        })
-        context.log.info(
-            f"{source_key} RSS persisted {len(article_uids)} article records for {batch_date} "
-            f"(cumulative: {total_persisted})"
-        )
-
-    async def execute_collection():
-        try:
-            return await client.collect(window, on_batch=persist_day)
-        finally:
-            await client.close()
-
-    try:
-        articles = asyncio.run(execute_collection())
-        stats = client.collection_stats
-        audit.save_attempts(db_run_id, source_code, client.fetch_attempts)
-        coverage = str(stats.get("coverage_status", "RSS_WINDOW_NOT_PROVEN"))
-        run_status = "PARTIAL" if coverage == "RSS_RETENTION_LIMITED" else "SUCCESS"
-        audit.finish_run(
-            db_run_id,
-            run_status,
-            discovered=total_discovered,
-            persisted=total_persisted,
-            failed=0,
-        )
-        audit.save_checkpoint(source_code, "last_completed_window", {
-            "start_date": window.start_date.isoformat(),
-            "end_date": window.end_date.isoformat(),
-            "persisted_articles": total_persisted,
-            "days_completed": days_completed,
-            "coverage_status": coverage,
-            "status": run_status,
-        })
-        if run_status == "PARTIAL":
-            context.log.warning(
-                f"{source_key} RSS only retains items from {stats.get('oldest_feed_publication_date')}; "
-                f"requested start {window.start_date.isoformat()} is not covered."
-            )
-        context.log.info(
-            f"{source_key} RSS collection finished: {total_persisted} stored, "
-            f"coverage={coverage}, window={window.start_date}..{window.end_date}"
-        )
-        return {
-            "source": source_key,
-            "run_status": run_status,
-            "articles_discovered": total_discovered,
-            "articles_persisted": total_persisted,
-            "days_completed": days_completed,
-            "collection_stats": stats,
-        }
-    except Exception as exc:
-        audit.save_attempts(db_run_id, source_code, client.fetch_attempts)
-        audit.finish_run(
-            db_run_id,
-            "FAILED",
-            discovered=total_discovered,
-            persisted=total_persisted,
-            failed=1,
-            error=str(exc)[:4000],
-        )
-        audit.save_checkpoint(source_code, "last_interrupted_run", {
-            "start_date": window.start_date.isoformat(),
-            "end_date": window.end_date.isoformat(),
-            "error": str(exc)[:500],
-            "fetch_attempts": len(client.fetch_attempts),
-            "persisted_before_failure": total_persisted,
-        })
-        raise
-
 
 def _news_source_config(source_key: str) -> dict:
     if source_key not in {*FINANCIAL_NEWS_SOURCES, *CONFIGURED_NEWS_SOURCES, "cafef"}:
@@ -269,7 +149,7 @@ def _collect_html_backfill(
 ) -> dict:
     if not source_collection_enabled(source_config):
         raise SourceAuthorizationError(
-            f"{source_key} is disabled; check its internal-only HTML backfill access policy."
+            f"{source_key} is disabled; check its licensed HTML redistribution policy."
         )
 
     writer = Node2NewsWriter(storage_mode=storage_mode)
@@ -421,8 +301,8 @@ def collect_cafef_news(context):
     source_config = _yaml(CONFIG_DIR / "sources/news/cafef.yaml")
     window = _window(context.op_config, source_config.get("timezone", "Asia/Ho_Chi_Minh"))
     storage_mode = context.op_config.get("storage_mode", "link_only")
-    return _collect_rss_source(
-        context, "cafef", source_config, window, storage_mode, job_name="cafef_news_job"
+    return _collect_html_backfill(
+        context, "cafef", source_config, window, storage_mode
     )
 
 
@@ -520,20 +400,20 @@ def collect_configured_news(context):
     source_config = _news_source_config(source_key)
     if not source_collection_enabled(source_config):
         raise SourceAuthorizationError(
-            f"{source_key} is disabled; enable its personal academic research scope in the source YAML before running."
+            f"{source_key} is disabled; enable its licensed redistribution policy in the source YAML before running."
         )
 
     window = _window(context.op_config, source_config.get("timezone", "Asia/Ho_Chi_Minh"))
     storage_mode = context.op_config.get("storage_mode", "link_only")
-    if source_config.get("discovery", {}).get("mode") == "rss_only":
-        return _collect_rss_source(
-            context, source_key, source_config, window, storage_mode,
-            job_name=f"{source_key}_news_job",
-        )
 
     writer = Node2NewsWriter(storage_mode=storage_mode)
     if source_key == "baomoi":
         client = BaoMoiClient(source_config, security_matcher=writer.matcher)
+    elif (
+        source_key in {"thanhnien", "tuoitre"}
+        and source_config.get("discovery", {}).get("html_backfill", {}).get("strategy") == "sitemap"
+    ):
+        client = SitemapHtmlNewsClient(source_config, security_matcher=writer.matcher)
     else:
         client = ConfiguredHtmlNewsClient(source_config, security_matcher=writer.matcher)
     audit = ScrapeAuditWriter()
@@ -614,17 +494,17 @@ def collect_configured_news(context):
 @op(config_schema={
     "start_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
     "end_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
-    "storage_mode": Field(String, is_required=False, default_value="link_only", description="RSS sources store summaries/links; Baomoi is collected from HTML"),
+    "storage_mode": Field(String, is_required=False, default_value="link_only", description="Store licensed HTML article bodies; binary media stays link-only"),
 })
 def collect_financial_news_batch(context):
     window = _window(context.op_config)
     storage_mode = context.op_config.get("storage_mode", "link_only")
     results: dict[str, dict] = {}
     errors: dict[str, str] = {}
-    for source_key in RSS_FINANCIAL_NEWS_SOURCES:
+    for source_key in FINANCIAL_NEWS_SOURCES:
         source_config = _yaml(CONFIG_DIR / f"sources/news/{source_key}.yaml")
         try:
-            results[source_key] = _collect_rss_source(
+            results[source_key] = _collect_html_backfill(
                 context,
                 source_key,
                 source_config,
@@ -1035,7 +915,7 @@ def cophieu68_market_job():
     collect_cophieu68_market()
 
 
-@job(name="financial_news_job", tags=_pod_tags("financial-news", "1Gi"), description="Batch collect RSS summaries from the four sheet publishers with RSS feeds.")
+@job(name="financial_news_job", tags=_pod_tags("financial-news", "1Gi"), description="Batch collect full licensed HTML articles from the five Financial News publishers.")
 def financial_news_job():
     collect_financial_news_batch()
 
@@ -1162,7 +1042,7 @@ def _build_configured_news_schedule(source_key: str, job_definition, cron_schedu
         source_config = _news_source_config(source_key)
         if not source_collection_enabled(source_config):
             return SkipReason(
-                f"{source_key} is disabled; enable its personal academic research scope in configs/sources/news/{source_key}.yaml."
+                f"{source_key} is disabled; enable its licensed HTML redistribution policy in configs/sources/news/{source_key}.yaml."
             )
         publication_day = (
             context.scheduled_execution_time.astimezone(LOCAL_TZ).date() - timedelta(days=1)

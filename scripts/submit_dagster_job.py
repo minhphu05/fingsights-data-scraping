@@ -80,10 +80,10 @@ SOURCE_CONFIGS: Dict[str, Dict[str, Any]] = {
         "op_name": "collect_news_backfill",
         "config_builder": lambda start, end, mode: {"source_key": "vnexpress", "start_date": start, "end_date": end, "storage_mode": mode},
     },
-    "baomoi_backfill": {
-        "job_name": "baomoi_news_backfill_job",
+    "vneconomy_backfill": {
+        "job_name": "vneconomy_news_backfill_job",
         "op_name": "collect_news_backfill",
-        "config_builder": lambda start, end, mode: {"source_key": "baomoi", "start_date": start, "end_date": end, "storage_mode": mode},
+        "config_builder": lambda start, end, mode: {"source_key": "vneconomy", "start_date": start, "end_date": end, "storage_mode": mode},
     },
     "financial_news": {
         "job_name": "financial_news_job",
@@ -144,7 +144,7 @@ BACKFILL_SOURCES = [
     "thanhnien_backfill",
     "tuoitre_backfill",
     "vnexpress_backfill",
-    "baomoi_backfill",
+    "vneconomy_backfill",
 ]
 
 
@@ -364,7 +364,7 @@ def main() -> None:
         "--source",
         choices=["all", "all_backfill", "all_official", "all_ir", *SOURCE_CONFIGS.keys()],
         default="financial_news",
-        help="Source to scrape, or 'all' to run the configured recent RSS batch",
+        help="Source to collect from configured HTML archives and sitemaps",
     )
     parser.add_argument(
         "--start-date",

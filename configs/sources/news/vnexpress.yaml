@@ -7,23 +7,22 @@ attribution_name: VnExpress
 timezone: Asia/Ho_Chi_Minh
 request_rate_per_second: 0.5
 collection_enabled: true
-use_scope: personal_academic_research
+use_scope: licensed_personal_project
 binary_asset_collection_enabled: false
 
-# Personal thesis research: keep collected records internal and attribute the source.
 access:
-  use_scope: personal_academic_research
-  internal_only: true
+  use_scope: licensed_personal_project
+  internal_only: false
   attribution_required: true
-  redistribution_allowed: false
+  redistribution_allowed: true
   respect_robots_txt: true
 rights:
-  status: unknown
+  status: licensed_full_text
   binary_asset_statuses: []
 
 article_id_regex: '-(?P<article_id>\d+)\.html$'
 discovery:
-  mode: rss_only
+  mode: html_archive
   max_pages: 2000
   fail_if_archive_boundary_not_proven: true
   link_selectors: ["a[href]"]
@@ -31,9 +30,6 @@ discovery:
     - code: stock_market
       first_page: https://vnexpress.net/kinh-doanh/chung-khoan-p1
       page_template: https://vnexpress.net/kinh-doanh/chung-khoan-p{page}
-  rss_feeds:
-    - url: https://vnexpress.net/rss/kinh-doanh.rss
-      category: business_finance
 
 article:
   title_selectors: ["h1.title-detail", "h1"]
@@ -62,3 +58,12 @@ financial_relevance:
     - khối ngoại
     - thanh khoản
     - công bố thông tin
+    - vàng
+    - giá dầu
+    - giá xăng
+    - bất động sản
+    - lạm phát
+    - tín dụng
+    - USD
+    - ngoại hối
+    - Fed

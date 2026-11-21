@@ -24,7 +24,7 @@ def main() -> int:
         "-s",
         default="all",
         choices=[*SOURCE_CHOICES, "all"],
-        help="Source to run; all runs the five sheet publishers with the selected collection method",
+        help="Source to run; all runs the four sheet publishers plus VnEconomy using HTML pages",
     )
     parser.add_argument(
         "--date",
@@ -43,7 +43,7 @@ def main() -> int:
         "--collection-method",
         choices=["latest", "html_backfill"],
         default="latest",
-        help="Use RSS for the latest window or full HTML archive pages for historical backfill",
+        help="Collect from HTML archive pages for the requested date window",
     )
     parser.add_argument(
         "--data-dir",

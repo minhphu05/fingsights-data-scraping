@@ -7,21 +7,20 @@ attribution_name: cafef
 timezone: Asia/Ho_Chi_Minh
 request_rate_per_second: 0.5
 collection_enabled: true
-use_scope: personal_academic_research
+use_scope: licensed_personal_project
 binary_asset_collection_enabled: false
 access:
-  use_scope: personal_academic_research
-  internal_only: true
+  use_scope: licensed_personal_project
+  internal_only: false
   attribution_required: true
-  redistribution_allowed: false
+  redistribution_allowed: true
   respect_robots_txt: true
 article_id_regex: '-(?P<article_id>188[0-9]{11,})\.chn$'
 discovery:
-  mode: rss_only
+  mode: html_archive
   html_backfill:
     strategy: category_archive
     max_pages: 5000
-    rss_recent_days: 0
     fail_if_archive_boundary_not_proven: true
     archive_categories:
       - code: stock_market
@@ -36,20 +35,46 @@ discovery:
       - code: macro_economy
         first_page: https://cafef.vn/timelinelist/18833/1.chn
         page_template: https://cafef.vn/timelinelist/18833/{page}.chn
-  rss_feeds:
-    - https://cafef.vn/thi-truong-chung-khoan.rss
-    - https://cafef.vn/doanh-nghiep.rss
-    - https://cafef.vn/tai-chinh-ngan-hang.rss
-    - https://cafef.vn/vi-mo-dau-tu.rss
 article:
   title_selectors: ["h1.title", "h1.detail-title", "article h1", "h1"]
   summary_selectors: ["h2.sapo", ".sapo", ".detail-sapo"]
   author_selectors: [".author", ".p-author", "[rel='author']"]
-  content_selectors: [".contentdetail", "#mainContent", ".detail-content", "article"]
+  content_selectors:
+    [".contentdetail", "#mainContent", ".detail-content", "article"]
   full_text_required: true
 rights:
-  status: unknown
+  status: licensed_full_text
   binary_asset_statuses: []
 financial_relevance:
   require_one_term_or_company_alias: true
-  terms: ["cổ phiếu", "chứng khoán", "VN-Index", "VN30", "HOSE", "HNX", "UPCoM", "cổ tức", "niêm yết", "trái phiếu", "báo cáo tài chính", "lợi nhuận", "ngân hàng", "lãi suất", "tỷ giá", "đầu tư", "thanh khoản", "khối ngoại", "IPO"]
+  terms:
+    [
+      "cổ phiếu",
+      "chứng khoán",
+      "VN-Index",
+      "VN30",
+      "HOSE",
+      "HNX",
+      "UPCoM",
+      "cổ tức",
+      "niêm yết",
+      "trái phiếu",
+      "báo cáo tài chính",
+      "lợi nhuận",
+      "ngân hàng",
+      "lãi suất",
+      "tỷ giá",
+      "đầu tư",
+      "thanh khoản",
+      "khối ngoại",
+      "IPO",
+      "vàng",
+      "giá dầu",
+      "giá xăng",
+      "bất động sản",
+      "lạm phát",
+      "tín dụng",
+      "USD",
+      "ngoại hối",
+      "Fed",
+    ]

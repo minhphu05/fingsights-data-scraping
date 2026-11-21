@@ -59,21 +59,22 @@ def _url_outside_window(url: str, window: DateWindow) -> bool:
 
 def source_collection_enabled(config: dict[str, Any]) -> bool:
     access = config.get("access", {})
+    scope = "licensed_personal_project"
     return bool(
         config.get("collection_enabled") is True
-        and config.get("use_scope") == "personal_academic_research"
-        and access.get("use_scope") == "personal_academic_research"
-        and access.get("internal_only") is True
+        and config.get("use_scope") == scope
+        and access.get("use_scope") == scope
+        and access.get("internal_only") is False
         and access.get("attribution_required") is True
-        and access.get("redistribution_allowed") is False
+        and access.get("redistribution_allowed") is True
         and access.get("respect_robots_txt") is True
     )
 
 
 class ConfiguredHtmlNewsClient(CafeFClient):
-    """Config-driven RSS/archive/detail collector for publisher news sites.
+    """Config-driven HTML archive/detail collector for publisher news sites.
 
-    The client requires an explicit internal research scope in source config.
+    The client requires an explicit licensed full-text redistribution policy in source config.
     It also fails a date-window run unless every configured archive reaches an
     article older than the inclusive start date.
     """
@@ -137,7 +138,7 @@ class ConfiguredHtmlNewsClient(CafeFClient):
         if not self.collection_ready():
             raise SourceAuthorizationError(
                 f"{self.source_code} is disabled: set collection_enabled and the "
-                "personal_academic_research internal-only scope in its source YAML."
+                "licensed_personal_project redistribution policy in its source YAML."
             )
 
         articles_by_id: dict[str, Article] = {}
