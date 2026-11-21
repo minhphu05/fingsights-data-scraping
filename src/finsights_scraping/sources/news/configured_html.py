@@ -361,7 +361,15 @@ class ConfiguredHtmlNewsClient(CafeFClient):
         full_text_required = article_config.get("full_text_required", True)
         if not blocks and summary and not full_text_required:
             blocks = [ContentBlock(0, "paragraph", text=summary, metadata={"fallback": "summary_only"})]
-        if full_text_required and not blocks:
+        has_article_text = any((block.text or "").strip() for block in blocks)
+        has_table_text = any(
+            str(cell).strip()
+            for block in blocks
+            if block.table
+            for row in block.table.get("rows", [])
+            for cell in row
+        )
+        if full_text_required and not (has_article_text or has_table_text):
             raise UnusableArticleError(f"Article body is missing: {clean_url}")
 
         author = self._first_text(soup, article_config.get("author_selectors", []))

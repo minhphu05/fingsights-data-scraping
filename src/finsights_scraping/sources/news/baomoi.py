@@ -569,6 +569,18 @@ class BaoMoiClient(CafeFClient):
                     break
             if root:
                 blocks = self._content_blocks(root)
+        has_article_text = any((block.text or "").strip() for block in blocks)
+        has_table_text = any(
+            str(cell).strip()
+            for block in blocks
+            if block.table
+            for row in block.table.get("rows", [])
+            for cell in row
+        )
+        if self.config.get("article", {}).get("full_text_required", False) and not (
+            has_article_text or has_table_text
+        ):
+            raise UnusableArticleError(f"Baomoi article body has no text: {clean_url}")
         if not blocks:
             raise UnusableArticleError(f"Baomoi article body is missing: {clean_url}")
 

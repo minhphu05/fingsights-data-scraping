@@ -472,6 +472,16 @@ class CafeFClient:
         full_text_required = self.config.get("article", {}).get("full_text_required", False)
         if not blocks and summary and not full_text_required:
             blocks = [ContentBlock(order=0, block_type="paragraph", text=summary, metadata={"fallback": "summary_only"})]
+        has_article_text = any((block.text or "").strip() for block in blocks)
+        has_table_text = any(
+            str(cell).strip()
+            for block in blocks
+            if block.table
+            for row in block.table.get("rows", [])
+            for cell in row
+        )
+        if full_text_required and not (has_article_text or has_table_text):
+            raise UnusableArticleError(f"CafeF article body has no text: {clean_url}")
         if not blocks:
             raise UnusableArticleError(f"CafeF article body is missing: {clean_url}")
 
