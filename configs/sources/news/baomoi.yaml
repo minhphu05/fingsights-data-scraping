@@ -38,6 +38,7 @@ discovery:
     strategy: daily_sitemap
     sitemap_index_url: https://baomoi.com/sitemaps/sitemap.xml
     partition_pattern: '/article-(?P<date>\d{8})\.xml$'
+    max_concurrent_article_fetches: 4
     max_article_failure_ratio: 0.25
     financial_title_terms:
       - chứng khoán

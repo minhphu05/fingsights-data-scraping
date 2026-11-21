@@ -134,6 +134,7 @@ class CafeFClient:
             backfill_config.get("max_pages", config.get("max_pages_per_category", 5000)),
         ))
         self._last_request = 0.0
+        self._request_rate_lock = asyncio.Lock()
         self.fetch_attempts: list[dict[str, Any]] = []
         self._robots_parser: RobotFileParser | None = None
         self._robots_loaded = False
@@ -161,17 +162,18 @@ class CafeFClient:
         interval = (1.0 / self.rate) if self.rate > 0 else 0.0
         max_retries = 2
         for attempt in range(max_retries + 1):
-            loop = asyncio.get_running_loop()
-            if interval > 0:
-                elapsed = loop.time() - self._last_request
-                if elapsed < interval:
-                    await asyncio.sleep(interval - elapsed)
-            requested_at = datetime.now(timezone.utc).replace(tzinfo=None)
-            started = loop.time()
-            # Throttle the interval between request starts. Recording this after
-            # the response added an unnecessary full second after slow requests.
-            if interval > 0:
-                self._last_request = started
+            async with self._request_rate_lock:
+                loop = asyncio.get_running_loop()
+                if interval > 0:
+                    elapsed = loop.time() - self._last_request
+                    if elapsed < interval:
+                        await asyncio.sleep(interval - elapsed)
+                requested_at = datetime.now(timezone.utc).replace(tzinfo=None)
+                started = loop.time()
+                # Space request starts even when several article responses are
+                # concurrently in flight.
+                if interval > 0:
+                    self._last_request = started
             try:
                 response = await self._client.get(url)
                 response.raise_for_status()

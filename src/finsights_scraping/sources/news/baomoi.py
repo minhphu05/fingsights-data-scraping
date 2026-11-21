@@ -356,6 +356,11 @@ class BaoMoiClient(CafeFClient):
             # the full historical window is still being processed.
             for partition_date in sorted(expected_dates, reverse=True)
         ]
+        max_concurrent_fetches = max(
+            1, int(backfill.get("max_concurrent_article_fetches", 4))
+        )
+        fetch_semaphore = asyncio.Semaphore(max_concurrent_fetches)
+
         for partition_date, sitemap_url in selected:
             response = await self._get(sitemap_url)
             try:
@@ -389,32 +394,53 @@ class BaoMoiClient(CafeFClient):
                     candidates.append((article_url, last_modified))
 
             stats["candidate_article_urls"] += len(candidates)
-            for article_url, last_modified in candidates:
-                try:
-                    article = await self.fetch_article(
-                        article_url,
-                        category="sitemap",
-                        listing_item={"sitemap_lastmod": last_modified},
-                    )
-                    stats["article_pages_fetched"] += 1
-                    if window.contains(article.published_at) and self.is_financial(article):
-                        if article.source_article_id not in seen_ids:
-                            seen_ids.add(article.source_article_id)
-                            article_day = article.published_at.astimezone(
-                                ZoneInfo(self.timezone_name)
-                            ).date()
-                            article.metadata["collection_method"] = stats["method"]
-                            article.metadata["content_scope"] = (
-                                "aggregate_excerpt"
-                                if any(block.metadata.get("fallback") == "summary_only" for block in article.blocks)
-                                else "baomoi_aggregator_content"
-                            )
-                            day_buffer.setdefault(article_day, []).append(article)
-                            stats["financial_articles"] += 1
-                except SourceAuthorizationError:
-                    raise
-                except Exception:
+            async def _fetch_candidate(
+                article_url: str,
+                last_modified: str | None,
+            ) -> tuple[Article | None, Exception | None]:
+                async with fetch_semaphore:
+                    try:
+                        return (
+                            await self.fetch_article(
+                                article_url,
+                                category="sitemap",
+                                listing_item={"sitemap_lastmod": last_modified},
+                            ),
+                            None,
+                        )
+                    except SourceAuthorizationError:
+                        raise
+                    except Exception as exc:
+                        return None, exc
+
+            fetched_candidates = await asyncio.gather(
+                *(_fetch_candidate(article_url, last_modified)
+                  for article_url, last_modified in candidates)
+            )
+            for (article_url, _last_modified), (article, error) in zip(
+                candidates, fetched_candidates
+            ):
+                if error is not None:
                     stats["article_pages_failed"] += 1
+                    continue
+                if article is None:
+                    stats["article_pages_failed"] += 1
+                    continue
+                stats["article_pages_fetched"] += 1
+                if window.contains(article.published_at) and self.is_financial(article):
+                    if article.source_article_id not in seen_ids:
+                        seen_ids.add(article.source_article_id)
+                        article_day = article.published_at.astimezone(
+                            ZoneInfo(self.timezone_name)
+                        ).date()
+                        article.metadata["collection_method"] = stats["method"]
+                        article.metadata["content_scope"] = (
+                            "aggregate_excerpt"
+                            if any(block.metadata.get("fallback") == "summary_only" for block in article.blocks)
+                            else "baomoi_aggregator_content"
+                        )
+                        day_buffer.setdefault(article_day, []).append(article)
+                        stats["financial_articles"] += 1
 
             flush_days()
 
