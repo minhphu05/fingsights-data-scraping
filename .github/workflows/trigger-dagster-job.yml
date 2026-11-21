@@ -26,7 +26,7 @@ on:
           - thanhnien_backfill
           - tuoitre_backfill
           - vnexpress_backfill
-          - vneconomy_backfill
+          - baomoi_backfill
           - hose
           - hnx
           - ubcknn

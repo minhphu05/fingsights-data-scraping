@@ -50,6 +50,11 @@ SOURCE_CONFIGS: Dict[str, Dict[str, Any]] = {
         "op_name": "collect_baomoi_news",
         "config_builder": lambda start, end, mode: {"start_date": start, "end_date": end, "storage_mode": mode},
     },
+    "baomoi_backfill": {
+        "job_name": "baomoi_news_backfill_job",
+        "op_name": "collect_news_backfill",
+        "config_builder": lambda start, end, mode: {"source_key": "baomoi", "start_date": start, "end_date": end, "storage_mode": mode},
+    },
     "vnexpress": {
         "job_name": "vnexpress_news_job",
         "op_name": "collect_configured_news",
@@ -79,11 +84,6 @@ SOURCE_CONFIGS: Dict[str, Dict[str, Any]] = {
         "job_name": "vnexpress_news_backfill_job",
         "op_name": "collect_news_backfill",
         "config_builder": lambda start, end, mode: {"source_key": "vnexpress", "start_date": start, "end_date": end, "storage_mode": mode},
-    },
-    "vneconomy_backfill": {
-        "job_name": "vneconomy_news_backfill_job",
-        "op_name": "collect_news_backfill",
-        "config_builder": lambda start, end, mode: {"source_key": "vneconomy", "start_date": start, "end_date": end, "storage_mode": mode},
     },
     "financial_news": {
         "job_name": "financial_news_job",
@@ -144,7 +144,7 @@ BACKFILL_SOURCES = [
     "thanhnien_backfill",
     "tuoitre_backfill",
     "vnexpress_backfill",
-    "vneconomy_backfill",
+    "baomoi_backfill",
 ]
 
 
