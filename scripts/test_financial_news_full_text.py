@@ -3,7 +3,7 @@
 
 This is a bounded, read-only smoke test: it never writes to the local data folder,
 MySQL, object storage, or Dagster. Four fixture URLs come from the existing local
-sample batch; VnEconomy is discovered from its HTML category page.
+sample batch; Báo Mới is discovered from its dated HTML sitemap.
 """
 from __future__ import annotations
 
@@ -11,9 +11,9 @@ import asyncio
 import json
 import re
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
-from urllib.parse import urljoin
 
 import yaml
 
@@ -24,11 +24,13 @@ from src.finsights_scraping.sources.news.configured_html import (  # noqa: E402
     ConfiguredHtmlNewsClient,
     source_collection_enabled,
 )
+from src.finsights_scraping.sources.news.baomoi import BaoMoiClient  # noqa: E402
 
 SAMPLE_DATE = "2026-11-02"
 FIXTURE_SOURCES = ("cafef", "tuoitre", "thanhnien", "vnexpress")
-ALL_SOURCES = (*FIXTURE_SOURCES, "vneconomy")
+ALL_SOURCES = (*FIXTURE_SOURCES, "baomoi")
 MIN_BODY_WORDS = 120
+BAOMOI_TEST_DATE = "2026-11-20"
 
 
 def _load_config(source: str) -> dict[str, Any]:
@@ -53,19 +55,55 @@ def _fixture_url(source: str) -> str:
     raise ValueError(f"No sample article URL in {path}")
 
 
-async def _vneconomy_url(client: ConfiguredHtmlNewsClient, config: dict[str, Any]) -> str:
-    category = config["discovery"]["archive_categories"][0]
-    response = await client._get(str(category["first_page"]))
-    urls = client._archive_urls(
-        __import__("bs4").BeautifulSoup(response.content, "lxml"),
-        str(response.url),
+async def _baomoi_url(client: BaoMoiClient, config: dict[str, Any]) -> str:
+    sitemap_index_url = str(config["discovery"]["html_backfill"]["sitemap_index_url"])
+    index_response = await client._get(sitemap_index_url)
+    index_root = ET.fromstring(index_response.content)
+    date_key = BAOMOI_TEST_DATE.replace("-", "")
+    daily_sitemap = next(
+        (
+            node.text.strip()
+            for node in index_root.iter()
+            if node.tag.rsplit("}", 1)[-1] == "loc"
+            and node.text
+            and date_key in node.text
+        ),
+        None,
     )
-    for url in urls:
-        if url.rstrip("/").endswith("/chung-khoan.htm"):
+    if not daily_sitemap:
+        raise ValueError(f"No Báo Mới sitemap partition for {BAOMOI_TEST_DATE}")
+
+    daily_response = await client._get(daily_sitemap)
+    daily_root = ET.fromstring(daily_response.content)
+    finance_slug_terms = (
+        "chung-khoan",
+        "co-phieu",
+        "vn-index",
+        "ngan-hang",
+        "lai-suat",
+        "loi-nhuan",
+        "co-tuc",
+        "bao-cao-tai-chinh",
+        "thi-truong-chung-khoan",
+    )
+    for entry in daily_root.iter():
+        if entry.tag.rsplit("}", 1)[-1] != "url":
             continue
-        if url.startswith("https://vneconomy.vn/"):
-            return urljoin(str(response.url), url)
-    raise ValueError("No VnEconomy article URL found in the HTML category page")
+        article_url = next(
+            (
+                child.text.strip()
+                for child in entry
+                if child.tag.rsplit("}", 1)[-1] == "loc" and child.text
+            ),
+            None,
+        )
+        if article_url and article_url.endswith(".epi") and any(
+            term in article_url.casefold() for term in finance_slug_terms
+        ):
+            return article_url
+    raise ValueError(
+        f"No clearly financial Báo Mới article URL in {BAOMOI_TEST_DATE} sitemap"
+    )
 
 
 async def _test_source(source: str) -> dict[str, Any]:
@@ -74,9 +112,9 @@ async def _test_source(source: str) -> dict[str, Any]:
         raise RuntimeError(f"{source} is not enabled by the configured access policy")
     if config.get("article", {}).get("full_text_required") is not True:
         raise RuntimeError(f"{source} does not require full article text")
-    client = ConfiguredHtmlNewsClient(config)
+    client = BaoMoiClient(config) if source == "baomoi" else ConfiguredHtmlNewsClient(config)
     try:
-        url = await _vneconomy_url(client, config) if source == "vneconomy" else _fixture_url(source)
+        url = await _baomoi_url(client, config) if source == "baomoi" else _fixture_url(source)
         article = await client.fetch_article(url, category="one_article_full_text_test")
         body = "\n".join(block.text or "" for block in article.blocks).strip()
         body_words = len(re.findall(r"\S+", body))

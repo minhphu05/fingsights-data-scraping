@@ -38,7 +38,7 @@ CONFIGURED_NEWS_SOURCES = {
     "vnexpress": ("vnexpress_news", "15 3 * * *"),
     "vneconomy": ("vneconomy_news", "0 4 * * *"),
 }
-FINANCIAL_NEWS_SOURCES = ("cafef", "thanhnien", "tuoitre", "vnexpress", "vneconomy")
+FINANCIAL_NEWS_SOURCES = ("cafef", "thanhnien", "tuoitre", "vnexpress", "baomoi")
 HTML_BACKFILL_SOURCES = FINANCIAL_NEWS_SOURCES
 OFFICIAL_DISCLOSURE_SOURCES = {
     "hose": ("hose_disclosures", "0 7,15 * * 1-5", "hose_disclosures_job", "512Mi"),
@@ -390,7 +390,7 @@ def collect_baomoi_news(context):
 
 
 @op(config_schema={
-    "source_key": Field(String, is_required=True, description="Configured source key: thanhnien, tuoitre, vnexpress, or vneconomy"),
+    "source_key": Field(String, is_required=True, description="Configured source key: thanhnien, tuoitre, vnexpress, vneconomy, or baomoi"),
     "start_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
     "end_date": Field(String, is_required=False, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh (defaults to today)"),
     "storage_mode": Field(String, is_required=False, default_value="link_only", description="link_only (no OCI binary upload) or full_media"),

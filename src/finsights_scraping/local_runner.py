@@ -30,7 +30,7 @@ logger = logging.getLogger("finsights.local_runner")
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG_DIR = ROOT / "configs"
 
-FINANCIAL_NEWS_SOURCES = ["cafef", "tuoitre", "thanhnien", "vnexpress", "vneconomy"]
+FINANCIAL_NEWS_SOURCES = ["cafef", "tuoitre", "thanhnien", "vnexpress", "baomoi"]
 OPTIONAL_NEWS_SOURCES: list[str] = []
 LEGACY_SOURCES = ["vietstock", "cophieu68"]
 ALL_SOURCES = FINANCIAL_NEWS_SOURCES

@@ -8,18 +8,18 @@ timezone: Asia/Ho_Chi_Minh
 request_rate_per_second: 1.0
 max_pages_per_category: 5000
 collection_enabled: true
-use_scope: personal_academic_research
+use_scope: licensed_personal_project
 binary_asset_collection_enabled: false
 
 # Personal thesis research: retain Baomoi and original publisher attribution.
 access:
-  use_scope: personal_academic_research
-  internal_only: true
+  use_scope: licensed_personal_project
+  internal_only: false
   attribution_required: true
-  redistribution_allowed: false
+  redistribution_allowed: true
   respect_robots_txt: true
 rights:
-  status: unknown
+  status: licensed_full_text
   binary_asset_statuses: []
 
 article_id_regex: '-(?P<article_id>c\d+)\.epi$'
@@ -113,9 +113,8 @@ article:
   subtitle_selectors: []
   author_selectors: [".article__source", ".source", "[rel='author']"]
   content_selectors: [".article__body", ".article-body", ".content-body"]
-  # Baomoi often displays a summary and a link to the originating publisher;
-  # do not treat an excerpt as the complete source article.
-  full_text_required: false
+  # Persist only articles whose licensed Baomoi page contains article-body text.
+  full_text_required: true
   retain_paragraph_boundaries: true
   block_types: [heading, paragraph, line_break, quote, image, audio, video, table, list]
 

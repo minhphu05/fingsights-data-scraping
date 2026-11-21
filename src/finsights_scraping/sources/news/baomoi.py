@@ -530,6 +530,10 @@ class BaoMoiClient(CafeFClient):
             author = self._meta(soup, "name", "author") or self._first_text(soup, [".article__source", ".source"])
 
         if not blocks and summary:
+            if self.config.get("article", {}).get("full_text_required", False):
+                raise UnusableArticleError(
+                    f"Baomoi article has summary only but full text is required: {clean_url}"
+                )
             blocks = [ContentBlock(order=0, block_type="paragraph", text=summary, metadata={"fallback": "summary_only"})]
         if not blocks:
             root = None
