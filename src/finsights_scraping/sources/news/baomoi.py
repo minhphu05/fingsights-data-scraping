@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import copy
 from datetime import date, datetime, timedelta
+import hashlib
 import ipaddress
 import json
 import logging
@@ -42,30 +43,78 @@ class BaoMoiClient(CafeFClient):
         ))
         self.base_url = str(config.get("base_url", "https://baomoi.com")).rstrip("/")
         self._robots_by_origin: dict[str, RobotFileParser | None] = {}
-        self._origin_request_lock = asyncio.Lock()
+        self._origin_request_locks: dict[str, asyncio.Lock] = {}
+        self._origin_last_request: dict[str, float] = {}
+        self._origin_intervals: dict[str, float] = {}
 
     async def _get(self, url: str) -> httpx.Response:
-        if self.config.get("access", {}).get("respect_robots_txt", True):
-            # CafeFClient keeps one robots parser. Baomoi links to many publishers,
-            # so serialize this client's requests while switching the parser by origin.
-            async with self._origin_request_lock:
-                await self._load_robots(url)
-                if self._robots_parser and not self._robots_parser.can_fetch("FinsightsDataResearch", url):
-                    raise SourceAuthorizationError(f"robots.txt disallows this URL for {self.source_code}: {url}")
-                return await super()._get(url)
-        return await super()._get(url)
-
-    async def _load_robots(self, url: str) -> None:
         parsed = urlparse(url)
-        origin = f"{parsed.scheme}://{parsed.netloc.lower()}"
-        if origin in self._robots_by_origin:
-            self._robots_parser = self._robots_by_origin[origin]
-            self._robots_loaded = True
-            return
+        if parsed.scheme.lower() != "https" or not parsed.hostname or parsed.username or parsed.password:
+            raise SourceAuthorizationError(f"Refusing unsafe URL for {self.source_code}")
+        host = parsed.hostname.lower()
+        port = parsed.port
+        origin = f"https://{host}" + (f":{port}" if port and port != 443 else "")
+        origin_lock = self._origin_request_locks.setdefault(origin, asyncio.Lock())
 
-        robots_url = urlunparse((parsed.scheme, parsed.netloc, "/robots.txt", "", "", ""))
+        async with origin_lock:
+            base_interval = (1.0 / self.rate) if self.rate > 0 else 0.0
+            if self.config.get("access", {}).get("respect_robots_txt", True):
+                if origin not in self._robots_by_origin:
+                    await self._load_origin_robots(parsed, origin)
+                parser = self._robots_by_origin[origin]
+                if parser and not parser.can_fetch("FinsightsDataResearch", url):
+                    raise SourceAuthorizationError(
+                        f"robots.txt disallows this URL for {self.source_code}: {url}"
+                    )
+
+            interval = max(base_interval, self._origin_intervals.get(origin, 0.0))
+            max_retries = 2
+            for attempt in range(max_retries + 1):
+                loop = asyncio.get_running_loop()
+                elapsed = loop.time() - self._origin_last_request.get(origin, 0.0)
+                if elapsed < interval:
+                    await asyncio.sleep(interval - elapsed)
+                requested_at = datetime.utcnow()
+                started = loop.time()
+                self._origin_last_request[origin] = started
+                response: httpx.Response | None = None
+                try:
+                    response = await self._client.get(url)
+                    response.raise_for_status()
+                    self.fetch_attempts.append({
+                        "url": url,
+                        "requested_at": requested_at,
+                        "completed_at": datetime.utcnow(),
+                        "http_status": response.status_code,
+                        "content_type": response.headers.get("content-type"),
+                        "size_bytes": len(response.content),
+                        "response_sha256": hashlib.sha256(response.content).hexdigest(),
+                        "duration_ms": int((loop.time() - started) * 1000),
+                        "outcome": "SUCCESS",
+                    })
+                    return response
+                except Exception as exc:
+                    error_response = getattr(exc, "response", None) or response
+                    self.fetch_attempts.append({
+                        "url": url,
+                        "requested_at": requested_at,
+                        "completed_at": datetime.utcnow(),
+                        "http_status": error_response.status_code if error_response else None,
+                        "content_type": error_response.headers.get("content-type") if error_response else None,
+                        "size_bytes": len(error_response.content) if error_response else None,
+                        "duration_ms": int((loop.time() - started) * 1000),
+                        "outcome": "FAILED",
+                        "error": f"{type(exc).__name__}: {str(exc)[:500]}",
+                    })
+                    if attempt >= max_retries:
+                        raise
+
+    async def _load_origin_robots(self, parsed_url, origin: str) -> None:
+        """Cache and enforce robots policy and delay independently for each publisher host."""
+        robots_url = urlunparse((parsed_url.scheme, parsed_url.netloc, "/robots.txt", "", "", ""))
         requested_at = datetime.utcnow()
         response = await self._client.get(robots_url)
+        self._origin_last_request[origin] = asyncio.get_running_loop().time()
         self.fetch_attempts.append({
             "url": robots_url,
             "resource_kind": "robots_txt",
@@ -78,8 +127,7 @@ class BaoMoiClient(CafeFClient):
         })
         if response.status_code == 404:
             self._robots_by_origin[origin] = None
-            self._robots_parser = None
-            self._robots_loaded = True
+            self._origin_intervals[origin] = (1.0 / self.rate) if self.rate > 0 else 0.0
             return
         if response.status_code != 200:
             raise SourceAuthorizationError(
@@ -89,11 +137,12 @@ class BaoMoiClient(CafeFClient):
         parser = RobotFileParser(robots_url)
         parser.parse(response.text.splitlines())
         self._robots_by_origin[origin] = parser
-        self._robots_parser = parser
-        self._robots_loaded = True
         crawl_delay = parser.crawl_delay("FinsightsDataResearch") or parser.crawl_delay("*")
-        if crawl_delay and crawl_delay > 0:
-            self.rate = min(self.rate, 1.0 / float(crawl_delay)) if self.rate > 0 else 1.0 / float(crawl_delay)
+        base_interval = (1.0 / self.rate) if self.rate > 0 else 0.0
+        self._origin_intervals[origin] = max(
+            base_interval,
+            float(crawl_delay) if crawl_delay and crawl_delay > 0 else 0.0,
+        )
 
     async def _find_start_page(self, category: dict[str, Any], end_date: date) -> int:
         """Binary search page index when target date is significantly in the past."""
