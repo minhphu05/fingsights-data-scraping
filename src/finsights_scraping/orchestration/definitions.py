@@ -933,9 +933,12 @@ def _build_configured_news_job(source_key: str):
 
 
 def _build_news_backfill_job(source_key: str):
+    # Baomoi needs more memory than the publisher archives because its daily
+    # sitemap backfill retains URL and fetch-attempt metadata across the run.
+    memory_limit = "2Gi" if source_key == "baomoi" else "1Gi"
     @job(
         name=f"{source_key}_news_backfill_job",
-        tags=_pod_tags(f"{source_key}-backfill", "1Gi"),
+        tags=_pod_tags(f"{source_key}-backfill", memory_limit),
         description=(
             f"Historical HTML financial-news backfill for {source_key}; "
             "date-batched writes to Node 2 in an isolated K3s run pod."
