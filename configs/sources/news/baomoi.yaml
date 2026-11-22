@@ -114,8 +114,11 @@ article:
   subtitle_selectors: []
   author_selectors: [".article__source", ".source", "[rel='author']"]
   content_selectors: [".article__body", ".article-body", ".content-body"]
-  # Persist only articles whose licensed Baomoi page contains article-body text.
+  # Persist full bodies from Baomoi or its permitted original publisher URL.
   full_text_required: true
+  # A short Baomoi teaser is not a full article; follow the permitted source URL
+  # and keep only bodies that are materially longer than the teaser.
+  full_text_min_characters: 600
   retain_paragraph_boundaries: true
   block_types: [heading, paragraph, line_break, quote, image, audio, video, table, list]
 

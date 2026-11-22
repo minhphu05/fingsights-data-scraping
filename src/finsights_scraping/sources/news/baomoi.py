@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 from datetime import date, datetime, timedelta
+import ipaddress
 import json
 import logging
 import os
@@ -9,7 +11,8 @@ import re
 import unicodedata
 import xml.etree.ElementTree as ET
 from typing import Any
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlunparse
+from urllib.robotparser import RobotFileParser
 from zoneinfo import ZoneInfo
 
 from bs4 import BeautifulSoup
@@ -23,6 +26,10 @@ from .configured_html import SourceAuthorizationError, source_collection_enabled
 logger = logging.getLogger("finsights.sources.news.baomoi")
 
 
+class SummaryOnlyArticleError(UnusableArticleError):
+    """The aggregator and its permitted original URL both lacked a full body."""
+
+
 class BaoMoiClient(CafeFClient):
     """High-throughput client for Baomoi finance news with SSR Next.js hydration extraction."""
 
@@ -34,13 +41,59 @@ class BaoMoiClient(CafeFClient):
             config.get("max_pages_per_category", config.get("discovery", {}).get("max_pages", 1000))
         ))
         self.base_url = str(config.get("base_url", "https://baomoi.com")).rstrip("/")
+        self._robots_by_origin: dict[str, RobotFileParser | None] = {}
+        self._origin_request_lock = asyncio.Lock()
 
     async def _get(self, url: str) -> httpx.Response:
         if self.config.get("access", {}).get("respect_robots_txt", True):
-            await self._load_robots(url)
-            if self._robots_parser and not self._robots_parser.can_fetch("FinsightsDataResearch", url):
-                raise SourceAuthorizationError(f"robots.txt disallows this URL for {self.source_code}: {url}")
+            # CafeFClient keeps one robots parser. Baomoi links to many publishers,
+            # so serialize this client's requests while switching the parser by origin.
+            async with self._origin_request_lock:
+                await self._load_robots(url)
+                if self._robots_parser and not self._robots_parser.can_fetch("FinsightsDataResearch", url):
+                    raise SourceAuthorizationError(f"robots.txt disallows this URL for {self.source_code}: {url}")
+                return await super()._get(url)
         return await super()._get(url)
+
+    async def _load_robots(self, url: str) -> None:
+        parsed = urlparse(url)
+        origin = f"{parsed.scheme}://{parsed.netloc.lower()}"
+        if origin in self._robots_by_origin:
+            self._robots_parser = self._robots_by_origin[origin]
+            self._robots_loaded = True
+            return
+
+        robots_url = urlunparse((parsed.scheme, parsed.netloc, "/robots.txt", "", "", ""))
+        requested_at = datetime.utcnow()
+        response = await self._client.get(robots_url)
+        self.fetch_attempts.append({
+            "url": robots_url,
+            "resource_kind": "robots_txt",
+            "requested_at": requested_at,
+            "completed_at": datetime.utcnow(),
+            "http_status": response.status_code,
+            "content_type": response.headers.get("content-type"),
+            "size_bytes": len(response.content),
+            "outcome": "SUCCESS" if response.status_code in {200, 404} else "FAILED",
+        })
+        if response.status_code == 404:
+            self._robots_by_origin[origin] = None
+            self._robots_parser = None
+            self._robots_loaded = True
+            return
+        if response.status_code != 200:
+            raise SourceAuthorizationError(
+                f"Cannot read robots.txt for {self.source_code}; refusing to collect pages."
+            )
+
+        parser = RobotFileParser(robots_url)
+        parser.parse(response.text.splitlines())
+        self._robots_by_origin[origin] = parser
+        self._robots_parser = parser
+        self._robots_loaded = True
+        crawl_delay = parser.crawl_delay("FinsightsDataResearch") or parser.crawl_delay("*")
+        if crawl_delay and crawl_delay > 0:
+            self.rate = min(self.rate, 1.0 / float(crawl_delay)) if self.rate > 0 else 1.0 / float(crawl_delay)
 
     async def _find_start_page(self, category: dict[str, Any], end_date: date) -> int:
         """Binary search page index when target date is significantly in the past."""
@@ -159,6 +212,7 @@ class BaoMoiClient(CafeFClient):
             "article_urls_discovered": 0,
             "article_pages_fetched": 0,
             "article_pages_failed": 0,
+            "article_pages_skipped_summary_only": 0,
             "financial_articles": 0,
             "coverage_proven": True,
             "requested_start_date": window.start_date.isoformat(),
@@ -215,13 +269,17 @@ class BaoMoiClient(CafeFClient):
                                     ZoneInfo(self.timezone_name)
                                 ).date()
                                 article.metadata["collection_method"] = stats["method"]
-                                article.metadata["content_scope"] = (
+                                article.metadata.setdefault(
+                                    "content_scope",
                                     "aggregate_excerpt"
                                     if any(block.metadata.get("fallback") == "summary_only" for block in article.blocks)
-                                    else "baomoi_aggregator_content"
+                                    else "baomoi_aggregator_full_text",
                                 )
                                 day_buffer.setdefault(article_day, []).append(article)
                                 stats["financial_articles"] += 1
+                    except SummaryOnlyArticleError:
+                        stats["article_pages_skipped_summary_only"] += 1
+                        continue
                     except SourceAuthorizationError:
                         raise
                     except Exception:
@@ -249,7 +307,7 @@ class BaoMoiClient(CafeFClient):
         _flush_days(min_date_cutoff=None)
         stats["article_failure_ratio"] = round(
             stats["article_pages_failed"]
-            / max(1, stats["article_pages_failed"] + stats["article_pages_fetched"]),
+            / max(1, stats["article_pages_failed"] + stats["article_pages_fetched"] + stats["article_pages_skipped_summary_only"]),
             4,
         )
         max_failure_ratio = float(self.config.get("discovery", {}).get("max_article_failure_ratio", 0.25))
@@ -332,6 +390,7 @@ class BaoMoiClient(CafeFClient):
             "candidate_article_urls": 0,
             "article_pages_fetched": 0,
             "article_pages_failed": 0,
+            "article_pages_skipped_summary_only": 0,
             "financial_articles": 0,
             "coverage_proven": True,
         }
@@ -421,6 +480,9 @@ class BaoMoiClient(CafeFClient):
                 candidates, fetched_candidates
             ):
                 if error is not None:
+                    if isinstance(error, SummaryOnlyArticleError):
+                        stats["article_pages_skipped_summary_only"] += 1
+                        continue
                     stats["article_pages_failed"] += 1
                     continue
                 if article is None:
@@ -434,10 +496,11 @@ class BaoMoiClient(CafeFClient):
                             ZoneInfo(self.timezone_name)
                         ).date()
                         article.metadata["collection_method"] = stats["method"]
-                        article.metadata["content_scope"] = (
+                        article.metadata.setdefault(
+                            "content_scope",
                             "aggregate_excerpt"
                             if any(block.metadata.get("fallback") == "summary_only" for block in article.blocks)
-                            else "baomoi_aggregator_content"
+                            else "baomoi_aggregator_full_text",
                         )
                         day_buffer.setdefault(article_day, []).append(article)
                         stats["financial_articles"] += 1
@@ -447,7 +510,7 @@ class BaoMoiClient(CafeFClient):
         flush_days()
         stats["article_failure_ratio"] = round(
             stats["article_pages_failed"]
-            / max(1, stats["article_pages_failed"] + stats["article_pages_fetched"]),
+            / max(1, stats["article_pages_failed"] + stats["article_pages_fetched"] + stats["article_pages_skipped_summary_only"]),
             4,
         )
         max_failure_ratio = float(backfill.get(
@@ -474,6 +537,125 @@ class BaoMoiClient(CafeFClient):
         slug = path.rsplit("/", 1)[-1]
         bounded_slug = f"-{slug}-"
         return any(f"-{term}-" in bounded_slug for term in terms)
+
+    @staticmethod
+    def _body_characters(blocks: list[ContentBlock]) -> int:
+        text_parts = [block.text or "" for block in blocks]
+        for block in blocks:
+            if block.table:
+                text_parts.extend(
+                    str(cell)
+                    for row in block.table.get("rows", [])
+                    for cell in row
+                )
+        return len(" ".join(text_parts).strip())
+
+    def _has_full_text(self, blocks: list[ContentBlock], summary: str | None) -> bool:
+        minimum = int(self.config.get("article", {}).get("full_text_min_characters", 600))
+        summary_length = len((summary or "").strip())
+        required = max(minimum, int(summary_length * 1.3))
+        return self._body_characters(blocks) >= required
+
+    def _safe_original_source_url(self, value: str | None) -> str | None:
+        if not value:
+            return None
+        url = urljoin(self.base_url + "/", value.strip())
+        parsed = urlparse(url)
+        host = (parsed.hostname or "").casefold().rstrip(".")
+        if parsed.scheme != "https" or not host or parsed.username or parsed.password:
+            return None
+        try:
+            port = parsed.port
+        except ValueError:
+            return None
+        if port not in (None, 443) or host == "baomoi.com" or host.endswith(".baomoi.com"):
+            return None
+        if host in {"localhost", "localhost.localdomain"} or host.endswith((".local", ".internal")):
+            return None
+        try:
+            if not ipaddress.ip_address(host).is_global:
+                return None
+        except ValueError:
+            pass
+        return url
+
+    def _original_html_blocks(self, soup: BeautifulSoup) -> list[ContentBlock]:
+        def article_bodies(value: Any):
+            if isinstance(value, dict):
+                body = value.get("articleBody")
+                if isinstance(body, str) and body.strip():
+                    yield body
+                for child in value.values():
+                    yield from article_bodies(child)
+            elif isinstance(value, list):
+                for child in value:
+                    yield from article_bodies(child)
+
+        min_chars = int(self.config.get("article", {}).get("full_text_min_characters", 600))
+        jsonld_candidates: list[str] = []
+        for script in soup.select('script[type="application/ld+json"]'):
+            try:
+                parsed = json.loads(script.string or script.get_text())
+            except (json.JSONDecodeError, TypeError):
+                continue
+            jsonld_candidates.extend(article_bodies(parsed))
+        for raw_body in sorted(jsonld_candidates, key=len, reverse=True):
+            body_soup = BeautifulSoup(raw_body, "lxml")
+            paragraphs = [
+                re.sub(r"\s+", " ", node.get_text(" ", strip=True)).strip()
+                for node in body_soup.find_all("p")
+            ]
+            paragraphs = [paragraph for paragraph in paragraphs if paragraph]
+            if not paragraphs:
+                text = re.sub(r"\s+", " ", body_soup.get_text(" ", strip=True)).strip()
+                paragraphs = [text] if text else []
+            if sum(map(len, paragraphs)) >= min_chars:
+                return [
+                    ContentBlock(order=index, block_type="paragraph", text=paragraph)
+                    for index, paragraph in enumerate(paragraphs)
+                ]
+
+        selectors = (
+            '[itemprop="articleBody"]', ".article-content", ".article__body",
+            ".article-body", ".content-detail", ".detail-content", ".entry-content",
+            ".post-content", ".article-detail", ".news-content", ".article-main",
+            "main", "article",
+        )
+        candidates: dict[int, tuple[int, Any]] = {}
+        for selector in selectors:
+            try:
+                nodes = soup.select(selector)
+            except Exception:
+                continue
+            for node in nodes:
+                candidate = copy.deepcopy(node)
+                for junk in candidate.select(
+                    "script,style,noscript,nav,aside,footer,header,form,button,iframe,"
+                    ".related,.related-news,.recommend,.recommend-news,.social,.share,"
+                    ".comment,.breadcrumb,.advertisement,.ads,[aria-hidden='true']"
+                ):
+                    junk.decompose()
+                visible_length = len(candidate.get_text(" ", strip=True))
+                if visible_length >= min_chars:
+                    candidates[id(node)] = (visible_length, candidate)
+        if not candidates:
+            return []
+        root = max(candidates.values(), key=lambda item: item[0])[1]
+        return self._content_blocks(root)
+
+    async def _fetch_original_source_blocks(self, original_source_url: str | None) -> list[ContentBlock]:
+        safe_url = self._safe_original_source_url(original_source_url)
+        if not safe_url:
+            return []
+        try:
+            response = await self._get(safe_url)
+        except SourceAuthorizationError:
+            logger.info("Original source blocked by robots.txt; retaining no excerpt-only copy")
+            return []
+        except Exception as exc:
+            logger.info("Original source fetch failed (%s)", type(exc).__name__)
+            return []
+        return self._original_html_blocks(BeautifulSoup(response.content, "lxml"))
 
     async def fetch_article(
         self,
@@ -555,11 +737,8 @@ class BaoMoiClient(CafeFClient):
         if not author:
             author = self._meta(soup, "name", "author") or self._first_text(soup, [".article__source", ".source"])
 
-        if not blocks and summary:
-            if self.config.get("article", {}).get("full_text_required", False):
-                raise UnusableArticleError(
-                    f"Baomoi article has summary only but full text is required: {clean_url}"
-                )
+        full_text_required = self.config.get("article", {}).get("full_text_required", False)
+        if not blocks and summary and not full_text_required:
             blocks = [ContentBlock(order=0, block_type="paragraph", text=summary, metadata={"fallback": "summary_only"})]
         if not blocks:
             root = None
@@ -569,18 +748,16 @@ class BaoMoiClient(CafeFClient):
                     break
             if root:
                 blocks = self._content_blocks(root)
-        has_article_text = any((block.text or "").strip() for block in blocks)
-        has_table_text = any(
-            str(cell).strip()
-            for block in blocks
-            if block.table
-            for row in block.table.get("rows", [])
-            for cell in row
-        )
-        if self.config.get("article", {}).get("full_text_required", False) and not (
-            has_article_text or has_table_text
-        ):
-            raise UnusableArticleError(f"Baomoi article body has no text: {clean_url}")
+        content_scope = "baomoi_aggregator_full_text"
+        if full_text_required and not self._has_full_text(blocks, summary):
+            original_blocks = await self._fetch_original_source_blocks(original_source_url)
+            if self._has_full_text(original_blocks, summary):
+                blocks = original_blocks
+                content_scope = "baomoi_original_source_full_text"
+            else:
+                raise SummaryOnlyArticleError(
+                    f"No full article body in Baomoi or its original source: {clean_url}"
+                )
         if not blocks:
             raise UnusableArticleError(f"Baomoi article body is missing: {clean_url}")
 
@@ -601,6 +778,7 @@ class BaoMoiClient(CafeFClient):
             "download_binary_assets_only_if_rights_status_in": self.config.get("rights", {}).get("binary_asset_statuses", []),
             "binary_asset_collection_enabled": bool(self.config.get("binary_asset_collection_enabled", True)),
             "original_source_url": original_source_url,
+            "content_scope": content_scope,
             "content_fingerprint_sha256": self._fingerprint(blocks),
         }
 
