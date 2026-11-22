@@ -90,6 +90,15 @@ SOURCE_CONFIGS: Dict[str, Dict[str, Any]] = {
         "op_name": "collect_financial_news_batch",
         "config_builder": lambda start, end, mode: {"start_date": start, "end_date": end, "storage_mode": mode},
     },
+    "quality_backfill": {
+        "job_name": "news_quality_backfill_job",
+        "op_name": "classify_news_quality_backfill",
+        "config_builder": lambda start, end, mode: {
+            "start_date": start,
+            "end_date": end,
+            "source_keys": "cafef,thanhnien,tuoitre,vnexpress,baomoi",
+        },
+    },
     "hose": {
         "job_name": "hose_disclosures_job",
         "op_name": "collect_official_disclosures",

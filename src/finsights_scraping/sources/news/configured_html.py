@@ -454,6 +454,8 @@ class ConfiguredHtmlNewsClient(CafeFClient):
         return None
 
     def is_financial(self, article: Article) -> bool:
+        if self.config.get("persist_candidates_for_quality_gate") is True:
+            return True
         configured = self.config.get("financial_relevance", {})
         terms = [str(term).casefold() for term in configured.get("terms", [])]
         text = " ".join([article.title, article.summary or "", *(block.text or "" for block in article.blocks)]).casefold()

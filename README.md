@@ -1,6 +1,6 @@
 # Finsights data collection
 
-Python source adapters and Dagster jobs for financial news, market data, and official issuer disclosures. The Financial News batch uses HTML category pages or publisher sitemaps to discover articles, then fetches full article pages with BeautifulSoup. It does not use RSS. Five separate `*_news_backfill_job` jobs collect historical data; each K3s run executes in an isolated pod.
+Python source adapters and Dagster jobs for financial news, market data, and official issuer disclosures. Financial News uses HTML category pages or publisher sitemaps to discover articles, then fetches full article pages with BeautifulSoup. It does not use RSS. Five source backfill jobs and a separate `news_quality_backfill_job` run in isolated K3s pods.
 
 ## Data ownership
 
@@ -63,9 +63,9 @@ Use `--source all` for a serial local smoke run. The Dagster jobs are `hose_disc
 
 Manual news jobs accept inclusive `start_date` and `end_date` values in `YYYY-MM-DD` format, interpreted in `Asia/Ho_Chi_Minh`. Locally, use `scripts/run_local.py --source all --start-date ... --end-date ...`; output is grouped under a date-window directory.
 
-The active five-source batch consists of the four publishers listed in the sheet—CafeF, Tuổi Trẻ, Thanh Niên, and VnExpress—plus VnEconomy as the requested additional publisher. Báo Mới and Vietstock are separate legacy adapters and are not included in this full-text batch. All five active publishers are configured for licensed full-text retention, source attribution, and `robots.txt` checks. Their HTML adapters reject missing article bodies instead of silently substituting an excerpt.
+The five Financial News publishers are CafeF, Tuổi Trẻ, Thanh Niên, VnExpress, and Báo Mới. VnEconomy remains available as a manually run adapter but is outside this five-source collection. All five publishers are configured for licensed full-text retention, source attribution, and `robots.txt` checks. Their HTML adapters reject missing article bodies instead of silently substituting an excerpt.
 
-The backfill jobs discover dated pages from publisher HTML archives or XML sitemaps, fetch full article HTML, verify publication dates and financial relevance, and write publication-day batches. VnEconomy uses monthly article sitemaps; Tuổi Trẻ and Thanh Niên use five-day sitemap partitions; CafeF and VnExpress use paginated HTML archives. Each article write is idempotent by publisher ID and canonical URL. Binary media downloads remain disabled.
+The backfill jobs discover dated pages from publisher HTML archives or XML sitemaps, fetch full article HTML, verify publication dates, and write publication-day batches. Tuổi Trẻ and Thanh Niên use five-day sitemap partitions; Báo Mới uses daily sitemap partitions; CafeF and VnExpress use paginated HTML archives. Each article write is idempotent by publisher ID and canonical URL. Binary media downloads remain disabled. A database quality gate labels every persisted article `financial`, `non_financial`, or `needs_review`, records evidence and ruleset version, and keeps excluded/review articles out of the financial feed.
 
 Run a small publisher backfill locally before submitting a larger range to Dagster:
 
@@ -73,7 +73,18 @@ Run a small publisher backfill locally before submitting a larger range to Dagst
 python scripts/test_financial_news_full_text.py
 ```
 
-Dagster exposes `cafef_news_backfill_job`, `thanhnien_news_backfill_job`, `tuoitre_news_backfill_job`, `vnexpress_news_backfill_job`, and `vneconomy_news_backfill_job`. Submit all five through `scripts/submit_dagster_job.py --source all_backfill`, or submit an individual `*_backfill` source. The one-article smoke test fetches five pages and does not write to MySQL or local data files.
+Dagster exposes `cafef_news_backfill_job`, `thanhnien_news_backfill_job`, `tuoitre_news_backfill_job`, and `vnexpress_news_backfill_job`, plus `baomoi_news_backfill_job`. Submit the five source jobs through `scripts/submit_dagster_job.py --source all_backfill`, or submit one `*_backfill` source. To classify existing rows without downloading articles again, run `news_quality_backfill_job` with this configuration:
+
+```yaml
+ops:
+  classify_news_quality_backfill:
+    config:
+      start_date: "2026-01-01"
+      end_date: "2026-11-23"
+      source_keys: "cafef,thanhnien,tuoitre,vnexpress,baomoi"
+```
+
+The job writes its classification and evidence to `finsights_news.news_article_quality` and updates `news_articles.article_status`; articles outside finance remain available in the separate non-financial/review feed.
 
 Set `collection_enabled: false` to pause a source. Licensed sources use `licensed_personal_project`, `internal_only: false`, and `redistribution_allowed: true`; the collector still applies attribution and robots.txt checks. The VnEconomy full-text backfill uses its published monthly sitemap partitions.
 
@@ -113,14 +124,15 @@ Every object has a UUID `asset_uid`; SHA-256 and size support content deduplicat
 
 | Job | Default schedule | Behavior |
 | --- | --- | --- |
-| `cafef_news_job` | Daily at 02:15 Vietnam time | Collect the previous calendar day after it has elapsed |
+| `cafef_news_job` | Daily at 02:00 Vietnam time, starting 2026-11-24 | Collect the previous calendar day after it has elapsed |
 | `vietstock_market_job` | Weekdays at 16:30 Vietnam time | EOD snapshot after the session; Dagster skips it until the licensed endpoint/token are configured |
-| `thanhnien_news_job` | Daily at 02:30 Vietnam time | Collect the previous calendar day |
-| `tuoitre_news_job` | Daily at 02:45 Vietnam time | Collect the previous calendar day |
-| `vnexpress_news_job` | Daily at 03:15 Vietnam time | Collect the previous calendar day |
-| `vneconomy_news_job` | Daily at 04:00 Vietnam time | Collect the previous calendar day |
-| `financial_news_job` | Manual batch | Run full HTML collection for the four publishers listed in the sheet plus VnEconomy |
+| `thanhnien_news_job` | Daily at 02:00 Vietnam time, starting 2026-11-24 | Collect the previous calendar day |
+| `tuoitre_news_job` | Daily at 02:00 Vietnam time, starting 2026-11-24 | Collect the previous calendar day |
+| `vnexpress_news_job` | Daily at 02:00 Vietnam time, starting 2026-11-24 | Collect the previous calendar day |
+| `baomoi_news_job` | Daily at 02:00 Vietnam time, starting 2026-11-24 | Collect the previous calendar day |
+| `financial_news_job` | Manual batch | Run full HTML collection for the five Financial News publishers |
 | Five `*_news_backfill_job` jobs | Manual backfill | Fetch dated HTML articles and persist full-text day batches to Node 2 |
+| `news_quality_backfill_job` | Manual backfill | Reclassify existing articles for the selected date range |
 
 For stock/index metrics, start with one EOD snapshot per trading day, then a second reconciliation around 16:30–17:00 if the provider revises closing data. If intraday analysis becomes necessary, add 15-minute snapshots during market sessions after confirming the licensed rate and storage limits; there is no need to collect every stock every five minutes at the start.
 

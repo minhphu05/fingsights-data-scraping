@@ -7,6 +7,7 @@ attribution_name: Báo Thanh Niên
 timezone: Asia/Ho_Chi_Minh
 request_rate_per_second: 0.5
 collection_enabled: true
+persist_candidates_for_quality_gate: true
 use_scope: licensed_personal_project
 binary_asset_collection_enabled: false
 

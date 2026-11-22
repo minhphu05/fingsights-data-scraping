@@ -816,6 +816,7 @@ class BaoMoiClient(CafeFClient):
         metadata = {
             "source_id_regex": self.config.get("article_id_regex"),
             "publisher_name": self.config.get("name", "Báo Mới"),
+            "publisher_domain": self.config.get("publisher_domain"),
             "homepage_url": self.base_url,
             "attribution_name": self.config.get("attribution_name", "Báo Mới"),
             "attribution_required": self.config.get("access", {}).get("attribution_required") is True,

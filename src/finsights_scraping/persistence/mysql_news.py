@@ -21,6 +21,7 @@ from sqlalchemy.engine import Engine
 from ..domain.models import Article, ContentBlock
 from ..storage import OciS3Uploader, build_asset_key, new_asset_uid
 from .mysql_engine import create_tls_mysql_engine
+from .news_quality import FinancialNewsQualityGate
 from .security_matching import SecurityAliasMatcher
 
 logger = logging.getLogger("finsights.persistence.news")
@@ -159,18 +160,48 @@ class Node2NewsWriter:
             SecurityAliasMatcher(market_engine, fallback_to_file=False)
             if market_engine is not None else None
         )
+        self.quality_gate = FinancialNewsQualityGate()
+        self.last_quality_summary: dict[str, int] = {}
         self.uploader = OciS3Uploader()
 
     def persist_articles(self, articles: list[Article]) -> dict[str, str]:
         article_uids: dict[str, str] = {}
+        quality_summary: dict[str, int] = {}
         for article in articles:
             article_uids[article.source_article_id] = self._persist_article(article)
+            assessment = article.metadata.get("quality_assessment", {})
+            label = str(assessment.get("financial_relevance", "needs_review"))
+            quality_summary[label] = quality_summary.get(label, 0) + 1
+        self.last_quality_summary = quality_summary
+        if articles:
+            logger.info("News quality gate batch: %s", quality_summary)
         return article_uids
 
     @_retry_transient_mysql_errors
     def _persist_article(self, article: Article) -> str:
         canonical_hash = _sha256(article.canonical_url)
         plaintext = _plain_text(article.blocks)
+        table_text = [
+            " ".join(str(cell) for row in block.table.get("rows", []) for cell in row)
+            for block in article.blocks if block.table
+        ]
+        quality_assessment = self.quality_gate.assess(
+            title=article.title,
+            summary=article.summary,
+            body="\n".join([plaintext, *table_text]),
+            section=article.section,
+            canonical_url=article.canonical_url,
+            original_source_url=article.original_source_url,
+            publisher_domain=article.metadata.get("publisher_domain"),
+            matched_securities=article.metadata.get("matched_securities", []),
+        )
+        article.metadata["quality_assessment"] = quality_assessment.as_dict()
+        article.metadata["quality_ruleset_version"] = self.quality_gate.ruleset_version
+        article_status = {
+            "publish": "published",
+            "exclude": "quality_excluded",
+            "review": "quality_review",
+        }[quality_assessment.publication_decision]
         content_hash = _sha256(plaintext)
         content_fingerprint = str(article.metadata.get("content_fingerprint_sha256") or content_hash)
         article_uid = str(uuid.uuid4())
@@ -188,7 +219,7 @@ class Node2NewsWriter:
                 INSERT INTO news_publishers
                     (code, name, domain, homepage_url, language_code, attribution_name, content_rights, terms_url, is_active)
                 VALUES (:code, :name, :domain, :homepage_url, 'vi', :attribution_name, :content_rights, :terms_url, 1)
-                ON DUPLICATE KEY UPDATE name=VALUES(name), homepage_url=VALUES(homepage_url),
+                ON DUPLICATE KEY UPDATE name=VALUES(name), domain=VALUES(domain), homepage_url=VALUES(homepage_url),
                     attribution_name=VALUES(attribution_name), content_rights=VALUES(content_rights),
                     terms_url=VALUES(terms_url), is_active=1
             """), {
@@ -224,7 +255,7 @@ class Node2NewsWriter:
                         canonical_url_sha256=:url_hash, title=:title, subtitle=:subtitle, summary=:summary,
                         original_section=:section, published_at=:published_at, modified_at=:modified_at,
                         cover_image_url=:cover_url, cover_image_alt=:cover_alt, content_rights=:content_rights,
-                        metadata_json=:metadata,
+                        article_status=:article_status, metadata_json=:metadata,
                         updated_at=CURRENT_TIMESTAMP
                     WHERE id=:article_id
                 """), {
@@ -234,6 +265,7 @@ class Node2NewsWriter:
                     "published_at": published_at, "modified_at": modified_at,
                     "cover_url": article.cover_image_url, "cover_alt": article.cover_image_alt,
                     "content_rights": article.metadata.get("rights_status", "unknown"),
+                    "article_status": article_status,
                     "metadata": metadata_json, "article_id": database_article_id,
                 })
             else:
@@ -263,7 +295,7 @@ class Node2NewsWriter:
                         VALUES
                             (:article_uid, :publisher_id, :source_id, :url, :url_hash, :title, :subtitle, :summary,
                              :section, 'vi', :published_at, :modified_at, :cover_url, :cover_alt,
-                             'published', :content_rights, :metadata)
+                             :article_status, :content_rights, :metadata)
                     """), {
                         "article_uid": article_uid, "publisher_id": publisher_id,
                         "source_id": article.source_article_id, "url": article.canonical_url,
@@ -271,10 +303,49 @@ class Node2NewsWriter:
                         "summary": article.summary, "section": article.section,
                         "published_at": published_at, "modified_at": modified_at,
                         "cover_url": article.cover_image_url, "cover_alt": article.cover_image_alt,
+                        "article_status": article_status,
                         "content_rights": article.metadata.get("rights_status", "unknown"),
                         "metadata": metadata_json,
                     })
                     database_article_id = int(result.lastrowid)
+
+            connection.execute(text("""
+                UPDATE news_articles
+                SET article_status=:article_status, metadata_json=:metadata, updated_at=CURRENT_TIMESTAMP
+                WHERE id=:article_id
+            """), {
+                "article_status": article_status,
+                "metadata": metadata_json,
+                "article_id": database_article_id,
+            })
+
+            connection.execute(text("""
+                INSERT INTO news_article_quality
+                    (article_id, financial_relevance, topic_label, publication_decision,
+                     confidence, reason_code, evidence_json, ruleset_version, assessed_by,
+                     last_run_id, review_status, assessed_at, updated_at)
+                VALUES (:article_id, :relevance, :topic, :decision, :confidence, :reason,
+                        :evidence, :ruleset, 'scraper_quality_gate', :run_id, :review_status,
+                        CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3))
+                ON DUPLICATE KEY UPDATE financial_relevance=VALUES(financial_relevance),
+                    topic_label=VALUES(topic_label), publication_decision=VALUES(publication_decision),
+                    confidence=VALUES(confidence), reason_code=VALUES(reason_code),
+                    evidence_json=VALUES(evidence_json), ruleset_version=VALUES(ruleset_version),
+                    assessed_by=VALUES(assessed_by), last_run_id=VALUES(last_run_id),
+                    review_status=VALUES(review_status), assessed_at=CURRENT_TIMESTAMP(3),
+                    updated_at=CURRENT_TIMESTAMP(3)
+            """), {
+                "article_id": database_article_id,
+                "relevance": quality_assessment.financial_relevance,
+                "topic": quality_assessment.topic_label,
+                "decision": quality_assessment.publication_decision,
+                "confidence": quality_assessment.confidence,
+                "reason": quality_assessment.reason_code,
+                "evidence": json.dumps(quality_assessment.evidence, ensure_ascii=False),
+                "ruleset": self.quality_gate.ruleset_version,
+                "run_id": article.metadata.get("dagster_run_id"),
+                "review_status": "pending" if quality_assessment.publication_decision == "review" else "automatic",
+            })
 
             connection.execute(text("""
                 INSERT INTO news_article_publications
@@ -445,14 +516,17 @@ class Node2NewsWriter:
                     ON DUPLICATE KEY UPDATE author_order=VALUES(author_order)
                 """), {"article_id": database_article_id, "author_id": author_id})
 
-            if self.matcher:
+            if quality_assessment.publication_decision != "publish":
+                connection.execute(text("""
+                    UPDATE news_article_securities
+                    SET review_status='rejected'
+                    WHERE article_id=:article_id
+                """), {"article_id": database_article_id})
+
+            if self.matcher and quality_assessment.publication_decision == "publish":
                 if write_canonical_content:
                     connection.execute(text("DELETE FROM news_article_securities WHERE article_id=:id"),
                                        {"id": database_article_id})
-                table_text = [
-                    " ".join(str(cell) for row in block.table.get("rows", []) for cell in row)
-                    for block in article.blocks if block.table
-                ]
                 matching_text = "\n".join([
                     article.title, article.summary or "", *(b.text or "" for b in article.blocks), *table_text
                 ])

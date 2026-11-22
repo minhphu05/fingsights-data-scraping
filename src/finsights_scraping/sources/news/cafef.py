@@ -727,6 +727,8 @@ class CafeFClient:
         return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
     def is_financial(self, article: Article) -> bool:
+        if self.config.get("persist_candidates_for_quality_gate") is True:
+            return True
         text = " ".join([article.title, article.summary or "", *(b.text or "" for b in article.blocks)]).casefold()
         if any(term in text for term in FINANCIAL_TERMS):
             return True

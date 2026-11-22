@@ -8,6 +8,7 @@ timezone: Asia/Ho_Chi_Minh
 request_rate_per_second: 1.0
 max_pages_per_category: 5000
 collection_enabled: true
+persist_candidates_for_quality_gate: true
 use_scope: licensed_personal_project
 binary_asset_collection_enabled: false
 

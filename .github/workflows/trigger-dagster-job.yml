@@ -11,6 +11,7 @@ on:
         options:
           - all
           - financial_news
+          - quality_backfill
           - cafef
           - vietstock
           - cophieu68

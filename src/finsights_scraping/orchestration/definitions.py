@@ -14,6 +14,7 @@ from dagster import Definitions, Field, RunRequest, SkipReason, String, job, op,
 from ..domain.models import Article
 from ..domain.windows import DateWindow
 from ..persistence import Node2DisclosureWriter, Node2FundamentalsWriter, Node2MarketWriter, Node2NewsWriter, ScrapeAuditWriter
+from ..persistence.news_quality_backfill import NewsQualityBackfill
 from ..sources.disclosures import (
     InvestorRelationsClient,
     build_client as build_disclosure_client,
@@ -33,13 +34,15 @@ ROOT = Path(__file__).resolve().parents[3]
 CONFIG_DIR = ROOT / "configs"
 LOCAL_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
 CONFIGURED_NEWS_SOURCES = {
-    "thanhnien": ("thanhnien_news", "30 2 * * *"),
-    "tuoitre": ("tuoitre_news", "45 2 * * *"),
-    "vnexpress": ("vnexpress_news", "15 3 * * *"),
+    "thanhnien": ("thanhnien_news", "0 2 * * *"),
+    "tuoitre": ("tuoitre_news", "0 2 * * *"),
+    "vnexpress": ("vnexpress_news", "0 2 * * *"),
     "vneconomy": ("vneconomy_news", "0 4 * * *"),
 }
 FINANCIAL_NEWS_SOURCES = ("cafef", "thanhnien", "tuoitre", "vnexpress", "baomoi")
+DAILY_FINANCIAL_NEWS_SOURCES = {"thanhnien", "tuoitre", "vnexpress"}
 HTML_BACKFILL_SOURCES = FINANCIAL_NEWS_SOURCES
+FINANCIAL_NEWS_SCHEDULE_START = date(2026, 11, 24)
 OFFICIAL_DISCLOSURE_SOURCES = {
     "hose": ("hose_disclosures", "0 7,15 * * 1-5", "hose_disclosures_job", "512Mi"),
     "hnx": ("hnx_disclosures", "30 2 * * 1-5", "hnx_disclosures_job", "768Mi"),
@@ -191,6 +194,8 @@ def _collect_html_backfill(
         if not articles:
             return
         total_discovered += len(articles)
+        for article in articles:
+            article.metadata["dagster_run_id"] = str(context.run_id)
         uids = writer.persist_articles(articles)
         total_persisted += len(uids)
         days_completed += 1
@@ -199,6 +204,7 @@ def _collect_html_backfill(
             "completed_day": batch_date.isoformat(),
             "category": category_code,
             "articles_persisted": len(uids),
+            "quality_counts": writer.last_quality_summary,
             "total_persisted_so_far": total_persisted,
         })
         context.log.info(
@@ -334,6 +340,8 @@ def collect_baomoi_news(context):
         if not day_articles:
             return
         total_discovered += len(day_articles)
+        for article in day_articles:
+            article.metadata["dagster_run_id"] = str(context.run_id)
         uids = writer.persist_articles(day_articles)
         total_persisted += len(uids)
         days_completed += 1
@@ -342,6 +350,7 @@ def collect_baomoi_news(context):
             "completed_day": batch_date.isoformat(),
             "category": category_code,
             "articles_persisted": len(uids),
+            "quality_counts": writer.last_quality_summary,
             "total_persisted_so_far": total_persisted,
         })
         cat_prefix = f"[{category_code}] " if category_code else ""
@@ -439,6 +448,8 @@ def collect_configured_news(context):
         if not day_articles:
             return
         total_discovered += len(day_articles)
+        for article in day_articles:
+            article.metadata["dagster_run_id"] = str(context.run_id)
         uids = writer.persist_articles(day_articles)
         total_persisted += len(uids)
         days_completed += 1
@@ -447,6 +458,7 @@ def collect_configured_news(context):
             "completed_day": batch_date.isoformat(),
             "category": category_code,
             "articles_persisted": len(uids),
+            "quality_counts": writer.last_quality_summary,
             "total_persisted_so_far": total_persisted,
         })
         cat_prefix = f"[{category_code}] " if category_code else ""
@@ -546,6 +558,42 @@ def collect_news_backfill(context):
         window,
         context.op_config.get("storage_mode", "link_only"),
     )
+
+
+@op(config_schema={
+    "start_date": Field(String, is_required=True, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh"),
+    "end_date": Field(String, is_required=True, description="Inclusive YYYY-MM-DD in Asia/Ho_Chi_Minh"),
+    "source_keys": Field(
+        String,
+        is_required=False,
+        default_value=",".join(FINANCIAL_NEWS_SOURCES),
+        description="Comma-separated publisher keys to classify (default: the five Financial News sources)",
+    ),
+})
+def classify_news_quality_backfill(context):
+    start_date = date.fromisoformat(str(context.op_config["start_date"]))
+    end_date = date.fromisoformat(str(context.op_config["end_date"]))
+    source_keys = tuple(
+        key.strip().lower()
+        for key in str(context.op_config.get("source_keys", ",".join(FINANCIAL_NEWS_SOURCES))).split(",")
+        if key.strip()
+    )
+    if not source_keys or any(key not in FINANCIAL_NEWS_SOURCES for key in source_keys):
+        raise ValueError(f"source_keys must be selected from {FINANCIAL_NEWS_SOURCES}")
+    source_configs = [_news_source_config(key) for key in source_keys]
+    publisher_domains = {
+        str(config["publisher_code"]): str(config["publisher_domain"])
+        for config in source_configs
+    }
+    backfill = NewsQualityBackfill(publisher_domains)
+    summary = backfill.run(
+        start_date,
+        end_date,
+        tuple(publisher_domains),
+        run_id=str(context.run_id),
+    )
+    context.log.info(f"News quality backfill complete: {json.dumps(summary, ensure_ascii=False)}")
+    return summary
 
 
 @op(config_schema={
@@ -920,6 +968,15 @@ def financial_news_job():
     collect_financial_news_batch()
 
 
+@job(
+    name="news_quality_backfill_job",
+    tags=_pod_tags("news-quality-backfill", "1Gi"),
+    description="Classify stored Financial News articles, retain evidence, and quarantine articles outside finance.",
+)
+def news_quality_backfill_job():
+    classify_news_quality_backfill()
+
+
 def _build_configured_news_job(source_key: str):
     @job(
         name=f"{source_key}_news_job",
@@ -1047,9 +1104,10 @@ def _build_configured_news_schedule(source_key: str, job_definition, cron_schedu
             return SkipReason(
                 f"{source_key} is disabled; enable its licensed HTML redistribution policy in configs/sources/news/{source_key}.yaml."
             )
-        publication_day = (
-            context.scheduled_execution_time.astimezone(LOCAL_TZ).date() - timedelta(days=1)
-        ).isoformat()
+        scheduled_day = context.scheduled_execution_time.astimezone(LOCAL_TZ).date()
+        if source_key in FINANCIAL_NEWS_SOURCES and scheduled_day < FINANCIAL_NEWS_SCHEDULE_START:
+            return SkipReason(f"Five-source Financial News automation starts on {FINANCIAL_NEWS_SCHEDULE_START}.")
+        publication_day = (scheduled_day - timedelta(days=1)).isoformat()
         return RunRequest(
             run_key=f"{source_code}-{publication_day}",
             run_config={"ops": {"collect_configured_news": {"config": {
@@ -1075,6 +1133,7 @@ configured_news_schedules = {
         source_key, configured_news_jobs[source_key], cron_schedule
     )
     for source_key, (_source_code, cron_schedule) in CONFIGURED_NEWS_SOURCES.items()
+    if source_key in DAILY_FINANCIAL_NEWS_SOURCES
 }
 official_disclosure_jobs = {
     source_key: _build_official_disclosure_job(source_key)
@@ -1100,14 +1159,15 @@ investor_relations_schedules = {
 
 @schedule(
     job=cafef_news_job,
-    cron_schedule="15 2 * * *",
+    cron_schedule="0 2 * * *",
     execution_timezone="Asia/Ho_Chi_Minh",
     name="cafef_daily_news_schedule",
 )
 def cafef_daily_news_schedule(context):
-    publication_day = (
-        context.scheduled_execution_time.astimezone(LOCAL_TZ).date() - timedelta(days=1)
-    ).isoformat()
+    scheduled_day = context.scheduled_execution_time.astimezone(LOCAL_TZ).date()
+    if scheduled_day < FINANCIAL_NEWS_SCHEDULE_START:
+        return SkipReason(f"Five-source Financial News automation starts on {FINANCIAL_NEWS_SCHEDULE_START}.")
+    publication_day = (scheduled_day - timedelta(days=1)).isoformat()
     return RunRequest(run_key=f"cafef-news-{publication_day}", run_config={
         "ops": {"collect_cafef_news": {"config": {"start_date": publication_day, "end_date": publication_day}}}
     })
@@ -1115,14 +1175,15 @@ def cafef_daily_news_schedule(context):
 
 @schedule(
     job=baomoi_news_job,
-    cron_schedule="0 3 * * *",
+    cron_schedule="0 2 * * *",
     execution_timezone="Asia/Ho_Chi_Minh",
     name="baomoi_daily_news_schedule",
 )
 def baomoi_daily_news_schedule(context):
-    publication_day = (
-        context.scheduled_execution_time.astimezone(LOCAL_TZ).date() - timedelta(days=1)
-    ).isoformat()
+    scheduled_day = context.scheduled_execution_time.astimezone(LOCAL_TZ).date()
+    if scheduled_day < FINANCIAL_NEWS_SCHEDULE_START:
+        return SkipReason(f"Five-source Financial News automation starts on {FINANCIAL_NEWS_SCHEDULE_START}.")
+    publication_day = (scheduled_day - timedelta(days=1)).isoformat()
     return RunRequest(run_key=f"baomoi-news-{publication_day}", run_config={
         "ops": {"collect_baomoi_news": {"config": {"start_date": publication_day, "end_date": publication_day}}}
     })
@@ -1163,6 +1224,7 @@ defs = Definitions(
         vietstock_market_job,
         cophieu68_market_job,
         financial_news_job,
+        news_quality_backfill_job,
         *configured_news_jobs.values(),
         *news_backfill_jobs.values(),
         *official_disclosure_jobs.values(),
